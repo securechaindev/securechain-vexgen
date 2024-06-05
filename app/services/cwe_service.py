@@ -9,6 +9,7 @@ async def read_cwes_by_cve_id(cve: str) -> list[dict[str, Any]]:
         {"$project": {
             "_id": 0,
             "@ID": 1,
+            "@Abstraction": 1,
             "Description": 1,
             "Extended_Description": 1,
             "Background_Details": 1,

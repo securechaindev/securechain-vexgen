@@ -19,6 +19,14 @@ async def read_cve_by_id(cve_id: str) -> dict[str, Any]:
                     0.0,
                 ]
             },
+            "version": {
+                "$ifNull": [
+                    "$metrics.cvssMetricV31.cvssData.version",
+                    "$metrics.cvssMetricV30.cvssData.version",
+                    "$metrics.cvssMetricV2.cvssData.version",
+                    "",
+                ]
+            },
             "attack_vector": {
                 "$ifNull": [
                     "$metrics.cvssMetricV31.cvssData.vectorString",

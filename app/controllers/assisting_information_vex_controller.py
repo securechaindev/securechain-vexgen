@@ -13,6 +13,7 @@ from regex import findall, search
 from typing_extensions import Annotated
 
 from app.controllers import init_mvn_package, init_npm_package, init_pypi_package
+from app.models import StatementsGroup
 from app.services import (
     read_cve_by_id,
     read_cve_ids_by_version_and_package,
@@ -31,7 +32,8 @@ router = APIRouter()
 async def create_vex_van(
     owner: Annotated[str, Path(min_length=1)],
     name: Annotated[str, Path(min_length=1)],
-    sbom_path: Annotated[str, Query(min_lengt=1)]
+    sbom_path: Annotated[str, Query(min_lengt=1)],
+    statements_group: StatementsGroup
 ) -> JSONResponse:
     """
     Return boths VEX and VAN files by a given owner, name and a SBOM path:
@@ -41,7 +43,7 @@ async def create_vex_van(
     - **sbom_path**: the path to the sbom file in repository
     """
     carpeta_descarga = await download_repository(owner, name)
-    result = await generate_vex_van(carpeta_descarga, owner, sbom_path)
+    result = await generate_vex_van(carpeta_descarga, owner, sbom_path, statements_group)
     if isinstance(result, JSONResponse):
         system("rm -rf " + carpeta_descarga)
         return result
@@ -75,20 +77,20 @@ async def download_repository(owner: str, name: str) -> str:
 async def generate_vex_van(
     carpeta_descarga: str,
     owner: str,
-    sbom_path: str
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str] | JSONResponse:
+    sbom_path: str,
+    statements_group: StatementsGroup
+) -> tuple[dict[str, Any], dict[str, Any], str] | JSONResponse:
     paths = await get_files_path(carpeta_descarga)
     s_path = ""
     timestamp = str(datetime.now())
-    with open("app/templates/van_template.json", encoding="utf-8") as van_file:
+    with open("app/templates/file/van_template.json", encoding="utf-8") as van_file:
         van = load(van_file)
     van["timestamp"] = timestamp
-    with open("app/templates/vex_template.json", encoding="utf-8") as vex_file:
+    with open("app/templates/file/vex_template.json", encoding="utf-8") as vex_file:
         vex = load(vex_file)
     vex["author"] = owner
     vex["timestamp"] = timestamp
     vex["last_updated"] = timestamp
-    vex["tooling"] = "https://github.com/GermanMT/depex"
     for branch in ("main", "master"):
         if exists(f"{carpeta_descarga}/{branch}/{sbom_path}"):
             s_path = f"{carpeta_descarga}/{branch}/{sbom_path}"
@@ -103,33 +105,7 @@ async def generate_vex_van(
                         ),
                     )
                 if "components" in sbom_json and isinstance(sbom_json["components"], list):
-                    for component in sbom_json["components"]:
-                        if "name" in component:
-                            if "group" in component:
-                                component_name = f"{component["group"]}\\{component["name"]}"
-                            else:
-                                component_name = component["name"]
-                            if "purl" in component and "version" in component:
-                                package_manager = component["purl"].split(":")[1].split("/")[0]
-                                if package_manager in ("npm", "maven", "pypi"):
-                                    package_manager = await parse_package_manager(package_manager)
-                                    result = await init_package(component, package_manager)
-                                    if isinstance(result, JSONResponse):
-                                        system("rm -rf " + carpeta_descarga)
-                                        return result
-                                    else:
-                                        component_name = result
-                                    cve_ids = await read_cve_ids_by_version_and_package(
-                                        component["version"], component_name, package_manager
-                                    )
-                                    for cve_id in cve_ids:
-                                        vex["statements"].append(
-                                            await generate_statement(cve_id, timestamp, package_manager)
-                                        )
-                                        van["statements_assisting_information"].append(
-                                            await generate_statement_info(cve_id, paths, component_name, component["version"])
-                                        )
-    van["statements_assisting_information"] = sorted(van["statements_assisting_information"], key=lambda d: d['priority'], reverse=True)
+                    vex, van = await generate_statements(sbom_json["components"], paths, carpeta_descarga, timestamp, statements_group, vex, van)
     if not s_path:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -149,6 +125,65 @@ async def get_files_path(directory_path: str) -> list[str]:
                 files.append(_path)
     return files
 
+
+async def generate_statements(
+    components: dict[str, Any],
+    paths: list[str],
+    carpeta_descarga: str,
+    timestamp: str,
+    statements_group: StatementsGroup,
+    vex: dict[str, Any],
+    van: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]] | JSONResponse:
+    if statements_group == "no_clustering":
+        have_group = False
+        group = []
+    else:
+        have_group = True
+        with open(f"app/templates/group/{statements_group.value}.json", encoding="utf-8") as group_file:
+            group = load(group_file)
+    for component in components:
+        if "name" in component:
+            if "group" in component:
+                component_name = f"{component["group"]}\\{component["name"]}"
+            else:
+                component_name = component["name"]
+            if "purl" in component and "version" in component:
+                package_manager = component["purl"].split(":")[1].split("/")[0]
+                if package_manager in ("npm", "maven", "pypi"):
+                    package_manager = await parse_package_manager(package_manager)
+                    result = await init_package(component, package_manager)
+                    if isinstance(result, JSONResponse):
+                        system("rm -rf " + carpeta_descarga)
+                        return result
+                    else:
+                        component_name = result
+                    cve_ids = await read_cve_ids_by_version_and_package(
+                        component["version"], component_name, package_manager
+                    )
+                    for cve_id in cve_ids:
+                        vex["statements"].append(
+                            await generate_statement(cve_id, timestamp, package_manager)
+                        )
+                        if have_group:
+                            group = await statements_grouping(group, statements_group, cve_id, paths, component_name, component["version"])
+                        else:
+                            group.append(
+                                await generate_statement_info(cve_id, paths, component_name, component["version"])
+                            )
+    if have_group:
+        void_keys = []
+        for key in group:
+            if group[key]:
+                group[key] = sorted(group[key], key=lambda d: d['priority'], reverse=True)
+            else:
+                void_keys.append(key)
+        for void_key in void_keys:
+            del group[void_key]
+    else:
+        group = sorted(group, key=lambda d: d['priority'], reverse=True)
+    van["statements_assisting_information"] = group
+    return vex, van
 
 async def parse_package_manager(package_manager: str) -> str:
     if package_manager == "npm":
@@ -190,8 +225,9 @@ async def init_package(component: dict[str, Any], package_manager: str) -> str:
                 await init_mvn_package(group_id, artifact_id)
     return component_name
 
+
 async def generate_statement(cve_id: str, timestamp: str, package_manager: str) -> dict[str, Any]:
-    statement_temp = open("app/templates/statement_template.json", encoding="utf-8")
+    statement_temp = open("app/templates/statement/statement_template.json", encoding="utf-8")
     statement = load(statement_temp)
     statement_temp.close()
     cve = await read_cve_by_id(cve_id)
@@ -204,8 +240,133 @@ async def generate_statement(cve_id: str, timestamp: str, package_manager: str) 
     return statement
 
 
-async def generate_statement_info(cve_id: str, paths: list[str],  name: str, version: str) -> dict[str, Any]:
-    statement_info_temp = open("app/templates/statement_info_template.json", encoding="utf-8")
+async def statements_grouping(
+    group: dict[str, list[dict[str, Any]]],
+    statements_group: str,
+    cve_id: str,
+    paths: list[str],
+    name: str,
+    version: str
+) -> dict[str, list[dict[str, Any]]]:
+    statement_info = await generate_statement_info(cve_id, paths, name, version)
+    match statements_group:
+        case "cwe_type":
+            if "cwes" in statement_info["vulnerability"]:
+                abstraction = await get_less_abstraction(statement_info["vulnerability"]["cwes"])
+                group[abstraction].append(statement_info)
+            else:
+                group["no_have_cwes"].append(statement_info)
+        case "attack_vector_av":
+            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
+                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
+                if av_parts:
+                    value = av_parts[0].split(":")[1]
+                    match value:
+                        case "N":
+                            group["network"].append(statement_info)
+                        case "A":
+                            group["adjacent"].append(statement_info)
+                        case "L":
+                            group["local"].append(statement_info)
+                else:
+                    group["no_have_attack_vector"].append(statement_info)
+        case "attack_vector_ac":
+            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
+                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
+                if av_parts:
+                    value = av_parts[1].split(":")[1]
+                    match value:
+                        case "H":
+                            group["high"].append(statement_info)
+                        case "M":
+                            group["medium"].append(statement_info)
+                        case "L":
+                            group["low"].append(statement_info)
+                else:
+                    group["no_have_attack_vector"].append(statement_info)
+        case "attack_vector_au":
+            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
+                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
+                if av_parts:
+                    value = av_parts[2].split(":")[1]
+                    match value:
+                        case "M":
+                            group["multiple"].append(statement_info)
+                        case "S":
+                            group["single"].append(statement_info)
+                        case "N":
+                            group["none"].append(statement_info)
+                else:
+                    group["no_have_attack_vector"].append(statement_info)
+        case "attack_vector_c":
+            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
+                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
+                if av_parts:
+                    value = av_parts[3].split(":")[1]
+                    match value:
+                        case "N":
+                            group["none"].append(statement_info)
+                        case "P":
+                            group["partial"].append(statement_info)
+                        case "C":
+                            group["complete"].append(statement_info)
+                else:
+                    group["no_have_attack_vector"].append(statement_info)
+        case "attack_vector_i":
+            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
+                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
+                if av_parts:
+                    value = av_parts[4].split(":")[1]
+                    match value:
+                        case "N":
+                            group["none"].append(statement_info)
+                        case "P":
+                            group["partial"].append(statement_info)
+                        case "C":
+                            group["complete"].append(statement_info)
+                else:
+                    group["no_have_attack_vector"].append(statement_info)
+        case "attack_vector_a":
+            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
+                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
+                if av_parts:
+                    value = av_parts[5].split(":")[1]
+                    match value:
+                        case "N":
+                            group["none"].append(statement_info)
+                        case "P":
+                            group["partial"].append(statement_info)
+                        case "C":
+                            group["complete"].append(statement_info)
+                else:
+                    group["no_have_attack_vector"].append(statement_info)
+        case "reachable_code":
+            if "reachable_code" not in statement_info:
+                group["no"].append(statement_info)
+            else:
+                group["yes"].append(statement_info)
+    return group
+
+
+async def get_less_abstraction(cwes: list[ dict[str, Any]]) -> str:
+    abstraction = ""
+    for cwe in cwes:
+        match cwe["abstraction"]:
+            case "Pillar":
+                abstraction = "pillar" if abstraction not in ["class", "base", "variant"] else abstraction
+            case "Class":
+                abstraction = "class" if abstraction not in ["base", "variant"] else abstraction
+            case "Base":
+                abstraction = "base" if abstraction not in ["variant"] else abstraction
+            case "Variant":
+                abstraction = "variant"
+            case "Compound":
+                return "compound"
+    return abstraction
+
+
+async def generate_statement_info(cve_id: str, paths: list[str], name: str, version: str) -> dict[str, Any]:
+    statement_info_temp = open("app/templates/statement/statement_info_template.json", encoding="utf-8")
     statement_info = load(statement_info_temp)
     statement_info_temp.close()
     statement_info["affected_component"] = name
@@ -216,10 +377,12 @@ async def generate_statement_info(cve_id: str, paths: list[str],  name: str, ver
     statement_info["vulnerability"]["description"] = cve["description"]
     statement_info["vulnerability"]["cvss"]["vuln_impact"] = cve["vuln_impact"][0]
     statement_info["vulnerability"]["cvss"]["attack_vector"] = cve["attack_vector"][0]
+    statement_info["vulnerability"]["cvss"]["version"] = cve["version"][0]
 
     for cwe in await read_cwes_by_cve_id(cve_id):
         _cwe = {}
         _cwe["@id"] = f"https://cwe.mitre.org/data/definitions/{cwe["@ID"]}.html"
+        _cwe["abstraction"] = cwe["@Abstraction"]
         _cwe["name"] = cwe["@ID"]
         _cwe["description"] = cwe["Extended_Description"] if "Extended_Description" in cwe else cwe["Description"]
         if "Background_Details" in cwe:
@@ -245,6 +408,7 @@ async def generate_statement_info(cve_id: str, paths: list[str],  name: str, ver
     for exploit in await read_exploits_by_cve_id(cve_id):
         _exploit = {}
         _exploit["@id"] = exploit["href"] if exploit["href"] else "Unknown"
+        _exploit["attack_vector"] = exploit["cvss"]["vector"] if "cvss" in exploit else "NONE"
         _exploit["description"] = "" if exploit["type"] == "githubexploit" else exploit["description"]
         _exploit["payload"] = ""
         if exploit["type"] == "githubexploit":

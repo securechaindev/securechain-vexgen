@@ -1,6 +1,6 @@
-# Depex Project
+# VexGen Project
 
-<p>
+<!-- <p>
   <a href="https://github.com/GermanMT/depex/releases" target="_blank">
     <img src="https://img.shields.io/github/v/release/GermanMT/depex?color=green&logo=github" alt="release">
   </a>
@@ -16,7 +16,7 @@
   <a href="https://doi.org/10.5281/zenodo.7692304">
     <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7692304.svg" alt="DOI">
   </a>
-</p>
+</p> -->
 
 ## Deployment with docker
 

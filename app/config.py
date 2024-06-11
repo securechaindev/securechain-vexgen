@@ -4,14 +4,14 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    GRAPH_DB_URI_PIP: str = ""
+    GRAPH_DB_URI_PYPI: str = ""
     GRAPH_DB_URI_NPM: str = ""
-    GRAPH_DB_URI_MVN: str = ""
+    GRAPH_DB_URI_MAVEN: str = ""
     VULN_DB_URI: str = ""
     GRAPH_DB_USER: str = ""
-    GRAPH_DB_PASSWORD_PIP: str = ""
+    GRAPH_DB_PASSWORD_PYPI: str = ""
     GRAPH_DB_PASSWORD_NPM: str = ""
-    GRAPH_DB_PASSWORD_MVN: str = ""
+    GRAPH_DB_PASSWORD_MAVEN: str = ""
     VULN_DB_USER: str = ""
     VULN_DB_PASSWORD: str = ""
     GITHUB_GRAPHQL_API_KEY: str = ""

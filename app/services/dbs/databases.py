@@ -8,27 +8,27 @@ from app.config import settings
 
 @lru_cache
 def get_graph_db_session(package_manager: str) -> AsyncSession | tuple[AsyncSession]:
-    pip_session: AsyncSession = AsyncGraphDatabase.driver(
-        uri=settings.GRAPH_DB_URI_PIP,
-        auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_PIP),
+    pypi_session: AsyncSession = AsyncGraphDatabase.driver(
+        uri=settings.GRAPH_DB_URI_PYPI,
+        auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_PYPI),
     ).session()
     npm_session: AsyncSession = AsyncGraphDatabase.driver(
         uri=settings.GRAPH_DB_URI_NPM,
         auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_NPM),
     ).session()
-    mvn_session: AsyncSession = AsyncGraphDatabase.driver(
-        uri=settings.GRAPH_DB_URI_MVN,
-        auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_MVN),
+    maven_session: AsyncSession = AsyncGraphDatabase.driver(
+        uri=settings.GRAPH_DB_URI_MAVEN,
+        auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_MAVEN),
     ).session()
     match package_manager:
-        case "PIP":
-            return pip_session
-        case "NPM":
+        case "pypi":
+            return pypi_session
+        case "npm":
             return npm_session
-        case "MVN":
-            return mvn_session
-        case "ALL":
-            return pip_session, npm_session, mvn_session
+        case "maven":
+            return maven_session
+        case "all":
+            return pypi_session, npm_session, maven_session
 
 
 @lru_cache

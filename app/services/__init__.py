@@ -15,25 +15,7 @@ from .exploit_service import read_exploits_by_cve_id
 from .package_service import (
     create_package_and_versions,
     read_package_by_name,
-    read_packages_by_requirement_file,
-    relate_packages,
     update_package_moment,
-)
-from .repository_service import (
-    create_repository,
-    read_repositories,
-    read_repositories_moment,
-    read_repository_by_id,
-    update_repository_is_complete,
-    update_repository_moment,
-)
-from .requirement_file_service import (
-    create_requirement_file,
-    delete_requirement_file,
-    delete_requirement_file_rel,
-    read_requirement_files_by_repository,
-    update_requirement_file_moment,
-    update_requirement_rel_constraints,
 )
 from .version_service import (
     count_number_of_versions_by_package,
@@ -51,21 +33,7 @@ __all__ = [
     "read_cwes_by_cve_id",
     "create_package_and_versions",
     "read_package_by_name",
-    "read_packages_by_requirement_file",
-    "relate_packages",
     "update_package_moment",
-    "create_repository",
-    "read_repositories_moment",
-    "read_repositories",
-    "read_repository_by_id",
-    "update_repository_is_complete",
-    "update_repository_moment",
-    "create_requirement_file",
-    "read_requirement_files_by_repository",
-    "update_requirement_rel_constraints",
-    "update_requirement_file_moment",
-    "delete_requirement_file",
-    "delete_requirement_file_rel",
     "read_env_variables",
     "update_env_variables_by_nvd",
     "update_env_variables_by_exploit_db",

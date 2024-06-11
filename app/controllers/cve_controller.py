@@ -2,8 +2,6 @@ from typing import Any
 
 from univers.versions import MavenVersion, PypiVersion, SemverVersion
 
-from app.utils import mean, weighted_mean
-
 
 async def attribute_cves(
     version: Any, cpe_product: dict[str, Any], package_manager: str
@@ -59,16 +57,14 @@ async def attribute_cves(
                     if cve["id"] not in version["cves"]:
                         version["cves"].append(cve["id"])
                         impacts.append(cve["impact_score"])
-    version["mean"] = await mean(impacts)
-    version["weighted_mean"] = await weighted_mean(impacts)
     return version
 
 
 async def get_version_type(package_manager: str):
     match package_manager:
-        case "PIP":
+        case "pypi":
             return PypiVersion
-        case "NPM":
+        case "npm":
             return SemverVersion
-        case "MVN":
+        case "maven":
             return MavenVersion

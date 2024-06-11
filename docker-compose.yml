@@ -3,11 +3,11 @@ services:
     container_name: vexgen_backend
     build: .
     depends_on:
-      pip_graph_database:
+      pypi_graph_database:
         condition: service_healthy
       npm_graph_database:
         condition: service_healthy
-      mvn_graph_database:
+      maven_graph_database:
         condition: service_healthy
       vuln_database:
         condition: service_started
@@ -16,12 +16,12 @@ services:
     networks:
       - vexgen
 
-  pip_graph_database:
+  pypi_graph_database:
     env_file: .env
-    container_name: pip_neo4j
+    container_name: pypi_neo4j
     image: neo4j:5.20.0
     environment:
-      - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_PIP}
+      - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_PYPI}
       - NEO4J_PLUGINS=["apoc"]
       - NEO4J_server_http_listen__address=:7474
       - NEO4J_server_http_advertised__address=:7474
@@ -32,7 +32,7 @@ services:
       - '7474:7474'
       - '7687:7687'
     volumes:
-      - ./seeds/graphs/pip_neo4j.cypher.gz:/backups/pip_neo4j.cypher.gz
+      - ./seeds/graphs/pypi_neo4j.cypher.gz:/backups/pypi_neo4j.cypher.gz
     networks:
       - vexgen
     healthcheck:
@@ -68,12 +68,12 @@ services:
       retries: 5
       start_period: 3s
 
-  mvn_graph_database:
+  maven_graph_database:
     env_file: .env
-    container_name: mvn_neo4j
+    container_name: maven_neo4j
     image: neo4j:5.20.0
     environment:
-      - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_MVN}
+      - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_MAVEN}
       - NEO4J_PLUGINS=["apoc"]
       - NEO4J_server_http_listen__address=:7472
       - NEO4J_server_http_advertised__address=:7472
@@ -84,7 +84,7 @@ services:
       - '7472:7472'
       - '7685:7685'
     volumes:
-      - ./seeds/graphs/mvn_neo4j.cypher.gz:/backups/mvn_neo4j.cypher.gz
+      - ./seeds/graphs/maven_neo4j.cypher.gz:/backups/maven_neo4j.cypher.gz
     networks:
       - vexgen
     healthcheck:

@@ -1,18 +1,16 @@
 from datetime import datetime
 from glob import glob
 from json import JSONDecodeError, dumps, load
-from os import makedirs, system
+from os import system
 from os.path import exists, isdir
 from typing import Any
 from zipfile import ZipFile
 
 from fastapi import APIRouter, Path, Query, status
 from fastapi.responses import FileResponse, JSONResponse
-from git import GitCommandError, Repo
-from regex import findall, search
 from typing_extensions import Annotated
 
-from app.controllers import init_mvn_package, init_npm_package, init_pypi_package
+from app.controllers import init_maven_package, init_npm_package, init_pypi_package
 from app.models import StatementsGroup
 from app.services import (
     read_cve_by_id,
@@ -20,7 +18,7 @@ from app.services import (
     read_cwes_by_cve_id,
     read_exploits_by_cve_id,
 )
-from app.utils import json_encoder
+from app.utils import download_repository, get_used_artifacts, is_imported, json_encoder
 
 router = APIRouter()
 
@@ -55,23 +53,6 @@ async def create_vex_van(
         myzip.write(s_path, arcname=s_path.split("/")[-1])
     system("rm -rf " + carpeta_descarga)
     return FileResponse(path="vex_van.zip", filename="vex_van.zip", status_code=status.HTTP_200_OK)
-
-
-async def download_repository(owner: str, name: str) -> str:
-    carpeta_descarga = "repositories/" + name
-    system("rm -rf " + carpeta_descarga)
-    makedirs(carpeta_descarga)
-    for branch in ("main", "master"):
-        branch_dir = carpeta_descarga + "/" + branch
-        if not exists(branch_dir):
-            makedirs(branch_dir)
-        try:
-            Repo.clone_from(
-                f"https://github.com/{owner}/{name}.git", branch_dir, branch=branch
-            )
-        except GitCommandError:
-            continue
-    return carpeta_descarga
 
 
 async def generate_vex_van(
@@ -121,7 +102,7 @@ async def get_files_path(directory_path: str) -> list[str]:
     for branch in ("/main", "/master"):
         paths = glob(directory_path + branch + "/**", recursive=True)
         for _path in paths:
-            if not isdir(_path) and ".py" in _path:
+            if not isdir(_path):
                 files.append(_path)
     return files
 
@@ -150,8 +131,7 @@ async def generate_statements(
                 component_name = component["name"]
             if "purl" in component and "version" in component:
                 package_manager = component["purl"].split(":")[1].split("/")[0]
-                if package_manager in ("npm", "maven", "pypi"):
-                    package_manager = await parse_package_manager(package_manager)
+                if package_manager in ("pypi", "npm", "maven"):
                     result = await init_package(component, package_manager)
                     if isinstance(result, JSONResponse):
                         system("rm -rf " + carpeta_descarga)
@@ -166,10 +146,10 @@ async def generate_statements(
                             await generate_statement(cve_id, timestamp, package_manager)
                         )
                         if have_group:
-                            group = await statements_grouping(group, statements_group, cve_id, paths, component_name, component["version"])
+                            group = await statements_grouping(group, statements_group, cve_id, paths, component_name, component["version"], package_manager)
                         else:
                             group.append(
-                                await generate_statement_info(cve_id, paths, component_name, component["version"])
+                                await generate_statement_info(cve_id, paths, component_name, component["version"], package_manager)
                             )
     if have_group:
         void_keys = []
@@ -185,35 +165,27 @@ async def generate_statements(
     van["statements_assisting_information"] = group
     return vex, van
 
-async def parse_package_manager(package_manager: str) -> str:
-    if package_manager == "npm":
-        return "NPM"
-    elif package_manager == "maven":
-        return "MVN"
-    elif package_manager == "pypi":
-        return "PIP"
-
 
 async def init_package(component: dict[str, Any], package_manager: str) -> str:
     if "group" in component:
         match package_manager:
-            case "PIP":
+            case "pypi":
                 component_name = component["name"]
                 await init_pypi_package(component_name)
-            case "NPM":
+            case "npm":
                 component_name = f"{component["group"]}\\{component["name"]}"
                 await init_npm_package(component_name)
-            case "MVN":
+            case "maven":
                 component_name = f"{component["group"]}:{component["name"]}"
-                await init_mvn_package(component["group"], component["name"])
+                await init_maven_package(component["group"], component["name"])
     else:
         component_name = component["name"]
         match package_manager:
-            case "PIP":
+            case "pypi":
                 await init_pypi_package(component_name)
-            case "NPM":
+            case "npm":
                 await init_npm_package(component_name)
-            case "MVN":
+            case "maven":
                 if ":" not in component_name:
                     return JSONResponse(
                         status_code=status.HTTP_200_OK,
@@ -222,7 +194,7 @@ async def init_package(component: dict[str, Any], package_manager: str) -> str:
                         ),
                     )
                 group_id, artifact_id = component_name.split(":")
-                await init_mvn_package(group_id, artifact_id)
+                await init_maven_package(group_id, artifact_id)
     return component_name
 
 
@@ -246,10 +218,13 @@ async def statements_grouping(
     cve_id: str,
     paths: list[str],
     name: str,
-    version: str
+    version: str,
+    package_manager: str
 ) -> dict[str, list[dict[str, Any]]]:
-    statement_info = await generate_statement_info(cve_id, paths, name, version)
+    statement_info = await generate_statement_info(cve_id, paths, name, version, package_manager)
     match statements_group:
+        case "affected_component_manager":
+            group[package_manager].append(statement_info)
         case "cwe_type":
             if "cwes" in statement_info["vulnerability"]:
                 abstraction = await get_less_abstraction(statement_info["vulnerability"]["cwes"])
@@ -365,12 +340,13 @@ async def get_less_abstraction(cwes: list[ dict[str, Any]]) -> str:
     return abstraction
 
 
-async def generate_statement_info(cve_id: str, paths: list[str], name: str, version: str) -> dict[str, Any]:
+async def generate_statement_info(cve_id: str, paths: list[str], name: str, version: str, package_manager: str) -> dict[str, Any]:
     statement_info_temp = open("app/templates/statement/statement_info_template.json", encoding="utf-8")
     statement_info = load(statement_info_temp)
     statement_info_temp.close()
     statement_info["affected_component"] = name
     statement_info["affected_component_version"] = version
+    statement_info["affected_component_manager"] = package_manager
     cve = await read_cve_by_id(cve_id)
     statement_info["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{cve["id"]}"
     statement_info["vulnerability"]["name"] = cve["id"]
@@ -398,10 +374,10 @@ async def generate_statement_info(cve_id: str, paths: list[str], name: str, vers
         statement_info["vulnerability"]["cwes"].append(_cwe)
 
     for path in paths:
-        if await is_imported(path, name):
+        if await is_imported(path, name, package_manager):
             reacheable_code = {}
             reacheable_code["path_to_file"] = path.replace("repositories/", "")
-            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"])
+            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], package_manager)
             if reacheable_code["used_artifacts"]:
                 statement_info["reachable_code"].append(reacheable_code)
 
@@ -438,57 +414,3 @@ async def generate_statement_info(cve_id: str, paths: list[str], name: str, vers
     statement_info["priority"] = priority
 
     return statement_info
-
-
-async def is_imported(file_path: str, dependency: str) -> Any:
-    with open(file_path, encoding="utf-8") as file:
-        try:
-            code = file.read()
-            return search(rf"(from|import)\s+{dependency}", code)
-        except Exception as _:
-            return False
-
-
-async def get_used_artifacts(filename: str, dependency: str, cve_description: str) -> dict[str, list[int]]:
-    with open(filename, encoding="utf-8") as file:
-        code = file.read()
-        current_line = 1
-        used_artifacts = await get_child_artifacts(dependency, code, cve_description)
-        for line in code.split("\n"):
-            if "import" not in line:
-                for artifact in used_artifacts:
-                    if artifact in line:
-                        used_artifacts.setdefault(artifact, []).append(current_line)
-            current_line += 1
-        for artifact in list(used_artifacts.keys()):
-            if not used_artifacts[artifact]:
-                del used_artifacts[artifact]
-
-        result = []
-        for artifact_name, used_in_lines in used_artifacts.items():
-            result.append({
-                "artifact_name": artifact_name,
-                "used_in_lines": used_in_lines
-            })
-        return result
-
-
-async def get_child_artifacts(parent: str, code: str, cve_description: str) -> dict[str, list[int]]:
-    used_artifacts: dict[str, list[int]] = {}
-    for _ in findall(rf"{parent}\.[^\(\)\s:]+", code):
-        for artifact in _.split(".")[1:]:
-            if artifact.lower() in cve_description.lower():
-                used_artifacts.setdefault(artifact.strip(), [])
-    for _ in findall(rf"from\s+{parent}\.[^\(\)\s:]+\s+import\s+\w+(?:\s*,\s*\w+)*", code):
-        for artifact in _.split("import")[1].split(","):
-            if artifact.lower() in cve_description.lower():
-                used_artifacts.setdefault(artifact.strip(), [])
-    for _ in findall(rf"from\s+{parent}\s+import\s+\w+(?:\s*,\s*\w+)*", code):
-        for artifact in _.split("import")[1].split(","):
-            if artifact.lower() in cve_description.lower():
-                used_artifacts.setdefault(artifact.strip(), [])
-    aux = {}
-    for artifact in used_artifacts:
-        aux.update(await get_child_artifacts(artifact, code, cve_description))
-    used_artifacts.update(aux)
-    return used_artifacts

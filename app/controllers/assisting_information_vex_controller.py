@@ -125,10 +125,6 @@ async def generate_statements(
             group = load(group_file)
     for component in components:
         if "name" in component:
-            if "group" in component:
-                component_name = f"{component["group"]}\\{component["name"]}"
-            else:
-                component_name = component["name"]
             if "purl" in component and "version" in component:
                 package_manager = component["purl"].split(":")[1].split("/")[0]
                 if package_manager in ("pypi", "npm", "maven"):
@@ -173,7 +169,7 @@ async def init_package(component: dict[str, Any], package_manager: str) -> str:
                 component_name = component["name"]
                 await init_pypi_package(component_name)
             case "npm":
-                component_name = f"{component["group"]}\\{component["name"]}"
+                component_name = f"{component["group"]}/{component["name"]}"
                 await init_npm_package(component_name)
             case "maven":
                 component_name = f"{component["group"]}:{component["name"]}"

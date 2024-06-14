@@ -18,11 +18,19 @@ from .managers.pypi_generate_controller import (
     pypi_create_package,
     pypi_search_new_versions,
 )
+from .managers.cargo_generate_controller import (
+    cargo_create_package,
+    cargo_search_new_versions,
+)
+from .managers.nuget_generate_controller import (
+    nuget_create_package,
+    nuget_search_new_versions,
+)
 
 
 async def init_pypi_package(package_name: str) -> JSONResponse:
     """
-    Starts graph extraction from a Python Package Index (PyPI) package:
+    Starts graph extraction from a Python Package Index package:
 
     - **package_name**: the name of the package as it appears in PyPI
     """
@@ -39,7 +47,7 @@ async def init_pypi_package(package_name: str) -> JSONResponse:
 
 async def init_npm_package(package_name: str) -> JSONResponse:
     """
-    Starts graph extraction from a Node Package Manager (npm) package:
+    Starts graph extraction from a Node Package Manager package:
 
     - **package_name**: the name of the package as it appears in npm
     """
@@ -69,4 +77,38 @@ async def init_maven_package(group_id: str, artifact_id: str) -> JSONResponse:
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder({"message": "initializing"}),
+    )
+
+
+async def init_cargo_package(package_name: str) -> JSONResponse:
+    """
+    Starts graph extraction from a Cargo Crates package:
+
+    - **package_name**: the name of the package as it appears in Cargo
+    """
+    package = await read_package_by_name(package_name, "cargo")
+    if not package:
+        await cargo_create_package(package_name)
+    elif package["moment"] < datetime.now() - timedelta(days=10):
+        await cargo_search_new_versions(package)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=json_encoder({"message": "Initializing graph"}),
+    )
+
+
+async def init_nuget_package(package_name: str) -> JSONResponse:
+    """
+    Starts graph extraction from a NuGet package:
+
+    - **package_name**: the name of the package as it appears in NuGet
+    """
+    package = await read_package_by_name(package_name, "nuget")
+    if not package:
+        await nuget_create_package(package_name)
+    elif package["moment"] < datetime.now() - timedelta(days=10):
+        await nuget_search_new_versions(package)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=json_encoder({"message": "Initializing graph"}),
     )

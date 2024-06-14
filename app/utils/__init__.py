@@ -2,7 +2,7 @@ from .code_analyzer import get_used_artifacts, is_imported
 from .get_first_pos import get_first_position
 from .json_encoder import json_encoder
 from .parse_pypi_constraints import parse_pypi_constraints
-from .repo_analyzer import download_repository
+from .download_repository import download_repository
 
 __all__ = [
     "json_encoder",

@@ -27,5 +27,5 @@ async def get_all_maven_versions(
     else:
         raw_versions = [pom_dict["metadata"]["versioning"]["versions"]["version"]]
     for count, version in enumerate(raw_versions):
-        versions.append({"name": version, "release_date": None, "count": count})
+        versions.append({"name": version, "count": count})
     return versions

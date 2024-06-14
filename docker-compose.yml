@@ -9,6 +9,10 @@ services:
         condition: service_healthy
       maven_graph_database:
         condition: service_healthy
+      cargo_graph_database:
+        condition: service_healthy
+      nuget_graph_database:
+        condition: service_healthy
       vuln_database:
         condition: service_started
     ports:
@@ -85,6 +89,58 @@ services:
       - '7685:7685'
     volumes:
       - ./seeds/graphs/maven_neo4j.cypher.gz:/backups/maven_neo4j.cypher.gz
+    networks:
+      - vexgen
+    healthcheck:
+      test: wget http://localhost:7472 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 3s
+
+  cargo_graph_database:
+    env_file: .env
+    container_name: cargo_neo4j
+    image: neo4j:5.20.0
+    environment:
+      - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_CARGO}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_server_http_listen__address=:7471
+      - NEO4J_server_http_advertised__address=:7471
+      - NEO4J_server_bolt_listen__address=:7684
+      - NEO4J_server_bolt_advertised__address=:7684
+      - NEO4J_apoc_export_file_enabled=true
+    ports:
+      - '7471:7471'
+      - '7684:7684'
+    volumes:
+      - ./seeds/graphs/cargo_neo4j.cypher.gz:/backups/cargo_neo4j.cypher.gz
+    networks:
+      - vexgen
+    healthcheck:
+      test: wget http://localhost:7472 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 3s
+
+  nuget_graph_database:
+    env_file: .env
+    container_name: nuget_neo4j
+    image: neo4j:5.20.0
+    environment:
+      - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_NUGET}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_server_http_listen__address=:7470
+      - NEO4J_server_http_advertised__address=:7470
+      - NEO4J_server_bolt_listen__address=:7683
+      - NEO4J_server_bolt_advertised__address=:7683
+      - NEO4J_apoc_export_file_enabled=true
+    ports:
+      - '7470:7470'
+      - '7683:7683'
+    volumes:
+      - ./seeds/graphs/nuget_neo4j.cypher.gz:/backups/nuget_neo4j.cypher.gz
     networks:
       - vexgen
     healthcheck:

@@ -3,10 +3,10 @@ from requests import get
 from asyncio import run
 from time import sleep
 from regex import compile
+from app.config import settings
 
 # Reemplaza con tu token de acceso personal
-GITHUB_TOKEN = "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"
-HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.cloak-preview"}
+HEADERS = {"Authorization": f"token {settings.GITHUB_GRAPHQL_API_KEY}", "Accept": "application/vnd.github.cloak-preview"}
 
 async def buscar_commits_por_cve(cve):
     while True:
@@ -69,26 +69,26 @@ async def extract_vuln_funcs():
         ids = cve_ghsa.split(":")
         cve_id = ids[0]
         cve = await cve_collection.find_one({"id": cve_id})
-        # if "affected_artefacts" not in cve:
-        for id in ids:
-            if id != "None":
-                commits = await buscar_commits_por_cve(id)
-                if "items" in commits:
-                    for item in commits["items"]:
-                        repo_full_name = item["repository"]["full_name"]
-                        if (
-                            "upgrade" not in item["commit"]["message"].lower() and
-                            "bump" not in item["commit"]["message"].lower()
-                            # ("fix" in item["commit"]["message"].lower() or
-                            # "mitigation" in item["commit"]["message"].lower() or
-                            # f"merge {id}" in item["commit"]["message"].lower())
-                        ):
-                            commit_data = await obtener_diffs_de_commits(repo_full_name, item["sha"])
-                            if "files" in commit_data:
-                                for file in commit_data["files"]:
-                                    if file["filename"].endswith((".java", ".py", ".cs", ".rs", ".js", ".ts")):
-                                        if "patch" in file:
-                                            func_modificadas.update(await extraer_funciones_modificadas(file["patch"], file["filename"].split(".")[-1]))
+        if "affected_artefacts" not in cve:
+            for id in ids:
+                if id != "None":
+                    commits = await buscar_commits_por_cve(id)
+                    if "items" in commits:
+                        for item in commits["items"]:
+                            repo_full_name = item["repository"]["full_name"]
+                            if (
+                                "upgrade" not in item["commit"]["message"].lower() and
+                                "bump" not in item["commit"]["message"].lower()
+                                # ("fix" in item["commit"]["message"].lower() or
+                                # "mitigation" in item["commit"]["message"].lower() or
+                                # f"merge {id}" in item["commit"]["message"].lower())
+                            ):
+                                commit_data = await obtener_diffs_de_commits(repo_full_name, item["sha"])
+                                if "files" in commit_data:
+                                    for file in commit_data["files"]:
+                                        if file["filename"].endswith((".java", ".py", ".cs", ".rs", ".js", ".ts")):
+                                            if "patch" in file:
+                                                func_modificadas.update(await extraer_funciones_modificadas(file["patch"], file["filename"].split(".")[-1]))
         cve["affected_artefacts"] = list(func_modificadas)
         await cve_collection.replace_one({"id": cve_id}, cve)
         print(cve_id)

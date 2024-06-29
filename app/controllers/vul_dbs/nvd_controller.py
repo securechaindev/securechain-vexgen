@@ -143,34 +143,35 @@ async def get_products(cve: dict[str, Any]) -> None:
         impact_score = 0.0
     if "configurations" in cve:
         for configuration in cve["configurations"]:
-            for node in configuration["nodes"]:
-                if "cpeMatch" in node:
-                    for cpe_match in node["cpeMatch"]:
-                        cve_ = {
-                            "id": cve["id"],
-                            "version": cpe_match["criteria"].split(":")[5],
-                            "impact_score": impact_score,
-                        }
-                        if any(key in cpe_match for key in version_keys):
-                            if "versionStartIncluding" in cpe_match:
-                                cve_["versionStartIncluding"] = cpe_match[
-                                    "versionStartIncluding"
-                                ]
-                            if "versionEndIncluding" in cpe_match:
-                                cve_["versionEndIncluding"] = cpe_match[
-                                    "versionEndIncluding"
-                                ]
-                            if "versionStartExcluding" in cpe_match:
-                                cve_["versionStartExcluding"] = cpe_match[
-                                    "versionStartExcluding"
-                                ]
-                            if "versionEndExcluding" in cpe_match:
-                                cve_["versionEndExcluding"] = cpe_match[
-                                    "versionEndExcluding"
-                                ]
-                        await update_cpe_products(
-                            cpe_match["criteria"].split(":")[4], cve_
-                        )
-                        await update_cpe_products(
-                            cpe_match["criteria"].split(":")[3], cve_
-                        )
+            if "nodes" in configuration:
+                for node in configuration["nodes"]:
+                    if "cpeMatch" in node:
+                        for cpe_match in node["cpeMatch"]:
+                            cve_ = {
+                                "id": cve["id"],
+                                "version": cpe_match["criteria"].split(":")[5],
+                                "impact_score": impact_score,
+                            }
+                            if any(key in cpe_match for key in version_keys):
+                                if "versionStartIncluding" in cpe_match:
+                                    cve_["versionStartIncluding"] = cpe_match[
+                                        "versionStartIncluding"
+                                    ]
+                                if "versionEndIncluding" in cpe_match:
+                                    cve_["versionEndIncluding"] = cpe_match[
+                                        "versionEndIncluding"
+                                    ]
+                                if "versionStartExcluding" in cpe_match:
+                                    cve_["versionStartExcluding"] = cpe_match[
+                                        "versionStartExcluding"
+                                    ]
+                                if "versionEndExcluding" in cpe_match:
+                                    cve_["versionEndExcluding"] = cpe_match[
+                                        "versionEndExcluding"
+                                    ]
+                            await update_cpe_products(
+                                cpe_match["criteria"].split(":")[4], cve_
+                            )
+                            await update_cpe_products(
+                                cpe_match["criteria"].split(":")[3], cve_
+                            )

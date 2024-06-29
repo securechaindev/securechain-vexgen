@@ -44,7 +44,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 3s
+      start_period: 8s
 
   npm_graph_database:
     env_file: .env
@@ -70,7 +70,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 3s
+      start_period: 8s
 
   maven_graph_database:
     env_file: .env
@@ -96,7 +96,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 3s
+      start_period: 8s
 
   cargo_graph_database:
     env_file: .env
@@ -118,11 +118,11 @@ services:
     networks:
       - vexgen
     healthcheck:
-      test: wget http://localhost:7472 || exit 1
+      test: wget http://localhost:7471 || exit 1
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 3s
+      start_period: 8s
 
   nuget_graph_database:
     env_file: .env
@@ -144,11 +144,11 @@ services:
     networks:
       - vexgen
     healthcheck:
-      test: wget http://localhost:7472 || exit 1
+      test: wget http://localhost:7470 || exit 1
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 3s
+      start_period: 8s
 
   vuln_database:
     env_file: .env

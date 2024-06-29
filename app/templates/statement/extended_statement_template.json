@@ -15,5 +15,9 @@
     },
     "reachable_code": [],
     "exploits": [],
-    "priority": 0.0
+    "priority": 0.0,
+    "timestamp": "",
+    "last_updated": "",
+    "status": "Go to VAN file to find vulnerability",
+    "justification": "Go to VAN file to find vulnerability"
 }

@@ -23,39 +23,39 @@ from app.utils import download_repository, get_used_artifacts, is_imported, json
 router = APIRouter()
 
 @router.post(
-    "/vex/van/{owner}/{name}",
-    summary="Create boths VEX and VAN files by repository id and SBOM file",
-    response_description="Return a zip with a VEX and a VAN file",
+    "/vex/{owner}/{name}",
+    summary="Create boths VEX and Extended VEX files by repository id and SBOM file",
+    response_description="Return a zip with a VEX and a Extended VEX file",
 )
-async def create_vex_van(
+async def create_vex(
     owner: Annotated[str, Path(min_length=1)],
     name: Annotated[str, Path(min_length=1)],
     sbom_path: Annotated[str, Query(min_lengt=1)],
     statements_group: StatementsGroup
 ) -> JSONResponse:
     """
-    Return boths VEX and VAN files by a given owner, name and a SBOM path:
+    Return boths VEX and Extended VEX files by a given owner, name and a SBOM path:
 
     - **owner**: the owner of a repository
     - **name**: the name of a repository
     - **sbom_path**: the path to the sbom file in repository
     """
     carpeta_descarga = await download_repository(owner, name)
-    result = await generate_vex_van(carpeta_descarga, owner, sbom_path, statements_group)
+    result = await generate_vex(carpeta_descarga, owner, sbom_path, statements_group)
     if isinstance(result, JSONResponse):
         system("rm -rf " + carpeta_descarga)
         return result
     else:
-        vex, van, s_path = result
-    with ZipFile("vex_van.zip", "w") as myzip:
+        vex, extended_vex, s_path = result
+    with ZipFile("vex.zip", "w") as myzip:
         myzip.writestr("vex.json", dumps(vex, indent=2))
-        myzip.writestr("van.json", dumps(van, indent=2))
+        myzip.writestr("extended_vex.json", dumps(extended_vex, indent=2))
         myzip.write(s_path, arcname=s_path.split("/")[-1])
     system("rm -rf " + carpeta_descarga)
-    return FileResponse(path="vex_van.zip", filename="vex_van.zip", status_code=status.HTTP_200_OK)
+    return FileResponse(path="vex.zip", filename="vex.zip", status_code=status.HTTP_200_OK)
 
 
-async def generate_vex_van(
+async def generate_vex(
     carpeta_descarga: str,
     owner: str,
     sbom_path: str,
@@ -64,9 +64,11 @@ async def generate_vex_van(
     paths = await get_files_path(carpeta_descarga)
     s_path = ""
     timestamp = str(datetime.now())
-    with open("app/templates/file/van_template.json", encoding="utf-8") as van_file:
-        van = load(van_file)
-    van["timestamp"] = timestamp
+    with open("app/templates/file/extended_vex_template.json", encoding="utf-8") as extended_vex_file:
+        extended_vex = load(extended_vex_file)
+    extended_vex["author"] = owner
+    extended_vex["timestamp"] = timestamp
+    extended_vex["last_updated"] = timestamp
     with open("app/templates/file/vex_template.json", encoding="utf-8") as vex_file:
         vex = load(vex_file)
     vex["author"] = owner
@@ -86,7 +88,7 @@ async def generate_vex_van(
                         ),
                     )
                 if "components" in sbom_json and isinstance(sbom_json["components"], list):
-                    vex, van = await generate_statements(sbom_json["components"], paths, carpeta_descarga, timestamp, statements_group, vex, van)
+                    vex, extended_vex = await generate_statements(sbom_json["components"], paths, carpeta_descarga, timestamp, statements_group, vex, extended_vex)
     if not s_path:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -94,7 +96,7 @@ async def generate_vex_van(
                 {"message": "The repository don't have main or master branch"}
             ),
         )
-    return vex, van, s_path
+    return vex, extended_vex, s_path
 
 
 async def get_files_path(directory_path: str) -> list[str]:
@@ -114,7 +116,7 @@ async def generate_statements(
     timestamp: str,
     statements_group: StatementsGroup,
     vex: dict[str, Any],
-    van: dict[str, Any]
+    extended_vex: dict[str, Any]
 ) -> tuple[dict[str, Any], dict[str, Any]] | JSONResponse:
     if statements_group == "no_clustering":
         have_group = False
@@ -142,10 +144,10 @@ async def generate_statements(
                             await generate_statement(cve_id, timestamp, package_manager)
                         )
                         if have_group:
-                            group = await statements_grouping(group, statements_group, cve_id, paths, component_name, component["version"], package_manager)
+                            group = await statements_grouping(group, statements_group, cve_id, paths, component_name, component["version"], timestamp, package_manager)
                         else:
                             group.append(
-                                await generate_statement_info(cve_id, paths, component_name, component["version"], package_manager)
+                                await generate_extended_statement(cve_id, paths, component_name, component["version"], timestamp, package_manager)
                             )
     if have_group:
         void_keys = []
@@ -158,8 +160,8 @@ async def generate_statements(
             del group[void_key]
     else:
         group = sorted(group, key=lambda d: d['priority'], reverse=True)
-    van["statements_assisting_information"] = group
-    return vex, van
+    extended_vex["extended_statements"] = group
+    return vex, extended_vex
 
 
 async def init_package(component: dict[str, Any], package_manager: str) -> str:
@@ -215,9 +217,10 @@ async def statements_grouping(
     paths: list[str],
     name: str,
     version: str,
+    timestamp: str,
     package_manager: str
 ) -> dict[str, list[dict[str, Any]]]:
-    statement_info = await generate_statement_info(cve_id, paths, name, version, package_manager)
+    statement_info = await generate_extended_statement(cve_id, paths, name, version, timestamp, package_manager)
     match statements_group:
         case "affected_component_manager":
             group[package_manager].append(statement_info)
@@ -336,20 +339,22 @@ async def get_less_abstraction(cwes: list[ dict[str, Any]]) -> str:
     return abstraction
 
 
-async def generate_statement_info(cve_id: str, paths: list[str], name: str, version: str, package_manager: str) -> dict[str, Any]:
-    statement_info_temp = open("app/templates/statement/statement_info_template.json", encoding="utf-8")
-    statement_info = load(statement_info_temp)
-    statement_info_temp.close()
-    statement_info["affected_component"] = name
-    statement_info["affected_component_version"] = version
-    statement_info["affected_component_manager"] = package_manager
+async def generate_extended_statement(cve_id: str, paths: list[str], name: str, version: str, timestamp:str, package_manager: str) -> dict[str, Any]:
+    extended_statement_temp = open("app/templates/statement/extended_statement_template.json", encoding="utf-8")
+    extended_statement = load(extended_statement_temp)
+    extended_statement_temp.close()
+    extended_statement["affected_component"] = name
+    extended_statement["affected_component_version"] = version
+    extended_statement["affected_component_manager"] = package_manager
+    extended_statement["timestamp"] = timestamp
+    extended_statement["last_updated"] = timestamp
     cve = await read_cve_by_id(cve_id)
-    statement_info["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{cve["id"]}"
-    statement_info["vulnerability"]["name"] = cve["id"]
-    statement_info["vulnerability"]["description"] = cve["description"]
-    statement_info["vulnerability"]["cvss"]["vuln_impact"] = cve["vuln_impact"][0]
-    statement_info["vulnerability"]["cvss"]["attack_vector"] = cve["attack_vector"][0]
-    statement_info["vulnerability"]["cvss"]["version"] = cve["version"][0]
+    extended_statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{cve["id"]}"
+    extended_statement["vulnerability"]["name"] = cve["id"]
+    extended_statement["vulnerability"]["description"] = cve["description"]
+    extended_statement["vulnerability"]["cvss"]["vuln_impact"] = cve["vuln_impact"][0]
+    extended_statement["vulnerability"]["cvss"]["attack_vector"] = cve["attack_vector"][0]
+    extended_statement["vulnerability"]["cvss"]["version"] = cve["version"][0]
 
     for cwe in await read_cwes_by_cve_id(cve_id):
         _cwe = {}
@@ -367,7 +372,7 @@ async def generate_statement_info(cve_id: str, paths: list[str], name: str, vers
             _cwe["potential_mitigations"] = cwe["Potential_Mitigations"]["Mitigation"]
         if "Demonstrative_Examples" in cwe:
             _cwe["demonstrative_examples"] = cwe["Demonstrative_Examples"]["Demonstrative_Example"]
-        statement_info["vulnerability"]["cwes"].append(_cwe)
+        extended_statement["vulnerability"]["cwes"].append(_cwe)
 
     for path in paths:
         if await is_imported(path, name, package_manager):
@@ -375,7 +380,7 @@ async def generate_statement_info(cve_id: str, paths: list[str], name: str, vers
             reacheable_code["path_to_file"] = path.replace("repositories/", "")
             reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], package_manager)
             if reacheable_code["used_artifacts"]:
-                statement_info["reachable_code"].append(reacheable_code)
+                extended_statement["reachable_code"].append(reacheable_code)
 
     for exploit in await read_exploits_by_cve_id(cve_id):
         _exploit = {}
@@ -388,25 +393,25 @@ async def generate_statement_info(cve_id: str, paths: list[str], name: str, vers
         else:
             if "sourceData" in exploit:
                 _exploit["payload"] = exploit["sourceData"]
-        statement_info["exploits"].append(_exploit)
+        extended_statement["exploits"].append(_exploit)
 
     priority = cve["vuln_impact"][0]*0.7
 
-    if not statement_info["reachable_code"]:
-        del statement_info["reachable_code"]
+    if not extended_statement["reachable_code"]:
+        del extended_statement["reachable_code"]
     else:
         priority += 1
 
-    if not statement_info["exploits"]:
-        del statement_info["exploits"]
+    if not extended_statement["exploits"]:
+        del extended_statement["exploits"]
     else:
         priority += 1
 
-    if not statement_info["vulnerability"]["cwes"]:
-        del statement_info["vulnerability"]["cwes"]
+    if not extended_statement["vulnerability"]["cwes"]:
+        del extended_statement["vulnerability"]["cwes"]
     else:
         priority += 1
 
-    statement_info["priority"] = priority
+    extended_statement["priority"] = priority
 
-    return statement_info
+    return extended_statement

@@ -89,8 +89,8 @@ async def extract_vuln_funcs():
                                         if file["filename"].endswith((".java", ".py", ".cs", ".rs", ".js", ".ts")):
                                             if "patch" in file:
                                                 func_modificadas.update(await extraer_funciones_modificadas(file["patch"], file["filename"].split(".")[-1]))
-        cve["affected_artefacts"] = list(func_modificadas)
-        await cve_collection.replace_one({"id": cve_id}, cve)
+            cve["affected_artefacts"] = list(func_modificadas)
+            await cve_collection.replace_one({"id": cve_id}, cve)
         print(cve_id)
 
 run(extract_vuln_funcs())

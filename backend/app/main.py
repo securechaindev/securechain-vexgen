@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 from time import sleep
 from typing import Any
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, Request
 from fastapi.exception_handlers import (
     http_exception_handler,
@@ -13,7 +12,6 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
-from app.controllers import nvd_update
 from app.router import api_router
 from app.services import create_indexes
 
@@ -25,18 +23,8 @@ over it.
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> Any:
-    while True:
-        try:
-            await create_indexes()
-            await nvd_update()
-            scheduler = AsyncIOScheduler()
-            scheduler.add_job(nvd_update, "interval", seconds=7200)
-            scheduler.start()
-            break
-        except Exception as _:
-            sleep(5)
+    await create_indexes()
     yield
-    scheduler.shutdown()
 
 
 app = FastAPI(

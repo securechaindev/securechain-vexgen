@@ -1,6 +1,5 @@
 fastapi[all]==0.111.0
 pydantic-settings==2.3.0
-apscheduler==3.10.4
 motor==3.4.0
 python-dotenv==1.0.1
 requests==2.32.3

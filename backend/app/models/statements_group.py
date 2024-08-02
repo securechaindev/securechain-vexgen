@@ -1,5 +1,54 @@
 from enum import Enum
 
+from pydantic import BaseModel, Field, validator
+
+from .validators import validate_password
+
+EMAIL_PATTERN = r"^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$"
+
+class User(BaseModel):
+    email: str = Field(
+        pattern=EMAIL_PATTERN
+    )
+    password: str = Field(...)
+
+    @validator("password")
+    def validate_password(cls, value):
+        return validate_password(value)
+
+
+class LoginRequest(BaseModel):
+    email: str = Field(
+        pattern=EMAIL_PATTERN
+    )
+    password: str = Field(...)
+
+    @validator("password")
+    def validate_password(cls, value):
+        return validate_password(value)
+
+
+class AccountExistsRequest(BaseModel):
+    email: str = Field(
+        pattern=EMAIL_PATTERN
+    )
+
+
+class VerifyAccessTokenRequest(BaseModel):
+    access_token: str | None
+
+
+class ChangePasswordRequest(BaseModel):
+    email: str = Field(
+        pattern=EMAIL_PATTERN
+    )
+    old_password: str = Field(...)
+    new_password: str = Field(...)
+
+    @validator("new_password", "old_password")
+    def validate_password(cls, value):
+        return validate_password(value)
+
 
 class StatementsGroup(str, Enum):
     no_clustering = "no_clustering"

@@ -1,3 +1,8 @@
+from .auth_service import (
+    create_user,
+    read_user_by_email,
+    update_user_password,
+)
 from .bulk_write_service import bulk_write_actions
 from .cve_service import (
     read_cpe_product_by_package_name,
@@ -24,6 +29,9 @@ from .version_service import (
 )
 
 __all__ = [
+    "create_user",
+    "read_user_by_email",
+    "update_user_password",
     "bulk_write_actions",
     "create_indexes",
     "read_cve_by_id",

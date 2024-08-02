@@ -2,44 +2,42 @@ from functools import lru_cache
 
 from app.config import settings
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
-from neo4j import AsyncGraphDatabase, AsyncSession
+from neo4j import AsyncGraphDatabase, AsyncSession, AsyncDriver
 
 
 @lru_cache
-def get_graph_db_session(package_manager: str) -> AsyncSession | tuple[AsyncSession]:
-    pypi_session: AsyncSession = AsyncGraphDatabase.driver(
+def get_graph_db_driver(package_manager: str) -> AsyncDriver | tuple[AsyncDriver]:
+    pypi_driver: AsyncDriver = AsyncGraphDatabase.driver(
         uri=settings.GRAPH_DB_URI_PYPI,
         auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_PYPI),
-    ).session()
-    npm_session: AsyncSession = AsyncGraphDatabase.driver(
+    )
+    npm_driver: AsyncDriver = AsyncGraphDatabase.driver(
         uri=settings.GRAPH_DB_URI_NPM,
         auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_NPM),
-    ).session()
-    maven_session: AsyncSession = AsyncGraphDatabase.driver(
+    )
+    maven_driver: AsyncDriver = AsyncGraphDatabase.driver(
         uri=settings.GRAPH_DB_URI_MAVEN,
         auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_MAVEN),
-    ).session()
-    cargo_session: AsyncSession = AsyncGraphDatabase.driver(
+    )
+    cargo_driver: AsyncDriver = AsyncGraphDatabase.driver(
         uri=settings.GRAPH_DB_URI_CARGO,
         auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_CARGO),
-    ).session()
-    nuget_session: AsyncSession = AsyncGraphDatabase.driver(
+    )
+    nuget_driver: AsyncDriver = AsyncGraphDatabase.driver(
         uri=settings.GRAPH_DB_URI_NUGET,
         auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD_NUGET),
-    ).session()
+    )
     match package_manager:
         case "pypi":
-            return pypi_session
+            return pypi_driver
         case "npm":
-            return npm_session
+            return npm_driver
         case "maven":
-            return maven_session
+            return maven_driver
         case "cargo":
-            return cargo_session
+            return cargo_driver
         case "nuget":
-            return nuget_session
-        case "all":
-            return pypi_session, npm_session, maven_session
+            return nuget_driver
 
 
 @lru_cache

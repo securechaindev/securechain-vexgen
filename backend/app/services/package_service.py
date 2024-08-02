@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from .dbs.databases import get_graph_db_session
+from .dbs.databases import get_graph_db_driver
 
 
 async def create_package_and_versions(
@@ -42,16 +42,17 @@ async def create_package_and_versions(
     }})
     create (package)-[rel_v:Have]->(v)
     """
-    session = get_graph_db_session(package_manager)
-    result = await session.run(
-        query,
-        package,
-        constraints=constraints,
-        parent_id=parent_id,
-        parent_version_name=parent_version_name,
-        versions=versions,
-    )
-    await result.single()
+    driver = get_graph_db_driver(package_manager)
+    async with driver.session() as session:
+        result = await session.run(
+            query,
+            package,
+            constraints=constraints,
+            parent_id=parent_id,
+            parent_version_name=parent_version_name,
+            versions=versions,
+        )
+        await result.single()
 
 
 async def read_package_by_name(
@@ -62,9 +63,10 @@ async def read_package_by_name(
     where p.name = $package_name
     return p{id: elementid(p), .*}
     """
-    session = get_graph_db_session(package_manager)
-    result = await session.run(query, package_name=package_name)
-    record = await result.single()
+    driver = get_graph_db_driver(package_manager)
+    async with driver.session() as session:
+        result = await session.run(query, package_name=package_name)
+        record = await result.single()
     return record[0] if record else None
 
 
@@ -73,5 +75,6 @@ async def update_package_moment(package_name: str, package_manager: str) -> None
     match (p:Package) where p.name = $package_name
     set p.moment = $moment
     """
-    session = get_graph_db_session(package_manager)
-    await session.run(query, package_name=package_name, moment=datetime.now())
+    driver = get_graph_db_driver(package_manager)
+    async with driver.session() as session:
+        await session.run(query, package_name=package_name, moment=datetime.now())

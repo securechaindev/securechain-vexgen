@@ -1,16 +1,18 @@
-from time import sleep
+from asyncio import TimeoutError, sleep
 from typing import Any
 
-from requests import ConnectionError, ConnectTimeout, get
+from aiohttp import ClientConnectorError, ClientSession
 
 
 async def get_all_nuget_versions(pkg_name: str) -> list[dict[str, Any]]:
-    while True:
-        try:
-            response = get(f"https://api.nuget.org/v3/registration5-gz-semver2/{pkg_name}/index.json").json()
-            break
-        except (ConnectTimeout, ConnectionError):
-            sleep(5)
+    async with ClientSession() as session:
+        while True:
+            try:
+                async with session.get(f"https://api.nuget.org/v3/registration5-gz-semver2/{pkg_name}/index.json") as response:
+                    response = await response.json()
+                    break
+            except (ClientConnectorError, TimeoutError):
+                await sleep(5)
     if "items" in response:
         versions: list[dict[str, Any]] = []
         for count, version in response["items"]["items"]:

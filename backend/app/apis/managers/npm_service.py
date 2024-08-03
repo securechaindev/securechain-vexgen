@@ -1,16 +1,18 @@
-from time import sleep
+from asyncio import TimeoutError, sleep
 from typing import Any
 
-from requests import ConnectionError, ConnectTimeout, get
+from aiohttp import ClientConnectorError, ClientSession
 
 
 async def get_all_npm_versions(pkg_name: str) -> list[dict[str, Any]]:
-    while True:
-        try:
-            response = get(f"https://registry.npmjs.org/{pkg_name}").json()
-            break
-        except (ConnectTimeout, ConnectionError):
-            sleep(5)
+    async with ClientSession() as session:
+        while True:
+            try:
+                async with session.get(f"https://registry.npmjs.org/{pkg_name}") as response:
+                    response = await response.json()
+                    break
+            except (ClientConnectorError, TimeoutError):
+                await sleep(5)
     if "versions" in response:
         versions = []
         raw_versions = response["versions"]

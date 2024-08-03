@@ -1,4 +1,3 @@
-# INFO: Need to parse pypi constraits because Univers library dont support environment markers like .* version, ~= and === operatorsç
 async def parse_pypi_constraints(raw_constraints: str) -> str:
     if raw_constraints:
         ctcs = []

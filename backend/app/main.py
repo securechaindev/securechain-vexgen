@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-from time import sleep
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -30,6 +29,7 @@ async def lifespan(app: FastAPI) -> Any:
 app = FastAPI(
     title="Depex",
     description=DESCRIPTION,
+    openapi_url=None,
     version="0.6.2",
     contact={
         "name": "Antonio Germán Márquez Trujillo",
@@ -60,7 +60,9 @@ async def validation_exception_handler(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[],
+    allow_origins=[
+        'http://localhost:3000'
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 
 from app.controllers import (
-    health_controller,
-    auth_controller,
     assisting_information_vex_controller,
+    auth_controller,
+    health_controller,
 )
 
 api_router = APIRouter()

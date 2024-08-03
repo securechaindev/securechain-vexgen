@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     GRAPH_DB_PASSWORD_NUGET: str = ""
     VULN_DB_USER: str = ""
     VULN_DB_PASSWORD: str = ""
+    ALGORITHM: str = ""
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 0
+    JWT_SECRET_KEY: str = ""
     GITHUB_GRAPHQL_API_KEY: str = ""
     NVD_API_KEY: str = ""
 

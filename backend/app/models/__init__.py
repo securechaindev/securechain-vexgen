@@ -1,8 +1,8 @@
 from .statements_group import (
-    StatementsGroup,
     AccountExistsRequest,
     ChangePasswordRequest,
     LoginRequest,
+    StatementsGroup,
     User,
     VerifyAccessTokenRequest,
 )

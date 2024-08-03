@@ -1,8 +1,9 @@
 from functools import lru_cache
 
-from app.config import settings
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
-from neo4j import AsyncGraphDatabase, AsyncSession, AsyncDriver
+from neo4j import AsyncDriver, AsyncGraphDatabase
+
+from app.config import settings
 
 
 @lru_cache
@@ -38,6 +39,8 @@ def get_graph_db_driver(package_manager: str) -> AsyncDriver | tuple[AsyncDriver
             return cargo_driver
         case "nuget":
             return nuget_driver
+        case "ALL":
+            return pypi_driver, npm_driver, maven_driver, cargo_driver, nuget_driver
 
 
 @lru_cache
@@ -45,6 +48,8 @@ def get_collection(collection_name: str) -> AsyncIOMotorCollection:
     client: AsyncIOMotorClient = AsyncIOMotorClient(settings.VULN_DB_URI)
     match collection_name:
         case "env_variables":
+            return client.depex.get_collection(collection_name)
+        case "users":
             return client.depex.get_collection(collection_name)
         case "cves":
             return client.nvd.get_collection(collection_name)

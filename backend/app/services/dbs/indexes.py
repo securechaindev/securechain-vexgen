@@ -1,4 +1,4 @@
-from app.services.dbs.databases import get_collection, get_graph_db_session
+from app.services.dbs.databases import get_collection, get_graph_db_driver
 
 
 async def create_indexes() -> None:
@@ -16,7 +16,8 @@ async def create_indexes() -> None:
     await cwes_collection.create_index("cvelist", unique=False)
     await exploits_collection.create_index("id", unique=True)
     await exploits_collection.create_index("cvelist", unique=False)
-    for session in get_graph_db_session("all"):
-        await session.run(
-            "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Package) REQUIRE p.name IS UNIQUE"
-        )
+    for driver in get_graph_db_driver("ALL"):
+        async with driver.session() as session:
+            await session.run(
+                "create constraint if not exists for (p:Package) require p.name is unique"
+            )

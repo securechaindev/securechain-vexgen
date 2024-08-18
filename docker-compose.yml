@@ -68,7 +68,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 8s
+      start_period: 15s
 
   npm_graph_database:
     env_file: .env
@@ -94,7 +94,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 8s
+      start_period: 15s
 
   maven_graph_database:
     env_file: .env
@@ -120,7 +120,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 8s
+      start_period: 15s
 
   cargo_graph_database:
     env_file: .env
@@ -146,7 +146,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 8s
+      start_period: 15s
 
   nuget_graph_database:
     env_file: .env
@@ -172,7 +172,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 8s
+      start_period: 15s
 
   vuln_database_seeder:
     env_file: .env

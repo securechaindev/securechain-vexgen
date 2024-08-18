@@ -35,6 +35,7 @@ async def read_cve_by_id(cve_id: str) -> dict[str, Any]:
                     "",
                 ]
             },
+            "affected_artefacts":1,
         },
     )
     return result if result is not None else {"vuln_impact": [0.0], "description": {"value": ""}}

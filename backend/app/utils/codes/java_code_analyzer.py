@@ -12,11 +12,11 @@ async def java_is_imported(file_path: str, dependency: str) -> Any:
             return False
 
 
-async def java_get_used_artifacts(filename: str, dependency: str, cve_description: str) -> list[dict[str, list[int]]]:
+async def java_get_used_artifacts(filename: str, dependency: str, cve_description: str, affected_artefacts: list[str]) -> list[dict[str, list[int]]]:
     with open(filename, encoding="utf-8") as file:
         code = file.read()
         current_line = 1
-        used_artifacts = await get_child_artifacts(dependency, code, cve_description)
+        used_artifacts = await get_child_artifacts(dependency, code, cve_description, affected_artefacts)
         for line in code.split("\n"):
             if "import" not in line:
                 for artifact in used_artifacts:
@@ -35,18 +35,20 @@ async def java_get_used_artifacts(filename: str, dependency: str, cve_descriptio
         return result
 
 
-async def get_child_artifacts(parent: str, code: str, cve_description: str) -> dict[str, list[int]]:
+async def get_child_artifacts(parent: str, code: str, cve_description: str, affected_artefacts: list[str]) -> dict[str, list[int]]:
     used_artifacts: dict[str, list[int]] = {}
     for _ in findall(rf"{parent}\.[^\(\)\s:;]+", code):
         for artifact in _.split(".")[1:]:
-            if artifact.lower() in cve_description.lower():
+            artifact_lower: str = artifact.lower()
+            if artifact_lower in cve_description.lower() or artifact_lower in affected_artefacts:
                 used_artifacts.setdefault(artifact.strip(), [])
     for _ in findall(rf"import\s+{parent}\.[^\(\)\s:;]+;", code):
         for artifact in _.split(parent + ".")[1:]:
-            if artifact.lower().replace(";", "").strip() in cve_description.lower():
+            artifact_lower: str = artifact.lower()
+            if artifact_lower.replace(";", "").strip() in cve_description.lower() or artifact_lower in affected_artefacts:
                 used_artifacts.setdefault(artifact.lower().replace(";", "").strip(), [])
     aux = {}
     for artifact in used_artifacts:
-        aux.update(await get_child_artifacts(artifact, code, cve_description))
+        aux.update(await get_child_artifacts(artifact, code, cve_description, affected_artefacts))
     used_artifacts.update(aux)
     return used_artifacts

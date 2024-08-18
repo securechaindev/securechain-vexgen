@@ -22,24 +22,13 @@ from app.utils import download_repository, get_used_artifacts, is_imported, json
 
 router = APIRouter()
 
-@router.post(
-    "/vex/{owner}/{name}",
-    summary="Create boths VEX and Extended VEX files by repository id and SBOM file",
-    response_description="Return a zip with a VEX and a Extended VEX file",
-)
+@router.post("/vex/{owner}/{name}")
 async def create_vex(
     owner: Annotated[str, Path(min_length=1)],
     name: Annotated[str, Path(min_length=1)],
     sbom_path: Annotated[str, Query(min_lengt=1)],
     statements_group: StatementsGroup
 ) -> JSONResponse:
-    """
-    Return boths VEX and Extended VEX files by a given owner, name and a SBOM path:
-
-    - **owner**: the owner of a repository
-    - **name**: the name of a repository
-    - **sbom_path**: the path to the sbom file in repository
-    """
     carpeta_descarga = await download_repository(owner, name)
     result = await generate_vex(carpeta_descarga, owner, sbom_path, statements_group)
     if isinstance(result, JSONResponse):
@@ -378,7 +367,7 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
         if await is_imported(path, name, package_manager):
             reacheable_code = {}
             reacheable_code["path_to_file"] = path.replace("repositories/", "")
-            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], package_manager)
+            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], cve["affected_artefacts"], package_manager)
             if reacheable_code["used_artifacts"]:
                 extended_statement["reachable_code"].append(reacheable_code)
 

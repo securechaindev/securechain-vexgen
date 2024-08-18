@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI) -> Any:
 app = FastAPI(
     title="Depex",
     description=DESCRIPTION,
-    openapi_url=None,
+    # openapi_url=None,
     version="0.6.2",
     contact={
         "name": "Antonio Germán Márquez Trujillo",

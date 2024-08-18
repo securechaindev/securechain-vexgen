@@ -25,19 +25,19 @@ async def is_imported(path: str, name: str, package_manager: str) -> Any:
             if ".cs" in path:
                 return await cs_is_imported()
 
-async def get_used_artifacts(path: str, name: str, cve_description: str, package_manager: str) -> dict[str, list[int]]:
+async def get_used_artifacts(path: str, name: str, cve_description: str, affected_artefacts: list[str], package_manager: str) -> dict[str, list[int]]:
     match package_manager:
         case "pypi":
-            return await python_get_used_artifacts(path, name, cve_description)
+            return await python_get_used_artifacts(path, name, cve_description, affected_artefacts)
         case "npm":
             if "/" in name:
                 name = name.split("/")[-1]
-            return await js_ts_get_used_artifacts(path, name, cve_description)
+            return await js_ts_get_used_artifacts(path, name, cve_description, affected_artefacts)
         case "maven":
             name = name.split(":")[-1]
-            return await java_get_used_artifacts(path, name, cve_description)
+            return await java_get_used_artifacts(path, name, cve_description, affected_artefacts)
         case "cargo":
-            return await rs_get_used_artifacts(path, name, cve_description)
+            return await rs_get_used_artifacts(path, name, cve_description, affected_artefacts)
         case "nuget":
-            return await cs_get_used_artifacts(path, name, cve_description)
+            return await cs_get_used_artifacts(path, name, cve_description, affected_artefacts)
 

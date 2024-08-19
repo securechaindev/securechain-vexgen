@@ -1,5 +1,5 @@
-from datetime import datetime
 from asyncio import TimeoutError, sleep
+from datetime import datetime
 
 from aiohttp import ClientConnectorError, ClientSession
 from dateutil.parser import parse

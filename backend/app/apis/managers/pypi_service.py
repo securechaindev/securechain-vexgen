@@ -1,5 +1,5 @@
-from json import JSONDecodeError
 from asyncio import TimeoutError, sleep
+from json import JSONDecodeError
 from typing import Any
 
 from aiohttp import ClientConnectorError, ClientSession

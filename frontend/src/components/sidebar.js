@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { useNavigate, Link } from 'react-router-dom'
 import { ChevronFirst, ChevronLast } from 'lucide-react'
 import depexLogo from '../assets/depexLogo.png'
+import Button from '@mui/material/Button'
 
 const SidebarContext = createContext()
 
@@ -30,14 +31,11 @@ export default function Sidebar({ is_logged, children }) {
             <ul className='flex-1 px-3'>{children}</ul>
           </SidebarContext.Provider>
 
-          {is_logged ? (
-            <input
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs rounded ${expanded ? 'w-36' : 'hidden'}`}
-              type='button'
-              onClick={on_button_logout_click}
-              value='Log out'
-            />
-          ) : null}
+          <div className='pb-2 pl-4 pr-4'>
+            {is_logged ? (
+              <Button variant="contained" size="small" onClick={on_button_logout_click}>Log out</Button>
+            ) : null}
+          </div>
 
           <div className='border-t flex p-3'>
             <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? 'w-52 ml-3' : 'w-0'} `}>

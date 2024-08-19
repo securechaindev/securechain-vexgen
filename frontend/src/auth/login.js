@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal'
 
@@ -75,8 +76,8 @@ const LoginPage = () => {
   }
 
   return (
-    <div className='flex flex-wrap flex-col h-screen justify-center items-center m-auto'>
-      <p className='mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl'>Login</p>
+    <div className='flex flex-wrap flex-col h-screen justify-center items-center m-auto space-y-2'>
+      <p className='text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl'>Login</p>
       <br />
       <div className='relative inline-flex'>
         <input
@@ -105,14 +106,9 @@ const LoginPage = () => {
           {passValue.showPassword ? <EyeIcon /> : <EyeOffIcon />}
         </div>
       </div>
-      <label className='text-red-600'>{email_error}</label>
-      <label className='text-red-600'>{password_error}</label>
-      <input
-        className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
-        type='button'
-        onClick={on_button_login_click}
-        value={'Log in'}
-      />
+      <label className={`text-red-600 ${email_error !== '' ? '' : 'hidden'}`}>{email_error}</label>
+      <label className={`text-red-600 ${password_error !== '' ? '' : 'hidden'}`}>{password_error}</label>
+      <Button variant="contained" onClick={on_button_login_click}>Log In</Button>
       <div className='space-x-1 flex'>
         <p className='text-gray-500 text-xs'>If you haven&quot;t an account you can </p>{' '}
         <p className='underline text-gray-500 text-xs' onClick={on_button_register_click}>
@@ -127,18 +123,13 @@ const LoginPage = () => {
         className='relative max-w-96 flex flex-col justify-center m-auto'
       >
         <Box className='text-gray-500 text-center border-blue-500 border-2 bg-white rounded-lg shadow'>
-          <Typography id='modal-modal-title' variant='h6' component='h2'>
+          <Typography id='modal-modal-title' variant='h6' component='h2' className='pb-2'>
             Email not registered
           </Typography>
-          <Typography id='modal-modal-description' sx={{ mt: 2 }}>
-            An account does not exist with this email address: {email}. Do you want to create a new account?
+          <Typography id='modal-modal-description' className='pb-2 space-y-2'>
+            <p>An account does not exist with this email address: {email}. Do you want to create a new account?</p>
+            <Button variant="contained" onClick={on_button_register_click}>Sign Up</Button>
           </Typography>
-          <input
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
-            type='button'
-            onClick={on_button_register_click}
-            value={'Sign up'}
-          />
         </Box>
       </Modal>
     </div>

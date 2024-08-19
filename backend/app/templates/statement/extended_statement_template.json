@@ -18,6 +18,6 @@
     "priority": 0.0,
     "timestamp": "",
     "last_updated": "",
-    "status": "Go to VAN file to find vulnerability",
-    "justification": "Go to VAN file to find vulnerability"
+    "status": "Go to VEX Extended file to find vulnerability assisted information.",
+    "justification": "Go to VEX Entended file to find vulnerability assisted information."
 }

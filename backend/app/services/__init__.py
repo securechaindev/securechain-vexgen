@@ -1,6 +1,7 @@
 from .auth_service import (
     create_user,
     read_user_by_email,
+    read_user_vexs,
     update_user_password,
     update_user_vexs,
 )
@@ -36,6 +37,7 @@ from .vex_service import (
 __all__ = [
     "create_user",
     "read_user_by_email",
+    "read_user_vexs",
     "update_user_password",
     "update_user_vexs",
     "bulk_write_actions",

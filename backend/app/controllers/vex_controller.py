@@ -22,10 +22,20 @@ from app.services import (
     read_exploits_by_cve_id,
     read_vex_moment_by_owner_name_sbom_path,
     update_user_vexs,
+    read_user_vexs,
 )
 from app.utils import download_repository, get_used_artifacts, is_imported, json_encoder
 
 router = APIRouter()
+
+@router.get("/vexs/{user_id}")
+async def get_vexs(user_id: str) -> JSONResponse:
+    vexs = await read_user_vexs(user_id)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=json_encoder(vexs),
+    )
+
 
 @router.post("/generate_vex")
 async def generate_vex(

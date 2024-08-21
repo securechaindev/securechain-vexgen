@@ -1,7 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { ArrowBigDownDash } from 'lucide-react'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 const RepositoriesPage = () => {
   const [owner, set_owner] = useState('')
@@ -11,7 +19,28 @@ const RepositoriesPage = () => {
   const [owner_error, set_owner_error] = useState('')
   const [name_error, set_name_error] = useState('')
   const [sbom_path_error, set_sbom_path_error] = useState('')
-  const user_id = localStorage.getItem('user_id')
+  const [vexs, set_vexs] = useState([])
+
+  useEffect(() => {
+    const access_token = localStorage.getItem('access_token')
+    const user_id = localStorage.getItem('user_id')
+    const fetch_vexs= () => {
+      fetch('http://localhost:8000/vexs/' + user_id, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${access_token}`
+        }
+      })
+        .then((r) => r.json())
+        .then((r) => {
+          set_vexs(r)
+        })
+    }
+    fetch_vexs()
+    const intervalId = setInterval(fetch_vexs, 10000)
+    return () => clearInterval(intervalId)
+  }, [])
 
   const on_button_generate_vex = () => {
     set_owner_error('')
@@ -32,6 +61,8 @@ const RepositoriesPage = () => {
       set_sbom_path_error('Please enter a sbom path')
       return
     }
+
+    const user_id = localStorage.getItem('user_id')
 
     fetch('http://localhost:8000/generate_vex', {
       method: 'POST',
@@ -114,6 +145,31 @@ const RepositoriesPage = () => {
       <label className={`text-red-600 ${name_error !== '' ? '' : 'hidden'}`}>{name_error}</label>
       <label className={`text-red-600 ${sbom_path_error !== '' ? '' : 'hidden'}`}>{sbom_path_error}</label>
       <Button variant="contained" onClick={on_button_generate_vex}>Generate VEX</Button>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="center">Owner</TableCell>
+              <TableCell align="center">Name</TableCell>
+              <TableCell align="center">SBOM Path</TableCell>
+              <TableCell align="center">Download VEX</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {vexs.map((row) => (
+              <TableRow
+                key={row._id}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
+                <TableCell align="center">{row.owner}</TableCell>
+                <TableCell align="center">{row.name}</TableCell>
+                <TableCell align="center">{row.sbom_path}</TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" onClick={on_button_generate_vex}><ArrowBigDownDash /></Button></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   )
 }

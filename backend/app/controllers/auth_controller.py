@@ -39,7 +39,7 @@ async def signup(user: User) -> JSONResponse:
     await create_user({
         "email": user.email,
         "password": await get_hashed_password(user.password),
-        "repositories": []
+        "vexs": []
     })
     return JSONResponse(
         status_code=status.HTTP_200_OK,

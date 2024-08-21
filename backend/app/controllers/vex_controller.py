@@ -6,50 +6,80 @@ from os.path import exists, isdir
 from typing import Any
 from zipfile import ZipFile
 
-from fastapi import APIRouter, Path, Query, status
+from fastapi import APIRouter, Body, status
 from fastapi.responses import FileResponse, JSONResponse
+from pytz import UTC
 from typing_extensions import Annotated
 
+from app.apis import get_last_commit_date_github
 from app.controllers import init_maven_package, init_npm_package, init_pypi_package
-from app.models import StatementsGroup
+from app.models import GenerateVEXRequest
 from app.services import (
+    create_vex,
     read_cve_by_id,
     read_cve_ids_by_version_and_package,
     read_cwes_by_cve_id,
     read_exploits_by_cve_id,
+    read_vex_moment_by_owner_name_sbom_path,
+    update_user_vexs,
 )
 from app.utils import download_repository, get_used_artifacts, is_imported, json_encoder
 
 router = APIRouter()
 
-@router.post("/vex/{owner}/{name}")
-async def create_vex(
-    owner: Annotated[str, Path(min_length=1)],
-    name: Annotated[str, Path(min_length=1)],
-    sbom_path: Annotated[str, Query(min_lengt=1)],
-    statements_group: StatementsGroup
-) -> JSONResponse:
-    carpeta_descarga = await download_repository(owner, name)
-    result = await generate_vex(carpeta_descarga, owner, sbom_path, statements_group)
-    if isinstance(result, JSONResponse):
-        system("rm -rf " + carpeta_descarga)
-        return result
-    else:
-        vex, extended_vex, s_path = result
-    with ZipFile("vex.zip", "w") as myzip:
-        myzip.writestr("vex.json", dumps(vex, indent=2))
-        myzip.writestr("extended_vex.json", dumps(extended_vex, indent=2))
-        myzip.write(s_path, arcname=s_path.split("/")[-1])
-    system("rm -rf " + carpeta_descarga)
-    return FileResponse(path="vex.zip", filename="vex.zip", status_code=status.HTTP_200_OK)
-
-
+@router.post("/generate_vex")
 async def generate_vex(
+    GenerateVEXRequest: Annotated[GenerateVEXRequest, Body()]
+) -> JSONResponse:
+    last_commit_date = await get_last_commit_date_github(
+        GenerateVEXRequest.owner, GenerateVEXRequest.name
+    )
+    if not last_commit_date:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=json_encoder({"message": "no_repo"}),
+        )
+    last_vex = await read_vex_moment_by_owner_name_sbom_path(GenerateVEXRequest.owner, GenerateVEXRequest.name, GenerateVEXRequest.sbom_path)
+    if (
+        not last_vex
+        or last_vex["moment"].replace(tzinfo=UTC)
+        < last_commit_date.replace(tzinfo=UTC)
+    ):
+        carpeta_descarga = await download_repository(GenerateVEXRequest.owner, GenerateVEXRequest.name)
+        result = await init_generate_vex(carpeta_descarga, GenerateVEXRequest.owner, GenerateVEXRequest.sbom_path, GenerateVEXRequest.statements_group)
+        if isinstance(result, JSONResponse):
+            system("rm -rf " + carpeta_descarga)
+            return result
+        else:
+            vex, extended_vex = result
+        with ZipFile("vex.zip", "w") as myzip:
+            myzip.writestr("vex.json", dumps(vex, indent=2))
+            myzip.writestr("extended_vex.json", dumps(extended_vex, indent=2))
+        system("rm -rf " + carpeta_descarga)
+        vex_id = await create_vex({
+            "owner": GenerateVEXRequest.owner,
+            "name": GenerateVEXRequest.name,
+            "sbom_path": GenerateVEXRequest.sbom_path,
+            "moment": datetime.now(),
+            "vex": vex,
+            "extended_vex": extended_vex
+        })
+        await update_user_vexs(vex_id, GenerateVEXRequest.user_id)
+        return FileResponse(path="vex.zip", filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
+    else:
+        with ZipFile("vex.zip", "w") as myzip:
+            myzip.writestr("vex.json", dumps(last_vex["vex"], indent=2))
+            myzip.writestr("extended_vex.json", dumps(last_vex["extended_vex"], indent=2))
+        await update_user_vexs(last_vex["_id"], GenerateVEXRequest.user_id)
+        return FileResponse(path="vex.zip", filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
+
+
+async def init_generate_vex(
     carpeta_descarga: str,
     owner: str,
     sbom_path: str,
-    statements_group: StatementsGroup
-) -> tuple[dict[str, Any], dict[str, Any], str] | JSONResponse:
+    statements_group: str
+) -> tuple[dict[str, Any], dict[str, Any]] | JSONResponse:
     paths = await get_files_path(carpeta_descarga)
     s_path = ""
     timestamp = str(datetime.now())
@@ -85,7 +115,7 @@ async def generate_vex(
                 {"message": "The repository don't have main or master branch"}
             ),
         )
-    return vex, extended_vex, s_path
+    return vex, extended_vex
 
 
 async def get_files_path(directory_path: str) -> list[str]:
@@ -103,12 +133,12 @@ async def generate_statements(
     paths: list[str],
     carpeta_descarga: str,
     timestamp: str,
-    statements_group: StatementsGroup,
+    statements_group: str,
     vex: dict[str, Any],
     extended_vex: dict[str, Any]
 ) -> tuple[dict[str, Any], dict[str, Any]] | JSONResponse:
     have_group = True
-    if statements_group == "no_clustering":
+    if statements_group == "no_grouping":
         have_group = False
         group = []
     for component in components:

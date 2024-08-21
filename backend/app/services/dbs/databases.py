@@ -51,6 +51,8 @@ def get_collection(collection_name: str) -> AsyncIOMotorCollection:
             return client.depex.get_collection(collection_name)
         case "users":
             return client.depex.get_collection(collection_name)
+        case "vexs":
+            return client.depex.get_collection(collection_name)
         case "cves":
             return client.nvd.get_collection(collection_name)
         case "cpe_matchs":

@@ -1,17 +1,17 @@
-from .statements_group import (
+from .models import (
     AccountExistsRequest,
     ChangePasswordRequest,
+    GenerateVEXRequest,
     LoginRequest,
-    StatementsGroup,
     User,
     VerifyAccessTokenRequest,
 )
 
 __all__ = [
-    "StatementsGroup",
     "AccountExistsRequest",
     "ChangePasswordRequest",
     "LoginRequest",
     "User",
     "VerifyAccessTokenRequest",
+    "GenerateVEXRequest",
 ]

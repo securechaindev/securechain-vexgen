@@ -134,3 +134,6 @@ dmypy.json
 
 # Ruff linter cache
 .ruff_cache
+
+#zips
+*.zip

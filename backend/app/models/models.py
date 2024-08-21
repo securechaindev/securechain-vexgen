@@ -7,9 +7,7 @@ from .validators import validate_password
 EMAIL_PATTERN = r"^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$"
 
 class User(BaseModel):
-    email: str = Field(
-        pattern=EMAIL_PATTERN
-    )
+    email: str = Field(pattern=EMAIL_PATTERN)
     password: str = Field(...)
 
     @validator("password")
@@ -29,9 +27,7 @@ class LoginRequest(BaseModel):
 
 
 class AccountExistsRequest(BaseModel):
-    email: str = Field(
-        pattern=EMAIL_PATTERN
-    )
+    email: str = Field(pattern=EMAIL_PATTERN)
 
 
 class VerifyAccessTokenRequest(BaseModel):
@@ -39,9 +35,7 @@ class VerifyAccessTokenRequest(BaseModel):
 
 
 class ChangePasswordRequest(BaseModel):
-    email: str = Field(
-        pattern=EMAIL_PATTERN
-    )
+    email: str = Field(pattern=EMAIL_PATTERN)
     old_password: str = Field(...)
     new_password: str = Field(...)
 
@@ -51,7 +45,7 @@ class ChangePasswordRequest(BaseModel):
 
 
 class StatementsGroup(str, Enum):
-    no_clustering = "no_clustering"
+    no_grouping = "no_grouping"
     affected_component_manager = "affected_component_manager"
     cwe_type = "cwe_type"
     attack_vector_av = "attack_vector_av"
@@ -61,3 +55,11 @@ class StatementsGroup(str, Enum):
     attack_vector_i = "attack_vector_i"
     attack_vector_a = "attack_vector_a"
     reachable_code = "reachable_code"
+
+
+class GenerateVEXRequest(BaseModel):
+    owner: str = Field(min_lengt=1)
+    name: str = Field(min_lengt=1)
+    sbom_path: str = Field(min_lengt=1)
+    statements_group: StatementsGroup
+    user_id: str

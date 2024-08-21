@@ -1,13 +1,17 @@
+from pymongo import ASCENDING
+
 from app.services.dbs.databases import get_collection, get_graph_db_driver
 
 
 async def create_indexes() -> None:
+    vexs_collection = get_collection("vexs")
     cves_collection = get_collection("cves")
     cpe_matchs_collection = get_collection("cpe_matchs")
     cpes_collection = get_collection("cpes")
     cpe_products_collection = get_collection("cpe_products")
     cwes_collection = get_collection("cwes")
     exploits_collection = get_collection("exploits")
+    await vexs_collection.create_index([("owner", ASCENDING), ("name", ASCENDING), ("sbom_path", ASCENDING)], unique=True)
     await cves_collection.create_index("id", unique=True)
     await cpe_matchs_collection.create_index("matchCriteriaId", unique=True)
     await cpes_collection.create_index("cpeNameId", unique=True)

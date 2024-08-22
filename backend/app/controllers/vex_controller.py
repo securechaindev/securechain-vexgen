@@ -20,15 +20,16 @@ from app.services import (
     read_cve_ids_by_version_and_package,
     read_cwes_by_cve_id,
     read_exploits_by_cve_id,
+    read_user_vexs,
+    read_vex_by_id,
     read_vex_moment_by_owner_name_sbom_path,
     update_user_vexs,
-    read_user_vexs,
 )
 from app.utils import download_repository, get_used_artifacts, is_imported, json_encoder
 
 router = APIRouter()
 
-@router.get("/vexs/{user_id}")
+@router.get("/vex/{user_id}")
 async def get_vexs(user_id: str) -> JSONResponse:
     vexs = await read_user_vexs(user_id)
     return JSONResponse(
@@ -37,10 +38,19 @@ async def get_vexs(user_id: str) -> JSONResponse:
     )
 
 
-@router.post("/generate_vex")
+@router.get("/vex/download/{vex_id}")
+async def download_vex(vex_id: str) -> FileResponse:
+    vex = await read_vex_by_id(vex_id)
+    with ZipFile("vex.zip", "w") as myzip:
+        myzip.writestr("vex.json", dumps(vex["vex"], indent=2))
+        myzip.writestr("extended_vex.json", dumps(vex["extended_vex"], indent=2))
+    return FileResponse(path="vex.zip", filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
+
+
+@router.post("/vex/generate")
 async def generate_vex(
     GenerateVEXRequest: Annotated[GenerateVEXRequest, Body()]
-) -> JSONResponse:
+) -> FileResponse:
     last_commit_date = await get_last_commit_date_github(
         GenerateVEXRequest.owner, GenerateVEXRequest.name
     )

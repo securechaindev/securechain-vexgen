@@ -25,7 +25,7 @@ const RepositoriesPage = () => {
     const access_token = localStorage.getItem('access_token')
     const user_id = localStorage.getItem('user_id')
     const fetch_vexs= () => {
-      fetch('http://localhost:8000/vexs/' + user_id, {
+      fetch('http://localhost:8000/vex/' + user_id, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ const RepositoriesPage = () => {
 
     const user_id = localStorage.getItem('user_id')
 
-    fetch('http://localhost:8000/generate_vex', {
+    fetch('http://localhost:8000/vex/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -90,6 +90,30 @@ const RepositoriesPage = () => {
 
   const handle_statements_group_change = (event) => {
     set_statements_group(event.target.value)
+  }
+
+  const download_vex = (vex_id) => {
+    fetch('http://localhost:8000/vex/download/' + vex_id, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(async response => {
+        const disposition = response.headers.get('Content-Disposition')
+        var filename = disposition.split(/;(.+)/)[1].split(/=(.+)/)[1]
+        if (filename.toLowerCase().startsWith("utf-8''"))
+          filename = decodeURIComponent(filename.replace("utf-8''", ''))
+        else
+          filename = filename.replace(/['"]/g, '')
+        var url = window.URL.createObjectURL(await response.blob())
+        var a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+      })
   }
 
   return (
@@ -164,7 +188,7 @@ const RepositoriesPage = () => {
                 <TableCell align="center">{row.owner}</TableCell>
                 <TableCell align="center">{row.name}</TableCell>
                 <TableCell align="center">{row.sbom_path}</TableCell>
-                <TableCell align="center"><Button size="small" variant="contained" onClick={on_button_generate_vex}><ArrowBigDownDash /></Button></TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" onClick={() => download_vex(row._id)}><ArrowBigDownDash /></Button></TableCell>
               </TableRow>
             ))}
           </TableBody>

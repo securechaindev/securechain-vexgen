@@ -31,6 +31,7 @@ from .version_service import (
 )
 from .vex_service import (
     create_vex,
+    read_vex_by_id,
     read_vex_moment_by_owner_name_sbom_path,
 )
 
@@ -57,5 +58,6 @@ __all__ = [
     "read_versions_names_by_package",
     "count_number_of_versions_by_package",
     "create_vex",
+    "read_vex_by_id",
     "read_vex_moment_by_owner_name_sbom_path",
 ]

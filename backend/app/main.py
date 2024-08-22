@@ -1,3 +1,5 @@
+from bson.errors import InvalidId
+
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -9,7 +11,7 @@ from fastapi.exception_handlers import (
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
 
 from app.router import api_router
 from app.services import create_indexes
@@ -56,6 +58,16 @@ async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> Response:
     return await request_validation_exception_handler(request, exc)
+
+
+@app.exception_handler(InvalidId)
+async def object_id_exception_handler(
+    request: Request, exc: InvalidId
+) -> Response:
+    return JSONResponse(
+        status_code=400,
+        content={"message": "The Object Id is invalid"},
+    )
 
 
 app.add_middleware(

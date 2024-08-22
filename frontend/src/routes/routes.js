@@ -6,7 +6,7 @@ import { HelpPage } from '../helpPage/help'
 import { LoginPage } from '../auth/login'
 import { SignUpPage } from '../auth/signup'
 import { ProtectedRoute } from '../auth/protectedRoute'
-import { RepositoriesPage } from '../repositoriesPage/repositories'
+import { VEXsPage } from '../vexsPage/vexs'
 import Sidebar, { SidebarItem } from '../components/sidebar'
 import PageNotFound from '../errorPage/error'
 
@@ -67,7 +67,7 @@ function Routes() {
       children: [
         {
           path: '/vexgen',
-          element: <RepositoriesPage />
+          element: <VEXsPage />
         }
       ]
     }
@@ -99,7 +99,7 @@ function Routes() {
       children: [
         {
           path: '/vexgen',
-          element: <RepositoriesPage />
+          element: <VEXsPage />
         }
       ]
     }

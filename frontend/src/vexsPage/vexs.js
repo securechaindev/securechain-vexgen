@@ -1,17 +1,89 @@
 import React, { useState, useEffect } from 'react'
-import { ArrowBigDownDash } from 'lucide-react'
+import PropTypes from 'prop-types'
+import { Eye, ArrowBigDownDash } from 'lucide-react'
+import { useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableContainer from '@mui/material/TableContainer'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import TableFooter from '@mui/material/TableFooter'
+import TablePagination from '@mui/material/TablePagination'
+import Paper from '@mui/material/Paper'
+import IconButton from '@mui/material/IconButton'
+import FirstPageIcon from '@mui/icons-material/FirstPage'
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft'
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight'
+import LastPageIcon from '@mui/icons-material/LastPage'
 
-const RepositoriesPage = () => {
+function TablePaginationActions(props) {
+  const theme = useTheme()
+  const { count, page, rowsPerPage, onPageChange } = props
+
+  const handleFirstPageButtonClick = (event) => {
+    onPageChange(event, 0)
+  }
+
+  const handleBackButtonClick = (event) => {
+    onPageChange(event, page - 1)
+  }
+
+  const handleNextButtonClick = (event) => {
+    onPageChange(event, page + 1)
+  }
+
+  const handleLastPageButtonClick = (event) => {
+    onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1))
+  }
+
+  return (
+    <Box sx={{ flexShrink: 0, ml: 2.5 }}>
+      <IconButton
+        onClick={handleFirstPageButtonClick}
+        disabled={page === 0}
+        aria-label="first page"
+      >
+        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
+      </IconButton>
+      <IconButton
+        onClick={handleBackButtonClick}
+        disabled={page === 0}
+        aria-label="previous page"
+      >
+        {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+      </IconButton>
+      <IconButton
+        onClick={handleNextButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="next page"
+      >
+        {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+      </IconButton>
+      <IconButton
+        onClick={handleLastPageButtonClick}
+        disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+        aria-label="last page"
+      >
+        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
+      </IconButton>
+    </Box>
+  )
+}
+
+TablePaginationActions.propTypes = {
+  count: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired,
+  rowsPerPage: PropTypes.number.isRequired,
+}
+
+
+const VEXsPage = () => {
   const [owner, set_owner] = useState('')
   const [name, set_name] = useState('')
   const [sbom_path, set_sbom_path] = useState('')
@@ -20,6 +92,19 @@ const RepositoriesPage = () => {
   const [name_error, set_name_error] = useState('')
   const [sbom_path_error, set_sbom_path_error] = useState('')
   const [vexs, set_vexs] = useState([])
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - vexs.length) : 0;
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
@@ -176,26 +261,58 @@ const RepositoriesPage = () => {
               <TableCell align="center">Owner</TableCell>
               <TableCell align="center">Name</TableCell>
               <TableCell align="center">SBOM Path</TableCell>
+              <TableCell align="center">Show VEX</TableCell>
               <TableCell align="center">Download VEX</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {vexs.map((row) => (
+            {(rowsPerPage > 0
+              ? vexs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              : vexs
+            ).map((vex) => (
               <TableRow
-                key={row._id}
+                key={vex._id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <TableCell align="center">{row.owner}</TableCell>
-                <TableCell align="center">{row.name}</TableCell>
-                <TableCell align="center">{row.sbom_path}</TableCell>
-                <TableCell align="center"><Button size="small" variant="contained" onClick={() => download_vex(row._id)}><ArrowBigDownDash /></Button></TableCell>
+                <TableCell align="center">{vex.owner}</TableCell>
+                <TableCell align="center">{vex.name}</TableCell>
+                <TableCell align="center">{vex.sbom_path}</TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" onClick={() => download_vex(vex._id)}><Eye /></Button></TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" onClick={() => download_vex(vex._id)}><ArrowBigDownDash /></Button></TableCell>
               </TableRow>
             ))}
+            {emptyRows > 0 && (
+              <TableRow style={{ height: 53 * emptyRows }}>
+                <TableCell colSpan={6} />
+              </TableRow>
+            )}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                colSpan={3}
+                count={vexs.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                slotProps={{
+                  select: {
+                    inputProps: {
+                      'aria-label': 'rows per page',
+                    },
+                    native: true,
+                  },
+                }}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+              />
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
     </div>
   )
 }
 
-export { RepositoriesPage }
+export { VEXsPage }

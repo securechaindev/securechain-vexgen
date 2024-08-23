@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from "react-router-dom"
 import PropTypes from 'prop-types'
 import { Eye, ArrowBigDownDash } from 'lucide-react'
-import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
@@ -94,7 +95,7 @@ const VEXsPage = () => {
   const [vexs, set_vexs] = useState([])
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
+  const navigate = useNavigate()
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - vexs.length) : 0;
 
   const handleChangePage = (event, newPage) => {
@@ -110,7 +111,7 @@ const VEXsPage = () => {
     const access_token = localStorage.getItem('access_token')
     const user_id = localStorage.getItem('user_id')
     const fetch_vexs= () => {
-      fetch('http://localhost:8000/vex/' + user_id, {
+      fetch('http://localhost:8000/vex/user/' + user_id, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -201,6 +202,10 @@ const VEXsPage = () => {
       })
   }
 
+  const show_vex = (vex_id) => {
+    navigate('/vex/' + vex_id)
+  }
+
   return (
     <div className='flex flex-col h-screen justify-center items-center m-auto'>
       <p className='mb-6 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
@@ -277,7 +282,7 @@ const VEXsPage = () => {
                 <TableCell align="center">{vex.owner}</TableCell>
                 <TableCell align="center">{vex.name}</TableCell>
                 <TableCell align="center">{vex.sbom_path}</TableCell>
-                <TableCell align="center"><Button size="small" variant="contained" onClick={() => download_vex(vex._id)}><Eye /></Button></TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" onClick={() => show_vex(vex._id)}><Eye /></Button></TableCell>
                 <TableCell align="center"><Button size="small" variant="contained" onClick={() => download_vex(vex._id)}><ArrowBigDownDash /></Button></TableCell>
               </TableRow>
             ))}

@@ -29,12 +29,21 @@ from app.utils import download_repository, get_used_artifacts, is_imported, json
 
 router = APIRouter()
 
-@router.get("/vex/{user_id}")
+@router.get("/vex/user/{user_id}")
 async def get_vexs(user_id: str) -> JSONResponse:
     vexs = await read_user_vexs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder(vexs),
+    )
+
+
+@router.get("/vex/show/{vex_id}")
+async def get_vex(vex_id: str) -> JSONResponse:
+    vex = await read_vex_by_id(vex_id)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=json_encoder(vex),
     )
 
 

@@ -7,6 +7,7 @@ import { LoginPage } from '../auth/login'
 import { SignUpPage } from '../auth/signup'
 import { ProtectedRoute } from '../auth/protectedRoute'
 import { VEXsPage } from '../vexsPage/vexs'
+import { ShowVEXPage } from '../vexsPage/showVex/vex'
 import Sidebar, { SidebarItem } from '../components/sidebar'
 import PageNotFound from '../errorPage/error'
 
@@ -68,6 +69,10 @@ function Routes() {
         {
           path: '/vexgen',
           element: <VEXsPage />
+        },
+        {
+          path: '/vex/:id',
+          element: <ShowVEXPage />
         }
       ]
     }
@@ -100,6 +105,10 @@ function Routes() {
         {
           path: '/vexgen',
           element: <VEXsPage />
+        },
+        {
+          path: '/vex/:id',
+          element: <ShowVEXPage />
         }
       ]
     }

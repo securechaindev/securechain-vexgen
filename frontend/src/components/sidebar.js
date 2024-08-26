@@ -42,7 +42,7 @@ export default function Sidebar({ is_logged, children }) {
               <div className='leading-4'>
                 <h4 className='font-semibold text-xs text-gray-600'>
                   {' '}
-                  Depex is sponsored by{' '}
+                  VEXGen is sponsored by{' '}
                   <a className='underline' href='https://www.us.es/'>
                     University of Seville
                   </a>{' '}

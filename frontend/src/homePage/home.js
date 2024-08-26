@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
+import Button from '@mui/material/Button'
 
 const HomePage = (props) => {
   const { is_logged } = props
@@ -11,10 +12,10 @@ const HomePage = (props) => {
   }
 
   return (
-    <div className='flex flex-col h-screen justify-center items-center m-auto'>
-      <p className='mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl'>Welcome to VEXGen!</p>
-      <p className='mb-6 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
-        VEX Generation description.
+    <div className='flex flex-col h-screen justify-center items-center m-auto space-y-6'>
+      <p className='text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl'>Welcome to VEXGen!</p>
+      <p className='text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
+        VEXGen is a simple generating tool of VEX files and assisting information supporting the creation of VEX files.
       </p>
       <div className='embed-responsive aspect-video'>
         <iframe
@@ -27,14 +28,7 @@ const HomePage = (props) => {
           allowFullScreen
         />
       </div>
-      {is_logged ? null : (
-        <input
-          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
-          type='button'
-          onClick={on_button_click}
-          value='Log in'
-        />
-      )}
+      {is_logged ? null : <Button variant="contained" onClick={on_button_click}>Log In</Button>}
     </div>
   )
 }

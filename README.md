@@ -34,8 +34,6 @@ Run command 'docker compose up --build' and seed the database with vulnerability
 
 #### Seeders
 
-- To use the API is mandatory to load the database with vulnerabilities and exploits, using the command script "seeds/vulndb_seeder.sh" on Linux systems or "seeds/vulndb_seeder.bat" on Windows systems.
-
 - You can create your graphs from scratch or load existing ones used in the experimentation of other articles or simply built and that can help in the creation of new graphs (this task can be time consuming). To do this use the script "seeds/graphdb_seeder.sh" if you are on Linux or "graphdb_seeder.bat" if you are on Windows.
 
 ### Step 3 
@@ -44,4 +42,4 @@ Enter [here](http://0.0.0.0:8000/docs)
 #### Other tools
 1. It is recommended to use a GUI such as [MongoDB Compass](https://www.mongodb.com/en/products/compass) to see what information is being indexed in vulnerability database
    
-2. You can see the created graph built for [pip](http://0.0.0.0:7474/browser/), [npm](http://localhost:7473/browser/) and [mvn](http://localhost:7472/browser/) clicking in this names. Using the Neo4J browser interfaces.
+2. You can see the created graph built for [PyPY](http://0.0.0.0:7474/browser/), [NPM](http://localhost:7473/browser/), [Maven](http://localhost:7472/browser/), [Cargo](http://localhost:7471/browser/) and [NuGet](http://localhost:7470/browser/) clicking in this names. Using the Neo4J browser interfaces.

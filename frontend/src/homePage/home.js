@@ -23,7 +23,7 @@ const HomePage = (props) => {
           className='embed-responsive-item rounded-lg'
           width='853'
           height='480'
-          src='https://www.youtube.com/embed/ZqNtZH58Udo?si=AQh_RmVpD16DIH1m'
+          src='https://www.youtube.com/embed/fERsI_apOsk'
           allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
           allowFullScreen
         />

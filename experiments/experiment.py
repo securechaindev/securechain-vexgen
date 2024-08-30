@@ -26,7 +26,7 @@ with open("repos_sbom.txt") as txt_file:
 
         # Second, generate the VEX and extended VEX file for each sbom file
         response = post(
-            f"http://localhost:8000/vex/generate",
+            "http://localhost:8000/vex/generate",
             json=GenerateVEXRequest
         )
         s_path = sbom_path.replace("/", "*")

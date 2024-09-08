@@ -42,7 +42,7 @@ async def read_user_vexs(user_id: str) -> list[dict[str, Any]]:
     ]
     try:
         return [
-            vex async for vex in users_collection.aggregate(pipeline)
+            vex async for vex in users_collection.aggregate(pipeline) if vex
         ]
     except Exception as _:
         return []

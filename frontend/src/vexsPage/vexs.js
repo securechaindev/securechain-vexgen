@@ -257,7 +257,7 @@ const VEXsPage = () => {
       <label className={`text-red-600 ${owner_error !== '' ? '' : 'hidden'}`}>{owner_error}</label>
       <label className={`text-red-600 ${name_error !== '' ? '' : 'hidden'}`}>{name_error}</label>
       <label className={`text-red-600 ${sbom_path_error !== '' ? '' : 'hidden'}`}>{sbom_path_error}</label>
-      <Button variant="contained" onClick={on_button_generate_vex}>Generate VEX</Button>
+      <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_generate_vex}>Generate VEX</Button>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -281,8 +281,8 @@ const VEXsPage = () => {
                 <TableCell align="center">{vex.owner}</TableCell>
                 <TableCell align="center">{vex.name}</TableCell>
                 <TableCell align="center">{vex.sbom_path}</TableCell>
-                <TableCell align="center"><Button size="small" variant="contained" onClick={() => show_vex(vex._id)}><Eye /></Button></TableCell>
-                <TableCell align="center"><Button size="small" variant="contained" onClick={() => download_vex(vex._id)}><ArrowBigDownDash /></Button></TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" style={{backgroundColor: "#d97706"}} onClick={() => show_vex(vex._id)}><Eye /></Button></TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" style={{backgroundColor: "#d97706"}} onClick={() => download_vex(vex._id)}><ArrowBigDownDash /></Button></TableCell>
               </TableRow>
             ))}
             {emptyRows > 0 && (

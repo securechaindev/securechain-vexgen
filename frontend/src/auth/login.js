@@ -108,7 +108,7 @@ const LoginPage = () => {
       </div>
       <label className={`text-red-600 ${email_error !== '' ? '' : 'hidden'}`}>{email_error}</label>
       <label className={`text-red-600 ${password_error !== '' ? '' : 'hidden'}`}>{password_error}</label>
-      <Button variant="contained" onClick={on_button_login_click}>Log In</Button>
+      <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_login_click}>Log In</Button>
       <div className='space-x-1 flex'>
         <p className='text-gray-500 text-xs'>If you haven&quot;t an account you can </p>{' '}
         <p className='underline text-gray-500 text-xs' onClick={on_button_register_click}>
@@ -122,13 +122,13 @@ const LoginPage = () => {
         aria-describedby='modal-modal-description'
         className='relative max-w-96 flex flex-col justify-center m-auto'
       >
-        <Box className='text-gray-500 text-center border-blue-500 border-2 bg-white rounded-lg shadow'>
+        <Box className='text-gray-500 text-center border-amber-500 border-2 bg-white rounded-lg shadow'>
           <Typography id='modal-modal-title' variant='h6' component='h2' className='pb-2'>
             Email not registered
           </Typography>
           <Typography id='modal-modal-description' className='pb-2 space-y-2'>
             <p>An account does not exist with this email address: {email}. Do you want to create a new account?</p>
-            <Button variant="contained" onClick={on_button_register_click}>Sign Up</Button>
+            <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_register_click}>Sign Up</Button>
           </Typography>
         </Box>
       </Modal>

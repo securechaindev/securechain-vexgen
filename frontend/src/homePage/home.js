@@ -28,7 +28,7 @@ const HomePage = (props) => {
           allowFullScreen
         />
       </div>
-      {is_logged ? null : <Button variant="contained" onClick={on_button_click}>Log In</Button>}
+      {is_logged ? null : <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_click}>Log In</Button>}
     </div>
   )
 }

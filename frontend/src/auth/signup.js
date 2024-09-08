@@ -131,7 +131,7 @@ const SignUpPage = () => {
       <label className={`text-red-600 ${email_error !== '' ? '' : 'hidden'}`}>{email_error}</label>
       <label className={`text-red-600 ${password_error !== '' ? '' : 'hidden'}`}>{password_error}</label>
       <label className={`text-red-600 ${repeated_password_error !== '' ? '' : 'hidden'}`}>{repeated_password_error}</label>
-      <Button variant="contained" onClick={on_button_sign_up_click}>Sign Up</Button>
+      <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_sign_up_click}>Sign Up</Button>
     </div>
   )
 }

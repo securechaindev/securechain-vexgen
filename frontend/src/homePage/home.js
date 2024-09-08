@@ -12,7 +12,7 @@ const HomePage = (props) => {
   }
 
   return (
-    <div className='flex flex-col h-screen justify-center items-center m-auto space-y-6'>
+    <div className='flex flex-col h-screen justify-center items-center m-auto space-y-6 w-8/12'>
       <p className='text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl'>Welcome to VEXGen!</p>
       <p className='text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
         VEXGen is a simple generating tool of VEX files and assisting information supporting the creation of VEX files.

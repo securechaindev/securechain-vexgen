@@ -12,7 +12,7 @@ const HelpPage = () => {
   }
 
   return (
-    <div className='flex flex-col h-screen justify-center m-auto pr-36 pl-36'>
+    <div className='flex flex-col h-screen justify-center m-auto w-8/12'>
       <p className='mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl'>
         Frequently Asked Questions
       </p>

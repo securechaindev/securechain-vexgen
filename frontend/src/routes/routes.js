@@ -38,7 +38,7 @@ function Routes() {
     <>
       <Sidebar is_logged={is_logged}>
         <SidebarItem icon={<Home size={20} />} text='Home' route='/' />
-        {is_logged ? <SidebarItem icon={<Boxes size={20} />} text='VEX Generation' route='/vexgen' /> : null}
+        {is_logged ? <SidebarItem icon={<Boxes size={20} />} text='VEX Generation' route='/vex' /> : null}
         <SidebarItem icon={<CircleHelp size={20} />} text='Help' route='/help' />
       </Sidebar>
       <Outlet />
@@ -67,7 +67,7 @@ function Routes() {
       element: <ProtectedRoute />,
       children: [
         {
-          path: '/vexgen',
+          path: '/vex',
           element: <VEXsPage />
         },
         {
@@ -103,7 +103,7 @@ function Routes() {
       element: <ProtectedRoute />,
       children: [
         {
-          path: '/vexgen',
+          path: '/vex',
           element: <VEXsPage />
         },
         {

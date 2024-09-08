@@ -207,8 +207,8 @@ const VEXsPage = () => {
   }
 
   return (
-    <div className='flex flex-col h-screen justify-center items-center m-auto'>
-      <p className='mb-6 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
+    <div className='flex flex-col h-screen justify-center items-center m-auto space-y-4 w-8/12'>
+      <p className='text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
         You must enter here the owner, name and the SBOM path in a public repository.
       </p>
       <div className='flex gap-4'>
@@ -254,7 +254,6 @@ const VEXsPage = () => {
         <MenuItem value={'attack_vector_a'}>Attack Vector A</MenuItem>
         <MenuItem value={'reachable_code'}>Reachable Code</MenuItem>
       </Select>
-      <br />
       <label className={`text-red-600 ${owner_error !== '' ? '' : 'hidden'}`}>{owner_error}</label>
       <label className={`text-red-600 ${name_error !== '' ? '' : 'hidden'}`}>{name_error}</label>
       <label className={`text-red-600 ${sbom_path_error !== '' ? '' : 'hidden'}`}>{sbom_path_error}</label>

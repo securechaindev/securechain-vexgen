@@ -250,7 +250,7 @@ const VEXsPage = () => {
       <label className={`text-red-600 ${name_error !== '' ? '' : 'hidden'}`}>{name_error}</label>
       <label className={`text-red-600 ${sbom_path_error !== '' ? '' : 'hidden'}`}>{sbom_path_error}</label>
       <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_generate_vex}>Generate VEX</Button>
-      <label className={`text-green-800 bg-lime-200 pr-1 pl-1 rounded`}>{message}</label>
+      <label className={`text-green-300 bg-lime-100 pr-1 pl-1 rounded`}>{message}</label>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>

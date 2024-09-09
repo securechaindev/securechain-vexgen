@@ -16,6 +16,7 @@ with open("repos_sbom.txt") as txt_file:
         # attack_vector_au, attack_vector_c, attack_vector_i, attack_vector_a, reachable_code] to creare clusters
         statements_group = "no_grouping"
 
+        # Change the user id if you want all VEXs to be associated with your user, if you want to use the frontend
         GenerateVEXRequest = {
             "owner": owner,
             "name": name,

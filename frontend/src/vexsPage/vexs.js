@@ -93,19 +93,20 @@ const VEXsPage = () => {
   const [name_error, set_name_error] = useState('')
   const [sbom_path_error, set_sbom_path_error] = useState('')
   const [vexs, set_vexs] = useState([])
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [page, setPage] = React.useState(0)
+  const [rowsPerPage, setRowsPerPage] = React.useState(5)
+  const [message, set_message] = useState("")
   const navigate = useNavigate()
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - vexs.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - vexs.length) : 0
 
   const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
+    setPage(newPage)
+  }
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+    setRowsPerPage(parseInt(event.target.value, 10))
+    setPage(0)
+  }
 
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
@@ -148,6 +149,12 @@ const VEXsPage = () => {
       return
     }
 
+    set_message("The VEX is being generated!")
+
+    setTimeout(() => {
+      set_message("")
+    }, 5000)
+
     const user_id = localStorage.getItem('user_id')
 
     fetch('http://localhost:8000/vex/generate', {
@@ -157,21 +164,6 @@ const VEXsPage = () => {
       },
       body: JSON.stringify({ owner, name, sbom_path, statements_group, user_id })
     })
-      .then(async response => {
-        const disposition = response.headers.get('Content-Disposition')
-        var filename = disposition.split(/;(.+)/)[1].split(/=(.+)/)[1]
-        if (filename.toLowerCase().startsWith("utf-8''"))
-          filename = decodeURIComponent(filename.replace("utf-8''", ''))
-        else
-          filename = filename.replace(/['"]/g, '')
-        var url = window.URL.createObjectURL(await response.blob())
-        var a = document.createElement('a')
-        a.href = url
-        a.download = filename
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-      })
   }
 
   const handle_statements_group_change = (event) => {
@@ -258,6 +250,7 @@ const VEXsPage = () => {
       <label className={`text-red-600 ${name_error !== '' ? '' : 'hidden'}`}>{name_error}</label>
       <label className={`text-red-600 ${sbom_path_error !== '' ? '' : 'hidden'}`}>{sbom_path_error}</label>
       <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_generate_vex}>Generate VEX</Button>
+      <label className={`text-green-800 bg-lime-200 pr-1 pl-1 rounded`}>{message}</label>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>

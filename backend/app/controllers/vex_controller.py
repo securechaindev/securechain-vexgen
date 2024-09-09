@@ -269,7 +269,7 @@ async def statements_grouping(
         group: dict[str, list[dict[str, Any]]] = load(group_file)
     statement_info, status, justification = await generate_extended_statement(cve_id, paths, name, version, timestamp, package_manager)
     match statements_group:
-        case "affected_component_manager":
+        case "supplier":
             group[package_manager].append(statement_info)
         case "cwe_type":
             if "cwes" in statement_info["vulnerability"]:
@@ -392,9 +392,9 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
     extended_statement_temp.close()
     extended_statement["affected_component"] = name
     extended_statement["affected_component_version"] = version
-    extended_statement["affected_component_manager"] = package_manager
     extended_statement["timestamp"] = timestamp
     extended_statement["last_updated"] = timestamp
+    extended_statement["supplier"] = package_manager
     cve = await read_cve_by_id(cve_id)
     extended_statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{cve["id"]}"
     extended_statement["vulnerability"]["name"] = cve["id"]

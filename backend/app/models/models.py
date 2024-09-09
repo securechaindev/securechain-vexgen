@@ -46,7 +46,7 @@ class ChangePasswordRequest(BaseModel):
 
 class StatementsGroup(str, Enum):
     no_grouping = "no_grouping"
-    affected_component_manager = "affected_component_manager"
+    supplier = "supplier"
     cwe_type = "cwe_type"
     attack_vector_av = "attack_vector_av"
     attack_vector_ac = "attack_vector_ac"

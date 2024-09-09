@@ -237,7 +237,7 @@ const VEXsPage = () => {
       </div>
       <Select value={statements_group} onChange={handle_statements_group_change}>
         <MenuItem value={'no_grouping'}>No Grouping</MenuItem>
-        <MenuItem value={'affected_component_manager'}>Affected Component Manager</MenuItem>
+        <MenuItem value={'supplier'}>Supplier</MenuItem>
         <MenuItem value={'attack_vector_av'}>Attack Vector AV</MenuItem>
         <MenuItem value={'attack_vector_ac'}>Attack Vector AC</MenuItem>
         <MenuItem value={'attack_vector_au'}>Attack Vector AU</MenuItem>

@@ -47,4 +47,3 @@ Dataport/terminfinder-frontend:src/sbom.json
 bhtoan2204/emailengine_crack:sbom.json
 masahiro331/tutorial-sbom:nodejs/yarn-lock/sbom.json
 masahiro331/tutorial-sbom:nodejs/package-lock/sbom.json
-axi0m/ratatoskr:sbom.json

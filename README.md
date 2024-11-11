@@ -18,6 +18,10 @@
   </a>
 </p> -->
 
+## Video tutorial
+
+[![How VEXGen Works](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)
+
 ## Deployment with docker
 
 ### Step 1

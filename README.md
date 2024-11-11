@@ -20,7 +20,7 @@
 
 ## Video tutorial
 
-[![How VEXGen Works](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)
+[![How VEXGen Works](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=KPqZaauM2k0)
 
 ## Deployment with docker
 

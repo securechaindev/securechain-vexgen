@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import Button from '@mui/material/Button'
 
+const API_URL = process.env.REACT_APP_API_URL
+
 const SignUpPage = () => {
   const [email, set_email] = useState('')
   const [password, set_password] = useState('')
@@ -49,7 +51,7 @@ const SignUpPage = () => {
   }
 
   const sign_up = () => {
-    fetch('http://localhost:8000/auth/signup', {
+    fetch(`${API_URL}/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -131,7 +133,7 @@ const SignUpPage = () => {
       <label className={`text-red-600 ${email_error !== '' ? '' : 'hidden'}`}>{email_error}</label>
       <label className={`text-red-600 ${password_error !== '' ? '' : 'hidden'}`}>{password_error}</label>
       <label className={`text-red-600 ${repeated_password_error !== '' ? '' : 'hidden'}`}>{repeated_password_error}</label>
-      <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_sign_up_click}>Sign Up</Button>
+      <Button variant="contained" style={{ backgroundColor: "#d97706" }} onClick={on_button_sign_up_click}>Sign Up</Button>
     </div>
   )
 }

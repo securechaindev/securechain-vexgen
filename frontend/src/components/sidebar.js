@@ -30,8 +30,8 @@ export default function Sidebar({ is_logged, children }) {
           <div className='p-4 flex items-start justify-between'>
             {
               expanded ?
-              <img src={vexgenCompleteLogo} alt='' onClick={() => on_click_navigate_home()} className='overflow-hidden transition-all w-28 cursor-pointer'/> :
-              <img src={vexgenLogo} alt='' onClick={() => on_click_navigate_home()} className='overflow-hidden transition-all w-12 cursor-pointer'/>
+                <img src={vexgenCompleteLogo} alt='' onClick={() => on_click_navigate_home()} className='overflow-hidden transition-all w-28 cursor-pointer' /> :
+                <img src={vexgenLogo} alt='' onClick={() => on_click_navigate_home()} className='overflow-hidden transition-all w-12 cursor-pointer' />
             }
             <button onClick={() => set_expanded((curr) => !curr)} className='p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100'>
               {expanded ? <ChevronFirst /> : <ChevronLast />}
@@ -44,7 +44,7 @@ export default function Sidebar({ is_logged, children }) {
 
           <div className='pb-2 pl-4 pr-4'>
             {is_logged ? (
-              <Button variant="contained" style={{backgroundColor: "#d97706"}} size="small" onClick={on_button_logout_click}>Log out</Button>
+              <Button variant="contained" style={{ backgroundColor: "#d97706" }} size="small" onClick={on_button_logout_click}>Log out</Button>
             ) : null}
           </div>
           <div className={`transition-all overflow-hidden ${expanded ? 'border-t flex p-3' : 'w-0 h-0'}`}>
@@ -64,7 +64,7 @@ export default function Sidebar({ is_logged, children }) {
                 <span className='text-xs text-gray-600'>amtrujillo@us.es</span>
               </div>
             </div>
-          </div> 
+          </div>
         </nav>
       </aside>
     </>

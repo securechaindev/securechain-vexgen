@@ -11,12 +11,14 @@ import { ShowVEXPage } from '../vexsPage/showVex/vex'
 import Sidebar, { SidebarItem } from '../components/sidebar'
 import PageNotFound from '../errorPage/error'
 
+const API_URL = process.env.REACT_APP_API_URL
+
 function Routes() {
   const [is_logged, set_is_logged] = useState(false)
 
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
-    fetch('http://localhost:8000/auth/verify_token', {
+    fetch(`${API_URL}/auth/verify_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

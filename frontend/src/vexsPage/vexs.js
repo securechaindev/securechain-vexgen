@@ -22,6 +22,8 @@ import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft'
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight'
 import LastPageIcon from '@mui/icons-material/LastPage'
 
+const API_URL = process.env.REACT_APP_API_URL
+
 function TablePaginationActions(props) {
   const theme = useTheme()
   const { count, page, rowsPerPage, onPageChange } = props
@@ -111,8 +113,8 @@ const VEXsPage = () => {
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
     const user_id = localStorage.getItem('user_id')
-    const fetch_vexs= () => {
-      fetch('http://localhost:8000/vex/user/' + user_id, {
+    const fetch_vexs = () => {
+      fetch(`${API_URL}/vex/user/` + user_id, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +159,7 @@ const VEXsPage = () => {
 
     const user_id = localStorage.getItem('user_id')
 
-    fetch('http://localhost:8000/vex/generate', {
+    fetch(`${API_URL}/vex/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -171,7 +173,7 @@ const VEXsPage = () => {
   }
 
   const download_vex = (vex_id) => {
-    fetch('http://localhost:8000/vex/download/' + vex_id, {
+    fetch(`${API_URL}/vex/download/` + vex_id, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -249,7 +251,7 @@ const VEXsPage = () => {
       <label className={`text-red-600 ${owner_error !== '' ? '' : 'hidden'}`}>{owner_error}</label>
       <label className={`text-red-600 ${name_error !== '' ? '' : 'hidden'}`}>{name_error}</label>
       <label className={`text-red-600 ${sbom_path_error !== '' ? '' : 'hidden'}`}>{sbom_path_error}</label>
-      <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={on_button_generate_vex}>Generate VEX</Button>
+      <Button variant="contained" style={{ backgroundColor: "#d97706" }} onClick={on_button_generate_vex}>Generate VEX</Button>
       <label className={`text-green-300 bg-lime-100 pr-1 pl-1 rounded`}>{message}</label>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -274,8 +276,8 @@ const VEXsPage = () => {
                 <TableCell align="center">{vex.owner}</TableCell>
                 <TableCell align="center">{vex.name}</TableCell>
                 <TableCell align="center">{vex.sbom_path}</TableCell>
-                <TableCell align="center"><Button size="small" variant="contained" style={{backgroundColor: "#d97706"}} onClick={() => show_vex(vex._id)}><Eye /></Button></TableCell>
-                <TableCell align="center"><Button size="small" variant="contained" style={{backgroundColor: "#d97706"}} onClick={() => download_vex(vex._id)}><ArrowBigDownDash /></Button></TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" style={{ backgroundColor: "#d97706" }} onClick={() => show_vex(vex._id)}><Eye /></Button></TableCell>
+                <TableCell align="center"><Button size="small" variant="contained" style={{ backgroundColor: "#d97706" }} onClick={() => download_vex(vex._id)}><ArrowBigDownDash /></Button></TableCell>
               </TableRow>
             ))}
             {emptyRows > 0 && (

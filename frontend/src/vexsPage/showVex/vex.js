@@ -10,6 +10,8 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails'
 import Typography from '@mui/material/Typography'
 import { Plus, Minus, BadgeCheck, BadgeAlert } from 'lucide-react'
 
+const API_URL = process.env.REACT_APP_API_URL
+
 const ReadMore = ({ id, text, amountOfWords = 36 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const splittedText = text.split(' ')
@@ -18,7 +20,7 @@ const ReadMore = ({ id, text, amountOfWords = 36 }) => {
     ? splittedText.slice(0, amountOfWords - 1).join(' ')
     : text
   const endText = splittedText.slice(amountOfWords - 1).join(' ')
-  
+
   const handleKeyboard = (e) => {
     if (e.code === 'Space' || e.code === 'Enter') {
       setIsExpanded(!isExpanded)
@@ -31,8 +33,8 @@ const ReadMore = ({ id, text, amountOfWords = 36 }) => {
       {itCanOverflow && (
         <>
           {!isExpanded && <span>... </span>}
-          <span 
-            className={`${!isExpanded && 'hidden'}`} 
+          <span
+            className={`${!isExpanded && 'hidden'}`}
             aria-hidden={!isExpanded}
           >
             {endText}
@@ -129,7 +131,7 @@ const ShowVEXPage = () => {
 
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
-    fetch('http://localhost:8000/vex/show/' + params.id, {
+    fetch(`${API_URL}/vex/show/` + params.id, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -146,37 +148,37 @@ const ShowVEXPage = () => {
   return (
     <div className='flex flex-col h-screen justify-center m-auto w-8/12'>
       <div className='flex'>
-        <p className='flex text-gray-400 border-t-2 border-b-2 border-l-2'>Show extended information:&ensp;<Plus size={20} className='text-lime-500'/>&ensp;|&ensp;</p>
-        <p className='flex text-gray-400 border-t-2 border-b-2'>Completed statements:&ensp;<BadgeCheck size={20} className='text-blue-500'/>&ensp;|&ensp;</p>
-        <p className='flex text-gray-400 border-t-2 border-b-2 border-r-2'>Incompleted statements:&ensp;<BadgeAlert size={20} className='text-red-500'/></p>
+        <p className='flex text-gray-400 border-t-2 border-b-2 border-l-2'>Show extended information:&ensp;<Plus size={20} className='text-lime-500' />&ensp;|&ensp;</p>
+        <p className='flex text-gray-400 border-t-2 border-b-2'>Completed statements:&ensp;<BadgeCheck size={20} className='text-blue-500' />&ensp;|&ensp;</p>
+        <p className='flex text-gray-400 border-t-2 border-b-2 border-r-2'>Incompleted statements:&ensp;<BadgeAlert size={20} className='text-red-500' /></p>
       </div>
       <p className='mt-2 mb-2 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
         {vex.owner}/{vex.name}: {vex.sbom_path}
       </p>
       {statements.map((statement, index) => (
-        <Accordion className='w-full' key={index} expanded={expanded === 'panel'+index} onChange={handle_change('panel'+index)}>
+        <Accordion className='w-full' key={index} expanded={expanded === 'panel' + index} onChange={handle_change('panel' + index)}>
           <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
-            <Typography className='flex'>Statement {index}&ensp;{statement.status === "Go to VEX Extended file to find vulnerability assisted information." ? <BadgeAlert size={20} className='text-red-500'/> : <BadgeCheck size={20} className='text-blue-500'/>}</Typography>
+            <Typography className='flex'>Statement {index}&ensp;{statement.status === "Go to VEX Extended file to find vulnerability assisted information." ? <BadgeAlert size={20} className='text-red-500' /> : <BadgeCheck size={20} className='text-blue-500' />}</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <Typography>
               <span>- Vulnerability:<br /></span>
-              <span>&ensp;&ensp;&ensp;{'\u2022'} Name: <a className='underline text-blue-600 hover:text-blue-800 visited:text-purple-600' href={statement.vulnerability["@id"]}>{statement.vulnerability.name}</a><br /></span> 
+              <span>&ensp;&ensp;&ensp;{'\u2022'} Name: <a className='underline text-blue-600 hover:text-blue-800 visited:text-purple-600' href={statement.vulnerability["@id"]}>{statement.vulnerability.name}</a><br /></span>
               <span>&ensp;&ensp;&ensp;{'\u2022'} Description: <ReadMore id="read-more-text" text={statement.vulnerability.description} /><br /></span>
-              <span>&ensp;&ensp;&ensp;{'\u2022'} CVSS:<Checkbox color={show_cvss ? "error": "success"} icon={<Plus size={20} className='text-lime-500 rounded-full'/>} checkedIcon={<Minus size={20} className='text-red-500 rounded-full'/>} onClick={on_click_show_cvss}/><br /></span>
-              { show_cvss ?
+              <span>&ensp;&ensp;&ensp;{'\u2022'} CVSS:<Checkbox color={show_cvss ? "error" : "success"} icon={<Plus size={20} className='text-lime-500 rounded-full' />} checkedIcon={<Minus size={20} className='text-red-500 rounded-full' />} onClick={on_click_show_cvss} /><br /></span>
+              {show_cvss ?
                 <>
                   <span>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} Vulnerability Impact: {statement.vulnerability.cvss.vuln_impact}<br /></span>
                   <span>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} CVSS version: {statement.vulnerability.cvss.version}<br /></span>
-                  <span>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} Attack Vector: {statement.vulnerability.cvss.attack_vector}<br /></span> 
+                  <span>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} Attack Vector: {statement.vulnerability.cvss.attack_vector}<br /></span>
                 </> :
                 null
               }
-              <span>&ensp;&ensp;&ensp;{'\u2022'} CWEs:<Checkbox color={show_cwes ? "error": "success"} icon={<Plus size={20} className='text-lime-500 rounded-full'/>} checkedIcon={<Minus size={20} className='text-red-500 rounded-full'/>} onClick={on_click_show_cwes}/><br /></span>
-              { show_cwes ?
+              <span>&ensp;&ensp;&ensp;{'\u2022'} CWEs:<Checkbox color={show_cwes ? "error" : "success"} icon={<Plus size={20} className='text-lime-500 rounded-full' />} checkedIcon={<Minus size={20} className='text-red-500 rounded-full' />} onClick={on_click_show_cwes} /><br /></span>
+              {show_cwes ?
                 statement.vulnerability.cwes && statement.vulnerability.cwes.map(
                   (cwe, index) => (
-                    <span key={index}>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} CWE {index}: <a className='underline text-blue-600 hover:text-blue-800 visited:text-purple-600' href={cwe["@id"]}>CWE-{cwe.name}</a><br /></span> 
+                    <span key={index}>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} CWE {index}: <a className='underline text-blue-600 hover:text-blue-800 visited:text-purple-600' href={cwe["@id"]}>CWE-{cwe.name}</a><br /></span>
                   )
                 )
                 :
@@ -185,31 +187,31 @@ const ShowVEXPage = () => {
               <span>- Status: {statement.status}<br /></span>
               <span>- Justification: {statement.justification}<br /></span>
               <span>- Supplier: {statement.supplier}<br /></span>
-              <span>- Exploits:<Checkbox color={show_exploits ? "error": "success"} icon={<Plus size={20} className='text-lime-500 rounded-full'/>} checkedIcon={<Minus size={20} className='text-red-500 rounded-full'/>} onClick={on_click_show_exploits}/><br /></span>
-              { show_exploits ?
+              <span>- Exploits:<Checkbox color={show_exploits ? "error" : "success"} icon={<Plus size={20} className='text-lime-500 rounded-full' />} checkedIcon={<Minus size={20} className='text-red-500 rounded-full' />} onClick={on_click_show_exploits} /><br /></span>
+              {show_exploits ?
                 statement.exploits && statement.exploits
-                .filter(exploit => exploit["@id"] !== "Unknown")
-                .map(
-                  (exploit, index) => (
-                    <span key={index}>&ensp;&ensp;&ensp;{'\u2022'} Exploit {index}: <a className='underline text-blue-600 hover:text-blue-800 visited:text-purple-600' href={exploit["@id"]}>{exploit["@id"]}</a><br /></span> 
+                  .filter(exploit => exploit["@id"] !== "Unknown")
+                  .map(
+                    (exploit, index) => (
+                      <span key={index}>&ensp;&ensp;&ensp;{'\u2022'} Exploit {index}: <a className='underline text-blue-600 hover:text-blue-800 visited:text-purple-600' href={exploit["@id"]}>{exploit["@id"]}</a><br /></span>
+                    )
                   )
-                )
                 :
                 null
               }
-              <span>- Reachable Code:<Checkbox color={show_reachable_code ? "error": "success"} icon={<Plus size={20} className='text-lime-500 rounded-full'/>} checkedIcon={<Minus size={20} className='text-red-500 rounded-full'/>} onClick={on_click_show_reachable_code}/><br /></span>
-              { show_reachable_code ?
+              <span>- Reachable Code:<Checkbox color={show_reachable_code ? "error" : "success"} icon={<Plus size={20} className='text-lime-500 rounded-full' />} checkedIcon={<Minus size={20} className='text-red-500 rounded-full' />} onClick={on_click_show_reachable_code} /><br /></span>
+              {show_reachable_code ?
                 statement.reachable_code && statement.reachable_code.map(
                   (reachable_code) => (
                     <span key={index}>&ensp;&ensp;&ensp;{'\u2022'} Reachable code in path {reachable_code.path_to_file} with: {
-                        reachable_code.used_artifacts.map((artifact, index) => (
-                          <p key={index}>
-                            &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} Artifact {artifact.artifact_name} in lines {artifact.used_in_lines.join(', ')}.
-                          </p>
-                        ))
-                      }
+                      reachable_code.used_artifacts.map((artifact, index) => (
+                        <p key={index}>
+                          &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;{'\u22c4'} Artifact {artifact.artifact_name} in lines {artifact.used_in_lines.join(', ')}.
+                        </p>
+                      ))
+                    }
                       <br />
-                    </span> 
+                    </span>
                   )
                 )
                 :

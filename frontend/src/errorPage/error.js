@@ -15,7 +15,7 @@ const PageNotFound = () => {
       <p className='mb-6 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400 text-center'>
         I&apos;s look like you&apos;re lost...
       </p>
-      <Button variant="contained" style={{backgroundColor: "#d97706"}} onClick={() => on_click_navigate_home()}>Go to Home</Button>
+      <Button variant="contained" style={{ backgroundColor: "#d97706" }} onClick={() => on_click_navigate_home()}>Go to Home</Button>
     </div>
   )
 }

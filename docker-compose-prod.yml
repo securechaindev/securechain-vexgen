@@ -3,24 +3,38 @@ services:
     container_name: vexgen_frontend
     build:
       context: .
-      dockerfile: ./frontend/Dockerfile
-    volumes:
-      - ./frontend:/frontend
+      dockerfile: ./frontend/Dockerfile.prod
     depends_on:
-      backend:
+      nginx_backend:
         condition: service_healthy
     ports:
-      - '3000:3000'
+      - '90:90'
     networks:
       - vexgen
+
+  nginx_backend:
+    image: nginx:1.26.2-alpine
+    container_name: vexgen_nginx_backend
+    restart: always
+    ports:
+      - '91:91'
+    volumes:
+      - ./backend/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+    networks:
+      - vexgen
+    healthcheck:
+      test: curl --fail http://localhost:91/health || exit 1
+      interval: 10s
+      start_period: 35s
 
   backend:
     container_name: vexgen_backend
     build:
       context: .
-      dockerfile: ./backend/Dockerfile
+      dockerfile: ./backend/Dockerfile.prod
     volumes:
-      - ./backend:/backend
       - .env:/backend/.env
     depends_on:
       pypi_graph_database:
@@ -35,19 +49,13 @@ services:
         condition: service_healthy
       vuln_database_seeder:
         condition: service_completed_successfully
-    ports:
-      - '8000:8000'
     networks:
       - vexgen
-    healthcheck:
-      test: curl --fail http://localhost:8000/health || exit 1
-      interval: 10s
-      start_period: 20s
 
   pypi_graph_database:
     env_file: .env
     container_name: pypi_neo4j
-    image: neo4j:5.20.0
+    image: neo4j:5.26
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_PYPI}
       - NEO4J_PLUGINS=["apoc"]
@@ -68,12 +76,12 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 15s
+      start_period: 25s
 
   npm_graph_database:
     env_file: .env
     container_name: npm_neo4j
-    image: neo4j:5.20.0
+    image: neo4j:5.26
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_NPM}
       - NEO4J_PLUGINS=["apoc"]
@@ -94,12 +102,12 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 15s
+      start_period: 25s
 
   maven_graph_database:
     env_file: .env
     container_name: maven_neo4j
-    image: neo4j:5.20.0
+    image: neo4j:5.26
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_MAVEN}
       - NEO4J_PLUGINS=["apoc"]
@@ -120,12 +128,12 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 15s
+      start_period: 25s
 
   cargo_graph_database:
     env_file: .env
     container_name: cargo_neo4j
-    image: neo4j:5.20.0
+    image: neo4j:5.26
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_CARGO}
       - NEO4J_PLUGINS=["apoc"]
@@ -146,12 +154,12 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 15s
+      start_period: 25s
 
   nuget_graph_database:
     env_file: .env
     container_name: nuget_neo4j
-    image: neo4j:5.20.0
+    image: neo4j:5.26
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_NUGET}
       - NEO4J_PLUGINS=["apoc"]
@@ -172,26 +180,25 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 15s
+      start_period: 25s
 
   vuln_database_seeder:
     env_file: .env
     container_name: mongodb_seeder
-    image: mongo:7.0.11
+    image: mongo:7.0.16
     depends_on:
       vuln_database:
         condition: service_healthy
     volumes:
       - ./seeds:/seeds
-    command:
-      /seeds/vulndb_seeder.sh
+    command: /seeds/vulndb_seeder.sh
     networks:
       - vexgen
 
   vuln_database:
     env_file: .env
     container_name: mongodb
-    image: mongo:7.0.11
+    image: mongo:7.0.16
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${VULN_DB_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${VULN_DB_PASSWORD}

@@ -24,9 +24,6 @@ class Settings(BaseSettings):
     GITHUB_GRAPHQL_API_KEY: str = ""
     NVD_API_KEY: str = ""
 
-    class Config:
-        env_file = ".env"
-
 
 @lru_cache
 def get_settings() -> Settings:

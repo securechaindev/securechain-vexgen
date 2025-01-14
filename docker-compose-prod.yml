@@ -34,8 +34,7 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile.prod
-    volumes:
-      - .env:/backend/.env
+    env_file: .env
     depends_on:
       pypi_graph_database:
         condition: service_healthy
@@ -53,9 +52,9 @@ services:
       - vexgen
 
   pypi_graph_database:
-    env_file: .env
     container_name: pypi_neo4j
     image: neo4j:5.26
+    env_file: .env
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_PYPI}
       - NEO4J_PLUGINS=["apoc"]
@@ -79,9 +78,9 @@ services:
       start_period: 25s
 
   npm_graph_database:
-    env_file: .env
     container_name: npm_neo4j
     image: neo4j:5.26
+    env_file: .env
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_NPM}
       - NEO4J_PLUGINS=["apoc"]
@@ -105,9 +104,9 @@ services:
       start_period: 25s
 
   maven_graph_database:
-    env_file: .env
     container_name: maven_neo4j
     image: neo4j:5.26
+    env_file: .env
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_MAVEN}
       - NEO4J_PLUGINS=["apoc"]
@@ -131,9 +130,9 @@ services:
       start_period: 25s
 
   cargo_graph_database:
-    env_file: .env
     container_name: cargo_neo4j
     image: neo4j:5.26
+    env_file: .env
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_CARGO}
       - NEO4J_PLUGINS=["apoc"]
@@ -157,9 +156,9 @@ services:
       start_period: 25s
 
   nuget_graph_database:
-    env_file: .env
     container_name: nuget_neo4j
     image: neo4j:5.26
+    env_file: .env
     environment:
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD_NUGET}
       - NEO4J_PLUGINS=["apoc"]
@@ -183,9 +182,9 @@ services:
       start_period: 25s
 
   vuln_database_seeder:
-    env_file: .env
     container_name: mongodb_seeder
     image: mongo:7.0.16
+    env_file: .env
     depends_on:
       vuln_database:
         condition: service_healthy
@@ -196,9 +195,9 @@ services:
       - vexgen
 
   vuln_database:
-    env_file: .env
     container_name: mongodb
     image: mongo:7.0.16
+    env_file: .env
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${VULN_DB_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${VULN_DB_PASSWORD}

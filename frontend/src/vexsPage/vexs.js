@@ -22,8 +22,6 @@ import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft'
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight'
 import LastPageIcon from '@mui/icons-material/LastPage'
 
-const API_URL = process.env.REACT_APP_API_URL
-
 function TablePaginationActions(props) {
   const theme = useTheme()
   const { count, page, rowsPerPage, onPageChange } = props
@@ -114,7 +112,7 @@ const VEXsPage = () => {
     const access_token = localStorage.getItem('access_token')
     const user_id = localStorage.getItem('user_id')
     const fetch_vexs = () => {
-      fetch(`${API_URL}/vex/user/` + user_id, {
+      fetch('/api/vex/user/' + user_id, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +157,7 @@ const VEXsPage = () => {
 
     const user_id = localStorage.getItem('user_id')
 
-    fetch(`${API_URL}/vex/generate`, {
+    fetch('/api/vex/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -173,7 +171,7 @@ const VEXsPage = () => {
   }
 
   const download_vex = (vex_id) => {
-    fetch(`${API_URL}/vex/download/` + vex_id, {
+    fetch('/api/vex/download/' + vex_id, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'

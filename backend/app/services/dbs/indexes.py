@@ -3,6 +3,7 @@ from pymongo import ASCENDING
 from app.services.dbs.databases import get_collection, get_graph_db_driver
 
 
+# TODO: Remove
 async def create_indexes() -> None:
     vexs_collection = get_collection("vexs")
     cves_collection = get_collection("cves")

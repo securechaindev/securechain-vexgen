@@ -29,7 +29,7 @@ from app.utils import download_repository, get_used_artifacts, is_imported, json
 
 router = APIRouter()
 
-@router.get("/vex/user/{user_id}")
+@router.get("/api/vex/user/{user_id}")
 async def get_vexs(user_id: str) -> JSONResponse:
     vexs = await read_user_vexs(user_id)
     return JSONResponse(
@@ -38,7 +38,7 @@ async def get_vexs(user_id: str) -> JSONResponse:
     )
 
 
-@router.get("/vex/show/{vex_id}")
+@router.get("/api/vex/show/{vex_id}")
 async def get_vex(vex_id: str) -> JSONResponse:
     vex = await read_vex_by_id(vex_id)
     return JSONResponse(
@@ -47,7 +47,7 @@ async def get_vex(vex_id: str) -> JSONResponse:
     )
 
 
-@router.get("/vex/download/{vex_id}")
+@router.get("/api/vex/download/{vex_id}")
 async def download_vex(vex_id: str) -> FileResponse:
     vex = await read_vex_by_id(vex_id)
     with ZipFile("vex.zip", "w") as myzip:
@@ -56,7 +56,7 @@ async def download_vex(vex_id: str) -> FileResponse:
     return FileResponse(path="vex.zip", filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
 
 
-@router.post("/vex/generate")
+@router.post("/api/vex/generate")
 async def generate_vex(
     GenerateVEXRequest: Annotated[GenerateVEXRequest, Body()]
 ) -> FileResponse:

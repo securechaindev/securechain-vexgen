@@ -10,8 +10,6 @@ import MuiAccordionDetails from '@mui/material/AccordionDetails'
 import Typography from '@mui/material/Typography'
 import { Plus, Minus, BadgeCheck, BadgeAlert } from 'lucide-react'
 
-const API_URL = process.env.REACT_APP_API_URL
-
 const ReadMore = ({ id, text, amountOfWords = 36 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const splittedText = text.split(' ')
@@ -131,7 +129,7 @@ const ShowVEXPage = () => {
 
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
-    fetch(`${API_URL}/vex/show/` + params.id, {
+    fetch('/api/vex/show/' + params.id, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

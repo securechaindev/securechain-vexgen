@@ -6,8 +6,6 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal'
 
-const API_URL = process.env.REACT_APP_API_URL
-
 const LoginPage = () => {
   const [email, set_email] = useState('')
   const [password, set_password] = useState('')
@@ -39,7 +37,7 @@ const LoginPage = () => {
   }
 
   const log_in = () => {
-    fetch(`${API_URL}/auth/login`, {
+    fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

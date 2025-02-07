@@ -5,7 +5,7 @@ from app.utils import json_encoder
 
 router = APIRouter()
 
-@router.get("/health")
+@router.get("/api/health")
 def health_check():
     return JSONResponse(
         status_code=status.HTTP_200_OK, content=json_encoder({"status": "healthy"})

@@ -1,10 +1,8 @@
-from contextlib import asynccontextmanager
-from typing import Any
+from os import getenv
 
 from fastapi import FastAPI
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.exceptions import HTTPException, RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.exception_handler import (
     http_exception_handler,
@@ -12,27 +10,17 @@ from app.exception_handler import (
     unhandled_exception_handler,
 )
 from app.middleware import log_request_middleware
-
 from app.router import api_router
-from app.services import create_indexes
 
 DESCRIPTION = """
-A backend for dependency graph building, atribution of vulnerabilities and reasoning
-over it.
+A simple generating tool of VEX files and assisting information supporting the creation of VEX files.
 """
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> Any:
-    await create_indexes()
-    yield
-
 
 app = FastAPI(
     title="Depex",
     description=DESCRIPTION,
     openapi_url=None,
-    version="0.6.2",
+    version="0.3.0",
     contact={
         "name": "Antonio Germán Márquez Trujillo",
         "url": "https://github.com/GermanMT",
@@ -42,16 +30,14 @@ app = FastAPI(
         "name": "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "url": "https://www.gnu.org/licenses/gpl-3.0.html",
     },
-    lifespan=lifespan,
 )
+
+frontend_url = getenv("FRONTEND_URL", default="http://localhost:3000")
 
 app.middleware("http")(log_request_middleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        'http://localhost:3000',
-        'http://localhost:90'
-    ],
+    allow_origins=[frontend_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

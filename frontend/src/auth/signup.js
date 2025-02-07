@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import Button from '@mui/material/Button'
 
-const API_URL = process.env.REACT_APP_API_URL
-
 const SignUpPage = () => {
   const [email, set_email] = useState('')
   const [password, set_password] = useState('')
@@ -51,7 +49,7 @@ const SignUpPage = () => {
   }
 
   const sign_up = () => {
-    fetch(`${API_URL}/auth/signup`, {
+    fetch('/api/auth/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

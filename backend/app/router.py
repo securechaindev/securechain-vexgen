@@ -7,6 +7,6 @@ from app.controllers import (
 )
 
 api_router = APIRouter()
-api_router.include_router(health_controller.router, tags=["health"])
-api_router.include_router(auth_controller.router, tags=["auth"])
-api_router.include_router(vex_controller.router, tags=["vex"])
+api_router.include_router(health_controller.router, tags=["/api/health"])
+api_router.include_router(auth_controller.router, tags=["/api/auth"])
+api_router.include_router(vex_controller.router, tags=["/api/vex"])

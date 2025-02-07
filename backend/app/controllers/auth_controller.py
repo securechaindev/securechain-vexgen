@@ -26,7 +26,7 @@ from app.utils import (
 
 router = APIRouter()
 
-@router.post("/auth/signup")
+@router.post("/api/auth/signup")
 async def signup(user: User) -> JSONResponse:
     existing_user = await read_user_by_email(user.email)
     if existing_user:
@@ -49,7 +49,7 @@ async def signup(user: User) -> JSONResponse:
     )
 
 
-@router.post("/auth/login")
+@router.post("/api/auth/login")
 async def login(login_request: Annotated[LoginRequest, Body()]) -> JSONResponse:
     user = await read_user_by_email(login_request.email)
     if user is None:
@@ -80,7 +80,7 @@ async def login(login_request: Annotated[LoginRequest, Body()]) -> JSONResponse:
     )
 
 
-@router.post("/auth/account_exists")
+@router.post("/api/auth/account_exists")
 async def account_exists(account_exists_request: AccountExistsRequest) -> JSONResponse:
     user = await read_user_by_email(account_exists_request.email)
     return JSONResponse(
@@ -89,7 +89,7 @@ async def account_exists(account_exists_request: AccountExistsRequest) -> JSONRe
     )
 
 
-@router.post("/auth/verify_token")
+@router.post("/api/auth/verify_token")
 async def verify_token(verify_access_token_request: VerifyAccessTokenRequest) -> JSONResponse:
     valid = (
         verify_access_token(verify_access_token_request.access_token)
@@ -101,7 +101,7 @@ async def verify_token(verify_access_token_request: VerifyAccessTokenRequest) ->
     )
 
 
-@router.post("/auth/change_password", dependencies=[Depends(JWTBearer())], tags=["auth"])
+@router.post("/api/auth/change_password", dependencies=[Depends(JWTBearer())], tags=["auth"])
 async def change_password(change_password_request: ChangePasswordRequest) -> JSONResponse:
     user = await read_user_by_email(change_password_request.email)
     if user is None:

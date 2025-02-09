@@ -5,14 +5,15 @@ from aiohttp import ClientConnectorError, ClientSession
 from xmltodict import parse
 
 
-async def get_all_maven_versions(
+async def get_maven_versions(
     package_artifact_id: str, package_group_id: str
 ) -> list[dict[str, Any]]:
     versions: list[dict[str, Any]] = []
+    api_url = f"https://repo1.maven.org/maven2/{package_group_id.replace(".", "/")}/{package_artifact_id}/maven-metadata.xml"
     async with ClientSession() as session:
         while True:
             try:
-                async with session.get(f"https://repo1.maven.org/maven2/{package_group_id.replace(".", "/")}/{package_artifact_id}/maven-metadata.xml") as response:
+                async with session.get(api_url) as response:
                     xml_string = await response.text()
                     break
             except (ClientConnectorError, TimeoutError):

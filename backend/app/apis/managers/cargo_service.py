@@ -4,11 +4,12 @@ from typing import Any
 from aiohttp import ClientConnectorError, ClientSession
 
 
-async def get_all_cargo_versions(pkg_name: str) -> list[dict[str, Any]]:
+async def get_cargo_versions(pkg_name: str) -> list[dict[str, Any]]:
+    api_url = f"https://crates.io/api/v1/crates/{pkg_name}"
     async with ClientSession() as session:
         while True:
             try:
-                async with session.get(f"https://crates.io/api/v1/crates/{pkg_name}") as response:
+                async with session.get(api_url) as response:
                     response = await response.json()
                     break
             except (ClientConnectorError, TimeoutError):

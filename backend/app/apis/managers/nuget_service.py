@@ -4,11 +4,12 @@ from typing import Any
 from aiohttp import ClientConnectorError, ClientSession
 
 
-async def get_all_nuget_versions(pkg_name: str) -> list[dict[str, Any]]:
+async def get_nuget_versions(pkg_name: str) -> list[dict[str, Any]]:
+    api_url = f"https://api.nuget.org/v3-flatcontainer/{pkg_name}/index.json"
     async with ClientSession() as session:
         while True:
             try:
-                async with session.get(f"https://api.nuget.org/v3-flatcontainer/{pkg_name}/index.json") as response:
+                async with session.get(api_url) as response:
                     response = await response.json()
                     break
             except (ClientConnectorError, TimeoutError):

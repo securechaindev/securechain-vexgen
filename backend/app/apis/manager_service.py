@@ -1,9 +1,12 @@
 from typing import Any
 
-from .managers.cargo_service import get_all_cargo_versions
-from .managers.maven_service import get_all_maven_versions
-from .managers.npm_service import get_all_npm_versions
-from .managers.pypi_service import get_all_pypi_versions
+from .managers import (
+    get_cargo_versions,
+    get_maven_versions,
+    get_npm_versions,
+    get_nuget_versions,
+    get_pypi_versions,
+)
 
 
 async def get_all_versions(
@@ -14,12 +17,12 @@ async def get_all_versions(
 ) -> list[dict[str, Any]]:
     match manager:
         case "pypi":
-            return await get_all_pypi_versions(package_name)
+            return await get_pypi_versions(package_name)
         case "npm":
-            return await get_all_npm_versions(package_name)
+            return await get_npm_versions(package_name)
         case "maven":
-            return await get_all_maven_versions(package_artifact_id, package_group_id)
+            return await get_maven_versions(package_artifact_id, package_group_id)
         case "cargo":
-            return await get_all_cargo_versions(package_name)
+            return await get_cargo_versions(package_name)
         case "nuget":
-            return await get_all_npm_versions(package_name)
+            return await get_nuget_versions(package_name)

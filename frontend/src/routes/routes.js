@@ -16,7 +16,7 @@ function Routes() {
 
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
-    fetch('/api/auth/verify_token', {
+    fetch(`${process.env.REACT_APP_API_URL}/api/auth/verify_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

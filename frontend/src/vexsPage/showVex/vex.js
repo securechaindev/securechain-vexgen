@@ -129,7 +129,7 @@ const ShowVEXPage = () => {
 
   useEffect(() => {
     const access_token = localStorage.getItem('access_token')
-    fetch('/api/vex/show/' + params.id, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/vex/show/${params.id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

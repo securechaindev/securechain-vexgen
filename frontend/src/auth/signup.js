@@ -49,7 +49,7 @@ const SignUpPage = () => {
   }
 
   const sign_up = () => {
-    fetch('/api/auth/signup', {
+    fetch(`${process.env.REACT_APP_API_URL}/api/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

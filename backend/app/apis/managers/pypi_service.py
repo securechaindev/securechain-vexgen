@@ -18,11 +18,9 @@ async def get_pypi_versions(name: str) -> list[dict[str, Any]]:
                 await sleep(5)
             except JSONDecodeError:
                 return []
-    if "releases" in response:
-        versions: list[dict[str, Any]] = []
-        for count, version in enumerate(response["releases"]):
-            versions.append(
-                {"name": version, "count": count}
-            )
-        return versions
-    return []
+    versions: list[dict[str, Any]] = []
+    for count, version in enumerate(response.get("releases", [])):
+        versions.append(
+            {"name": version, "count": count}
+        )
+    return versions

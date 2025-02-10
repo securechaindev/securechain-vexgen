@@ -9,20 +9,19 @@ from .managers import (
 )
 
 
-async def get_all_versions(
+async def get_versions(
     manager: str,
-    package_name: str | None = None,
-    package_artifact_id: str | None = None,
-    package_group_id: str | None = None,
+    name: str,
+    group_id: str | None = None,
 ) -> list[dict[str, Any]]:
     match manager:
         case "pypi":
-            return await get_pypi_versions(package_name)
+            return await get_pypi_versions(name)
         case "npm":
-            return await get_npm_versions(package_name)
+            return await get_npm_versions(name)
         case "maven":
-            return await get_maven_versions(package_artifact_id, package_group_id)
+            return await get_maven_versions(group_id, name)
         case "cargo":
-            return await get_cargo_versions(package_name)
+            return await get_cargo_versions(name)
         case "nuget":
-            return await get_nuget_versions(package_name)
+            return await get_nuget_versions(name)

@@ -5,13 +5,12 @@ WORKDIR /backend
 COPY /backend/requirements.txt ./
 
 RUN apk add --no-cache \
+    git \
     curl \
     gcc \
     musl-dev \
     && pip install --no-cache-dir -r requirements.txt \
     && apk del gcc musl-dev
-
-ENV GIT_PYTHON_REFRESH=quiet
 
 EXPOSE 8000
 

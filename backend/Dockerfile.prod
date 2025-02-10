@@ -10,7 +10,7 @@ RUN apk add --no-cache \
     && pip install --user -r requirements.txt \
     && apk del musl-dev
 
-FROM python:3.13.1-alpine AS production-stage
+FROM python:3.13.1-alpine
 
 WORKDIR /backend
 
@@ -19,6 +19,8 @@ COPY --from=build-stage /root/.local /root/.local
 COPY backend/ ./
 
 ENV PATH=/root/.local/bin:$PATH
+
+RUN apk add --no-cache git
 
 ENV GIT_PYTHON_REFRESH=quiet
 

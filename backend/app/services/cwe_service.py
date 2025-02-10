@@ -1,6 +1,6 @@
 from typing import Any
 
-from .dbs.databases import get_collection
+from .dbs import get_collection
 
 
 async def read_cwes_by_cve_id(cve: str) -> list[dict[str, Any]]:

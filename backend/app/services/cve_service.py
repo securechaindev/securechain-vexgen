@@ -1,6 +1,6 @@
 from typing import Any
 
-from .dbs.databases import get_collection
+from .dbs import get_collection
 
 
 async def read_cve_by_id(cve_id: str) -> dict[str, Any]:
@@ -41,9 +41,9 @@ async def read_cve_by_id(cve_id: str) -> dict[str, Any]:
     return result if result is not None else {"vuln_impact": [0.0], "description": {"value": ""}}
 
 
-async def read_cpe_product_by_package_name(package_name: str) -> dict[str, Any]:
+async def read_cpe_product_by_package_name(name: str) -> dict[str, Any]:
     cpe_products_collection = get_collection("cpe_products")
-    return await cpe_products_collection.find_one({"product": package_name})
+    return await cpe_products_collection.find_one({"product": name})
 
 
 async def update_cpe_products(product: str, cve: dict[str, Any]) -> None:

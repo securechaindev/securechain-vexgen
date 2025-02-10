@@ -1,13 +1,12 @@
 from datetime import datetime
 from typing import Any
 
-from .dbs.databases import get_graph_db_driver
+from .dbs import get_graph_db_driver
 
 
 async def create_package_and_versions(
     package: dict[str, Any],
     versions: list[dict[str, Any]],
-    package_manager: str,
     constraints: str | None = None,
     parent_id: str | None = None,
     parent_version_name: str | None = None,
@@ -20,7 +19,6 @@ async def create_package_and_versions(
         if parent_id
         else ""
     )
-    query_part2 = f"{{name:$name,{"group_id:$group_id," if package_manager == "MVN" else ""}moment:$moment}}"
     query_part3 = (
         f"create (parent)-[rel_p:Requires{{constraints:$constraints{", parent_version_name:$parent_version_name" if parent_version_name else ""}}}]->(p)"
         if parent_id
@@ -28,7 +26,7 @@ async def create_package_and_versions(
     )
     query = f"""
     {query_part1}
-    create(p:Package{query_part2})
+    create(p:Package{{manager:$manager, group_id:$group_id, name:$name, moment:$moment}})
     {query_part3}
     with p as package
     unwind $versions as version
@@ -42,8 +40,7 @@ async def create_package_and_versions(
     }})
     create (package)-[rel_v:Have]->(v)
     """
-    driver = get_graph_db_driver(package_manager)
-    async with driver.session() as session:
+    async with get_graph_db_driver().session() as session:
         result = await session.run(
             query,
             package,
@@ -55,26 +52,27 @@ async def create_package_and_versions(
         await result.single()
 
 
-async def read_package_by_name(
-    package_name: str, package_manager: str
-) -> dict[str, Any]:
+async def read_package_by_name(manager: str, group_id: str, name: str) -> dict[str, Any]:
     query = """
     match (p:Package)
-    where p.name = $package_name
+    where p.manager = $manager and p.group_id = $group_id and p.name = $name
     return p{id: elementid(p), .*}
     """
-    driver = get_graph_db_driver(package_manager)
-    async with driver.session() as session:
-        result = await session.run(query, package_name=package_name)
+    async with get_graph_db_driver().session() as session:
+        result = await session.run(
+            query,
+            manager = manager,
+            group_id=group_id,
+            name=name
+        )
         record = await result.single()
     return record[0] if record else None
 
 
-async def update_package_moment(package_name: str, package_manager: str) -> None:
+async def update_package_moment(manager: str, group_id: str, name: str) -> None:
     query = """
-    match (p:Package) where p.name = $package_name
+    match (p:Package) where p.manager = $manager and p.group_id = $group_id and p.name = $name
     set p.moment = $moment
     """
-    driver = get_graph_db_driver(package_manager)
-    async with driver.session() as session:
-        await session.run(query, package_name=package_name, moment=datetime.now())
+    async with get_graph_db_driver().session() as session:
+        await session.run(query, manager=manager, group_id=group_id, name=name, moment=datetime.now())

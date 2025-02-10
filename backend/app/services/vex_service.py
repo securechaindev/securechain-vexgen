@@ -2,7 +2,7 @@ from typing import Any
 
 from bson import ObjectId
 
-from .dbs.databases import get_collection
+from .dbs import get_collection
 
 
 async def create_vex(vex: dict[str, Any]) -> str:

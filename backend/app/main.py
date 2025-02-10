@@ -19,7 +19,7 @@ A simple generating tool of VEX files and assisting information supporting the c
 app = FastAPI(
     title="Depex",
     description=DESCRIPTION,
-    openapi_url=None,
+    # openapi_url=None,
     version="0.3.0",
     contact={
         "name": "Antonio Germán Márquez Trujillo",

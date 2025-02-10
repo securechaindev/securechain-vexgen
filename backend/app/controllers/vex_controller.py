@@ -175,20 +175,22 @@ async def generate_statements(
             if "purl" in component and "version" in component:
                 package_manager = component["purl"].split(":")[1].split("/")[0]
                 if package_manager in ("pypi", "npm", "maven"):
-                    result = await init_package(component, package_manager)
-                    if isinstance(result, JSONResponse):
+                    component_name = await init_package(component, package_manager)
+                    if isinstance(component_name, JSONResponse):
                         system("rm -rf " + carpeta_descarga)
-                        return result
-                    else:
-                        component_name = result
+                        return component_name
                     cve_ids = await read_cve_ids_by_version_and_package(
-                        component["version"], component_name, package_manager
+                        component["version"], package_manager, component["group"] if "group" in component else "none", component["name"]
                     )
                     for cve_id in cve_ids:
                         if have_group:
                             group, status, justification = await statements_grouping(statements_group, cve_id, paths, component_name, component["version"], timestamp, package_manager)
+                            if group == None:
+                                continue
                         else:
-                            _group, status, justification =await generate_extended_statement(cve_id, paths, component_name, component["version"], timestamp, package_manager)
+                            _group, status, justification = await generate_extended_statement(cve_id, paths, component_name, component["version"], timestamp, package_manager)
+                            if _group == None:
+                                continue
                             group.append(_group)
                         vex["statements"].append(
                             await generate_statement(cve_id, timestamp, package_manager, status, justification)
@@ -208,9 +210,9 @@ async def generate_statements(
     return vex, extended_vex
 
 
-async def init_package(component: dict[str, Any], package_manager: str) -> str:
+async def init_package(component: dict[str, Any], manager: str) -> str:
     if "group" in component:
-        match package_manager:
+        match manager:
             case "pypi":
                 component_name = component["name"]
                 await init_pypi_package(component_name)
@@ -222,7 +224,7 @@ async def init_package(component: dict[str, Any], package_manager: str) -> str:
                 await init_maven_package(component["group"], component["name"])
     else:
         component_name = component["name"]
-        match package_manager:
+        match manager:
             case "pypi":
                 await init_pypi_package(component_name)
             case "npm":
@@ -240,7 +242,7 @@ async def init_package(component: dict[str, Any], package_manager: str) -> str:
     return component_name
 
 
-async def generate_statement(cve_id: str, timestamp: str, package_manager: str, status: str, justification: str) -> dict[str, Any]:
+async def generate_statement(cve_id: str, timestamp: str, manager: str, status: str, justification: str) -> dict[str, Any]:
     statement_temp = open("app/templates/statement/statement_template.json", encoding="utf-8")
     statement = load(statement_temp)
     statement_temp.close()
@@ -250,7 +252,7 @@ async def generate_statement(cve_id: str, timestamp: str, package_manager: str, 
     statement["vulnerability"]["description"] = cve["description"]
     statement["timestamp"] = timestamp
     statement["last_updated"] = timestamp
-    statement["supplier"] = package_manager
+    statement["supplier"] = manager
     statement["status"] = status
     statement["justification"] = justification
     return statement
@@ -263,14 +265,16 @@ async def statements_grouping(
     name: str,
     version: str,
     timestamp: str,
-    package_manager: str
+    manager: str
 ) -> tuple[dict[str, list[dict[str, Any]]], str, str]:
     with open(f"app/templates/group/{statements_group.value}.json", encoding="utf-8") as group_file:
         group: dict[str, list[dict[str, Any]]] = load(group_file)
-    statement_info, status, justification = await generate_extended_statement(cve_id, paths, name, version, timestamp, package_manager)
+    statement_info, status, justification = await generate_extended_statement(cve_id, paths, name, version, timestamp, manager)
+    if statement_info == None:
+        return None, None, None
     match statements_group:
         case "supplier":
-            group[package_manager].append(statement_info)
+            group[manager].append(statement_info)
         case "cwe_type":
             if "cwes" in statement_info["vulnerability"]:
                 abstraction = await get_less_abstraction(statement_info["vulnerability"]["cwes"])
@@ -386,7 +390,7 @@ async def get_less_abstraction(cwes: list[ dict[str, Any]]) -> str:
     return abstraction
 
 
-async def generate_extended_statement(cve_id: str, paths: list[str], name: str, version: str, timestamp:str, package_manager: str) -> tuple[dict[str, Any], str, str]:
+async def generate_extended_statement(cve_id: str, paths: list[str], name: str, version: str, timestamp:str, manager: str) -> tuple[dict[str, Any], str, str]:
     extended_statement_temp = open("app/templates/statement/extended_statement_template.json", encoding="utf-8")
     extended_statement = load(extended_statement_temp)
     extended_statement_temp.close()
@@ -394,8 +398,10 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
     extended_statement["affected_component_version"] = version
     extended_statement["timestamp"] = timestamp
     extended_statement["last_updated"] = timestamp
-    extended_statement["supplier"] = package_manager
+    extended_statement["supplier"] = manager
     cve = await read_cve_by_id(cve_id)
+    if "id" not in cve:
+        return None, None, None
     extended_statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{cve["id"]}"
     extended_statement["vulnerability"]["name"] = cve["id"]
     extended_statement["vulnerability"]["description"] = cve["description"]
@@ -423,14 +429,14 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
 
     is_imported_any = False
     for path in paths:
-        if await is_imported(path, name, package_manager):
+        if await is_imported(path, name, manager):
             is_imported_any = True
             reacheable_code = {}
             reacheable_code["path_to_file"] = path.replace("repositories/", "")
             affected_artefacts = []
             if "affected_artefacts" in cve:
                 affected_artefacts = cve["affected_artefacts"]
-            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], affected_artefacts, package_manager)
+            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], affected_artefacts, manager)
             if reacheable_code["used_artifacts"]:
                 extended_statement["reachable_code"].append(reacheable_code)
 

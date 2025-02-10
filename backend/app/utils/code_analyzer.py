@@ -1,14 +1,21 @@
 from typing import Any
 
-from .codes.cs_code_analyzer import cs_get_used_artifacts, cs_is_imported
-from .codes.java_code_analyzer import java_get_used_artifacts, java_is_imported
-from .codes.js_ts_code_analyzer import js_ts_get_used_artifacts, js_ts_is_imported
-from .codes.python_code_analyzer import python_get_used_artifacts, python_is_imported
-from .codes.rs_code_analyzer import rs_get_used_artifacts, rs_is_imported
+from .codes import (
+    cs_get_used_artifacts,
+    cs_is_imported,
+    java_get_used_artifacts,
+    java_is_imported,
+    js_ts_get_used_artifacts,
+    js_ts_is_imported,
+    python_get_used_artifacts,
+    python_is_imported,
+    rs_get_used_artifacts,
+    rs_is_imported,
+)
 
 
-async def is_imported(path: str, name: str, package_manager: str) -> Any:
-    match package_manager:
+async def is_imported(path: str, name: str, manager: str) -> Any:
+    match manager:
         case "pypi":
             if ".py" in path:
                 return await python_is_imported(path, name)
@@ -25,8 +32,8 @@ async def is_imported(path: str, name: str, package_manager: str) -> Any:
             if ".cs" in path:
                 return await cs_is_imported()
 
-async def get_used_artifacts(path: str, name: str, cve_description: str, affected_artefacts: list[str], package_manager: str) -> dict[str, list[int]]:
-    match package_manager:
+async def get_used_artifacts(path: str, name: str, cve_description: str, affected_artefacts: list[str], manager: str) -> dict[str, list[int]]:
+    match manager:
         case "pypi":
             return await python_get_used_artifacts(path, name, cve_description, affected_artefacts)
         case "npm":

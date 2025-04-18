@@ -12,7 +12,7 @@ from pytz import UTC
 
 from app.apis import get_last_commit_date_github
 from app.controllers import init_maven_package, init_npm_package, init_pypi_package
-from app.models import GenerateVEXRequest
+from app.models.vex import GenerateVEXRequest
 from app.services import (
     create_vex,
     read_cve_by_id,

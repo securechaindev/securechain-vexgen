@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, status
 from fastapi.responses import JSONResponse
 
-from app.models import (
+from app.models.auth import (
     AccountExistsRequest,
     ChangePasswordRequest,
     LoginRequest,

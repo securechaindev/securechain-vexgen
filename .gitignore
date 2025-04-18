@@ -7,3 +7,6 @@
 
 # Environment
 .env
+
+# Ruff linter cache
+.ruff_cache

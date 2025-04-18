@@ -3,13 +3,12 @@ from glob import glob
 from json import JSONDecodeError, dumps, load
 from os import system
 from os.path import exists, isdir
-from typing import Any
+from typing import Annotated, Any
 from zipfile import ZipFile
 
 from fastapi import APIRouter, Body, status
 from fastapi.responses import FileResponse, JSONResponse
 from pytz import UTC
-from typing_extensions import Annotated
 
 from app.apis import get_last_commit_date_github
 from app.controllers import init_maven_package, init_npm_package, init_pypi_package
@@ -185,11 +184,11 @@ async def generate_statements(
                     for cve_id in cve_ids:
                         if have_group:
                             group, status, justification = await statements_grouping(statements_group, cve_id, paths, component_name, component["version"], timestamp, package_manager)
-                            if group == None:
+                            if group is None:
                                 continue
                         else:
                             _group, status, justification = await generate_extended_statement(cve_id, paths, component_name, component["version"], timestamp, package_manager)
-                            if _group == None:
+                            if _group is None:
                                 continue
                             group.append(_group)
                         vex["statements"].append(
@@ -270,7 +269,7 @@ async def statements_grouping(
     with open(f"app/templates/group/{statements_group.value}.json", encoding="utf-8") as group_file:
         group: dict[str, list[dict[str, Any]]] = load(group_file)
     statement_info, status, justification = await generate_extended_statement(cve_id, paths, name, version, timestamp, manager)
-    if statement_info == None:
+    if statement_info is None:
         return None, None, None
     match statements_group:
         case "supplier":

@@ -8,8 +8,8 @@ from .verify_access_token import VerifyAccessTokenRequest
 __all__ = [
     "AccountExistsRequest",
     "ChangePasswordRequest",
+    "GenerateVEXRequest",
     "LoginRequest",
     "User",
     "VerifyAccessTokenRequest",
-    "GenerateVEXRequest",
 ]

@@ -1,4 +1,4 @@
-from asyncio import TimeoutError, sleep
+from asyncio import sleep
 from datetime import datetime
 
 from aiohttp import ClientConnectorError, ClientSession
@@ -23,7 +23,7 @@ async def get_last_commit_date_github(owner: str, name: str) -> datetime | bool:
                             edges {{
                                 node {{
                                     author {{
-                                    date
+                                        date
                                     }}
                                 }}
                             }}

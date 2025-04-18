@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vexgen-frontend-d
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vexgen-frontend
+  template:
+    metadata:
+      labels:
+        app: vexgen-frontend
+    spec:
+      containers:
+        - name: vexgen-frontend
+          image: germanmt/vexgen-frontend:0.2.25
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "2"
+            requests:
+              memory: "100Mi"
+              cpu: "0.5"
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1

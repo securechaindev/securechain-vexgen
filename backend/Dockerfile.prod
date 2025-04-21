@@ -1,4 +1,4 @@
-FROM python:3.13.1-alpine AS build-stage
+FROM python:3.13.3-alpine AS build-stage
 
 WORKDIR /backend
 
@@ -10,7 +10,7 @@ RUN apk add --no-cache \
     && pip install --user -r requirements.txt \
     && apk del musl-dev
 
-FROM python:3.13.1-alpine
+FROM python:3.13.3-alpine
 
 WORKDIR /backend
 

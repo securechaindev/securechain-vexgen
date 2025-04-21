@@ -164,4 +164,4 @@ yarn-error.log*
 .github
 
 # Logger
-errors.log
+errors.log*

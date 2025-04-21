@@ -31,19 +31,18 @@ https://github.com/user-attachments/assets/5750712e-8429-410b-b697-ce8414fe5063
 
 - How to get a GitHub [API key](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 
-- How to get a NVD [API key](https://nvd.nist.gov/developers/request-an-api-key)
+- Modify the **Json Web Token (JWT)** secret key with your own. You can generate your own with the command **node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"**.
 
 ### Step 2
-Run command 'docker compose up --build' and seed the database with vulnerability info
+Create the **graphs** folder inside the **seeds** folder in the root of the project, download the graphs seed from this [link](https://goo.su/YjuzmQ), and insert it into the **graphs** folder.
 
-#### Seeders
+### Step 3
+Run command *docker compose up --build*.
 
-- You can create your graphs from scratch or load existing ones used in the experimentation of other articles or simply built and that can help in the creation of new graphs (this task can be time consuming). To do this use the script "seeds/graphdb_seeder.sh" if you are on Linux or "graphdb_seeder.bat" if you are on Windows.
-
-### Step 3 
-Enter [here](http://0.0.0.0:8000/docs)
+### Step 4
+Enter [here](http://0.0.0.0:3000)
 
 #### Other tools
 1. It is recommended to use a GUI such as [MongoDB Compass](https://www.mongodb.com/en/products/compass) to see what information is being indexed in vulnerability database
    
-2. You can see the created graph built for [PyPY](http://0.0.0.0:7474/browser/), [NPM](http://localhost:7473/browser/), [Maven](http://localhost:7472/browser/), [Cargo](http://localhost:7471/browser/) and [NuGet](http://localhost:7470/browser/) clicking in this names. Using the Neo4J browser interfaces.
+2. You can see the created graph built for [here](http://0.0.0.0:7474/browser/), using the Neo4J browser interfaces.

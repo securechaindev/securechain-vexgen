@@ -19,6 +19,7 @@ from .package_service import (
 )
 from .version_service import (
     count_number_of_versions_by_package,
+    create_versions,
     read_cve_ids_by_version_and_package,
     read_versions_names_by_package,
 )
@@ -32,6 +33,7 @@ __all__ = [
     "count_number_of_versions_by_package",
     "create_package_and_versions",
     "create_user",
+    "create_versions",
     "create_vex",
     "read_cpe_product_by_package_name",
     "read_cve_by_id",

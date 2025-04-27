@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from app.apis import get_versions
+from app.apis import get_nuget_versions
 from app.controllers.cve_controller import attribute_cves
 from app.services import (
     count_number_of_versions_by_package,
@@ -18,7 +18,7 @@ async def nuget_create_package(
     parent_id: str | None = None,
     parent_version_name: str | None = None,
 ) -> None:
-    all_versions = await get_versions("nuget", name)
+    all_versions = await get_nuget_versions(name)
     if all_versions:
         cpe_product = await read_cpe_product_by_package_name(name)
         versions = [
@@ -36,7 +36,7 @@ async def nuget_create_package(
 
 async def nuget_search_new_versions(package: dict[str, Any]) -> None:
     no_existing_versions: list[dict[str, Any]] = []
-    all_versions = await get_versions("nuget", package["name"])
+    all_versions = await get_nuget_versions(package["name"])
     counter = await count_number_of_versions_by_package("nuget", "none", package["name"])
     if counter < len(all_versions):
         cpe_matches = await read_cpe_product_by_package_name(package["name"])

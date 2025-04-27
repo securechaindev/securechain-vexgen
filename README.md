@@ -29,7 +29,7 @@ https://github.com/user-attachments/assets/5750712e-8429-410b-b697-ce8414fe5063
 
 #### Get API Keys
 
-- How to get a GitHub [API key](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+- How to get a GitHub [API key](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
 
 - Modify the **Json Web Token (JWT)** secret key with your own. You can generate your own with the command **node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"**.
 
@@ -40,9 +40,9 @@ Create the **graphs** folder inside the **seeds** folder in the root of the proj
 Run command *docker compose up --build*.
 
 ### Step 4
-Enter [here](http://0.0.0.0:3000)
+Enter [here](http://0.0.0.0:3000) for the frontend Web API.
 
 #### Other tools
 1. It is recommended to use a GUI such as [MongoDB Compass](https://www.mongodb.com/en/products/compass) to see what information is being indexed in vulnerability database
-   
+
 2. You can see the created graph built for [here](http://0.0.0.0:7474/browser/), using the Neo4J browser interfaces.

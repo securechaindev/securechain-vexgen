@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Any
 
-from app.apis import get_versions
+from app.apis import get_cargo_versions
 from app.controllers.cve_controller import attribute_cves
 from app.services import (
     count_number_of_versions_by_package,
     create_package_and_versions,
+    create_versions,
     read_cpe_product_by_package_name,
     read_versions_names_by_package,
     update_package_moment,
@@ -18,7 +19,7 @@ async def cargo_create_package(
     parent_id: str | None = None,
     parent_version_name: str | None = None,
 ) -> None:
-    all_versions = await get_versions("cargo", name)
+    all_versions = await get_cargo_versions(name)
     if all_versions:
         cpe_product = await read_cpe_product_by_package_name(name)
         versions = [
@@ -26,8 +27,9 @@ async def cargo_create_package(
             for version in all_versions
         ]
         await create_package_and_versions(
-            {"manager": "cargo", "group_id": "none", "name": name, "moment": datetime.now()},
+            {"name": name, "vendor": "n/a", "moment": datetime.now()},
             versions,
+            "CargoPackage",
             constraints,
             parent_id,
             parent_version_name,
@@ -35,12 +37,12 @@ async def cargo_create_package(
 
 
 async def cargo_search_new_versions(package: dict[str, Any]) -> None:
-    no_existing_versions: list[dict[str, Any]] = []
-    all_versions = await get_versions("cargo", package["name"])
+    all_versions = await get_cargo_versions(package["name"])
     counter = await count_number_of_versions_by_package("cargo", "none", package["name"])
     if counter < len(all_versions):
+        no_existing_versions: list[dict[str, Any]] = []
         cpe_matches = await read_cpe_product_by_package_name(package["name"])
-        actual_versions = await read_versions_names_by_package("cargo", "none", package["name"])
+        actual_versions = await read_versions_names_by_package("CargoPackage", "none", package["name"])
         for version in all_versions:
             if version["release"] not in actual_versions:
                 version["count"] = counter
@@ -49,4 +51,9 @@ async def cargo_search_new_versions(package: dict[str, Any]) -> None:
                 )
                 no_existing_versions.append(new_version)
                 counter += 1
-    await update_package_moment("cargo", "none", package["name"])
+        await create_versions(
+            package,
+            "CargoPackage",
+            no_existing_versions,
+        )
+    await update_package_moment("CargoPackage", "none", package["name"])

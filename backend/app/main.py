@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from os import getenv
 
 from fastapi import FastAPI
@@ -9,12 +10,18 @@ from app.exception_handler import (
     request_validation_exception_handler,
     unhandled_exception_handler,
 )
+from app.http_session import close_session
 from app.middleware import log_request_middleware
 from app.router import api_router
 
 DESCRIPTION = """
 A simple generating tool of VEX files and assisting information supporting the creation of VEX files.
 """
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await close_session()
 
 app = FastAPI(
     title="Depex",
@@ -30,6 +37,7 @@ app = FastAPI(
         "name": "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "url": "https://www.gnu.org/licenses/gpl-3.0.html",
     },
+    lifespan=lifespan,
 )
 
 frontend_url = getenv("FRONTEND_URL", default="http://localhost:3000")

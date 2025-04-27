@@ -1,8 +1,11 @@
-from datetime import datetime, timedelta
 
-from fastapi import status
+from datetime import datetime, timedelta
+from typing import Any
+
+from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
+from app.models.graph import InitPackageRequest
 from app.services import read_package_by_name
 from app.utils import json_encoder
 
@@ -19,88 +22,45 @@ from .managers import (
     pypi_search_new_versions,
 )
 
+router = APIRouter()
 
-async def init_pypi_package(name: str) -> JSONResponse:
-    """
-    Starts graph extraction from a Python Package Index package:
-
-    - **name**: the name of the package as it appears in PyPI
-    """
-    package = await read_package_by_name("pypi", "none", name)
+async def init_package(init_package_request: InitPackageRequest) -> JSONResponse:
+    init_package_request.name = init_package_request.name.lower()
+    package = await read_package_by_name(init_package_request.node_type.value, init_package_request.name)
     if not package:
-        await pypi_create_package(name)
+        await create_package(init_package_request)
     elif package["moment"] < datetime.now() - timedelta(days=10):
-        await pypi_search_new_versions(package)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=json_encoder({"message": "Initializing graph"}),
-    )
-
-
-async def init_npm_package(name: str) -> JSONResponse:
-    """
-    Starts graph extraction from a Node Package Manager package:
-
-    - **name**: the name of the package as it appears in npm
-    """
-    package = await read_package_by_name("npm", "none", name)
-    if not package:
-        await npm_create_package(name)
-    elif package["moment"] < datetime.now() - timedelta(days=10):
-        await npm_search_new_versions(package)
+        await search_new_versions(package, init_package_request.node_type.value)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder({"message": "initializing"}),
     )
 
 
-async def init_maven_package(group_id: str, artifact_id: str) -> JSONResponse:
-    """
-    Starts graph extraction from a Maven Central package:
-
-    - **group_id**: the group_id of the package as it appears in Maven Central
-    - **artifact_id**: the artifact_id of the package as it appears in Maven Central
-    """
-    package = await read_package_by_name("maven", group_id, artifact_id)
-    if not package:
-        await maven_create_package(group_id, artifact_id)
-    elif package["moment"] < datetime.now() - timedelta(days=10):
-        await maven_search_new_versions(package)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=json_encoder({"message": "initializing"}),
-    )
+async def create_package(init_package_request: InitPackageRequest) -> None:
+    match init_package_request.node_type.value:
+        case "CargoPackage":
+            await cargo_create_package(init_package_request.name)
+        case "MavenPackage":
+            group_id, artifact_id = init_package_request.name.split(":")
+            await maven_create_package(group_id, artifact_id)
+        case "NPMPackage":
+            await npm_create_package(init_package_request.name)
+        case "NuGetPackage":
+            await nuget_create_package(init_package_request.name)
+        case "PyPIPackage":
+            await pypi_create_package(init_package_request.name)
 
 
-async def init_cargo_package(name: str) -> JSONResponse:
-    """
-    Starts graph extraction from a Cargo Crates package:
-
-    - **name**: the name of the package as it appears in Cargo
-    """
-    package = await read_package_by_name("cargo", "none", name)
-    if not package:
-        await cargo_create_package(name)
-    elif package["moment"] < datetime.now() - timedelta(days=10):
-        await cargo_search_new_versions(package)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=json_encoder({"message": "Initializing graph"}),
-    )
-
-
-async def init_nuget_package(name: str) -> JSONResponse:
-    """
-    Starts graph extraction from a NuGet package:
-
-    - **name**: the name of the package as it appears in NuGet
-    """
-    package = await read_package_by_name("nuget", "none", name)
-    if not package:
-        await nuget_create_package(name)
-    elif package["moment"] < datetime.now() - timedelta(days=10):
-        await nuget_search_new_versions(package)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=json_encoder({"message": "Initializing graph"}),
-    )
+async def search_new_versions(package: dict[str, Any], node_type: str) -> None:
+    match node_type:
+        case "CargoPackage":
+            await cargo_search_new_versions(package)
+        case "MavenPackage":
+            await maven_search_new_versions(package)
+        case "NPMPackage":
+            await npm_search_new_versions(package)
+        case "NuGetPackage":
+            await nuget_search_new_versions(package)
+        case "PyPIPackage":
+            await pypi_search_new_versions(package)

@@ -22,6 +22,12 @@
 
 https://github.com/user-attachments/assets/5750712e-8429-410b-b697-ce8414fe5063
 
+## Deployment requirements
+
+1. [Docker](https://www.docker.com/) to deploy the tool.
+
+2. [Git Large Files Storage](https://git-lfs.com/) (git-lfs) for cloning correctly the seeds of the repository.
+
 ## Deployment with docker
 
 ### Step 1

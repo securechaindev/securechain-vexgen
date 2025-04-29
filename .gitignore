@@ -10,3 +10,6 @@
 
 # Ruff linter cache
 .ruff_cache
+
+# VEXGen environment
+vexgen_env

@@ -25,7 +25,7 @@ async def fetch_page_versions(url: str) -> list[dict[str, Any]]:
 
 async def get_nuget_versions(
     name: str
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+) -> list[dict[str, Any]]:
     response = await get_cache(name)
     if response:
         versions = response

@@ -22,22 +22,17 @@ def get_graph_db_driver() -> AsyncDriver:
 def get_collection(collection_name: str) -> AsyncIOMotorCollection:
     client: AsyncIOMotorClient = AsyncIOMotorClient(settings.VULN_DB_URI)
     depex_db: AsyncIOMotorDatabase = client.depex
-    nvd_db: AsyncIOMotorDatabase = client.nvd
+    osv_db: AsyncIOMotorDatabase = client.osv
+    cwes_db: AsyncIOMotorDatabase = client.cwes
     vulners_db: AsyncIOMotorDatabase = client.vulners_db
     match collection_name:
         case "users":
             return depex_db.get_collection(collection_name)
         case "vexs":
             return depex_db.get_collection(collection_name)
-        case "cves":
-            return nvd_db.get_collection(collection_name)
-        case "cpe_matchs":
-            return nvd_db.get_collection(collection_name)
-        case "cpes":
-            return nvd_db.get_collection(collection_name)
-        case "cpe_products":
-            return nvd_db.get_collection(collection_name)
+        case "vulnerabilities":
+            return osv_db.get_collection(collection_name)
         case "cwes":
-            return nvd_db.get_collection(collection_name)
+            return cwes_db.get_collection(collection_name)
         case "exploits":
             return vulners_db.get_collection(collection_name)

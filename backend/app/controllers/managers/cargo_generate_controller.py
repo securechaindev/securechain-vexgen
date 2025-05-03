@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import Any
 
+from backend.app.controllers import attribute_vulnerabilities
+
 from app.apis import get_cargo_versions
-from app.controllers.cve_controller import attribute_cves
 from app.services import (
     count_number_of_versions_by_package,
     create_package_and_versions,
     create_versions,
-    read_cpe_product_by_package_name,
     read_versions_names_by_package,
     update_package_moment,
 )
@@ -21,9 +21,8 @@ async def cargo_create_package(
 ) -> None:
     all_versions = await get_cargo_versions(name)
     if all_versions:
-        cpe_product = await read_cpe_product_by_package_name(name)
         versions = [
-            await attribute_cves(version, cpe_product, "cargo")
+            await attribute_vulnerabilities(name, version)
             for version in all_versions
         ]
         await create_package_and_versions(
@@ -40,20 +39,17 @@ async def cargo_search_new_versions(package: dict[str, Any]) -> None:
     all_versions = await get_cargo_versions(package["name"])
     counter = await count_number_of_versions_by_package("cargo", "none", package["name"])
     if counter < len(all_versions):
-        no_existing_versions: list[dict[str, Any]] = []
-        cpe_matches = await read_cpe_product_by_package_name(package["name"])
+        new_versions: list[dict[str, Any]] = []
         actual_versions = await read_versions_names_by_package("CargoPackage", "none", package["name"])
         for version in all_versions:
-            if version["release"] not in actual_versions:
+            if version.get("name") not in actual_versions:
                 version["count"] = counter
-                new_version = await attribute_cves(
-                    version, cpe_matches, "cargo", package["name"]
-                )
-                no_existing_versions.append(new_version)
+                new_version = await attribute_vulnerabilities(package["name"], version)
+                new_versions.append(new_version)
                 counter += 1
         await create_versions(
             package,
             "CargoPackage",
-            no_existing_versions,
+            new_versions,
         )
     await update_package_moment("CargoPackage", "none", package["name"])

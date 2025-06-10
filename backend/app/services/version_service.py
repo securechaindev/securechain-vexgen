@@ -3,13 +3,13 @@ from typing import Any
 from .dbs import get_graph_db_driver
 
 
-async def read_cve_ids_by_version_and_package(
+async def read_vulnerability_ids_by_version_and_package(
     node_type: str, name: str, version: str
 ) -> list[str]:
     query = f"""
     MATCH (p:{node_type}{{name:$name}})
     MATCH (p)-[r:Have]->(v: Version) WHERE v.name = $version
-    RETURN v.cves
+    RETURN v.vulnerabilities
     """
     async with get_graph_db_driver().session() as session:
         result = await session.run(query, name=name, version=version)
@@ -53,7 +53,7 @@ async def create_versions(
     CREATE(v:Version{{
         name: version.name,
         count: version.count,
-        cves: version.cves,
+        vulnerabilities: version.vulnerabilities,
         mean: version.mean,
         weighted_mean: version.weighted_mean
     }})

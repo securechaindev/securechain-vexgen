@@ -5,8 +5,6 @@ from .auth_service import (
     update_user_password,
     update_user_vexs,
 )
-from .cwe_service import read_cwes_by_cve_id
-from .exploit_service import read_exploits_by_cve_id
 from .package_service import (
     create_package_and_versions,
     read_package_by_name,
@@ -15,8 +13,8 @@ from .package_service import (
 from .version_service import (
     count_number_of_versions_by_package,
     create_versions,
-    read_cve_ids_by_version_and_package,
     read_versions_names_by_package,
+    read_vulnerability_ids_by_version_and_package,
 )
 from .vex_service import (
     create_vex,
@@ -25,6 +23,7 @@ from .vex_service import (
 )
 from .vulnerability_service import (
     read_vulnerabilities_by_package_and_version,
+    read_vulnerability_by_id,
 )
 
 __all__ = [
@@ -33,11 +32,6 @@ __all__ = [
     "create_user",
     "create_versions",
     "create_vex",
-    "read_cpe_product_by_package_name",
-    "read_cve_by_id",
-    "read_cve_ids_by_version_and_package",
-    "read_cwes_by_cve_id",
-    "read_exploits_by_cve_id",
     "read_package_by_name",
     "read_user_by_email",
     "read_user_vexs",
@@ -45,7 +39,8 @@ __all__ = [
     "read_vex_by_id",
     "read_vex_moment_by_owner_name_sbom_path",
     "read_vulnerabilities_by_package_and_version",
-    "update_cpe_products",
+    "read_vulnerability_by_id",
+    "read_vulnerability_ids_by_version_and_package",
     "update_package_moment",
     "update_user_password",
     "update_user_vexs"

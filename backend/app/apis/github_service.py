@@ -8,7 +8,7 @@ from app.config import settings
 
 headers_github = {
     "Accept": "application/vnd.github.hawkgirl-preview+json",
-    "Authorization": f"Bearer {settings.GITHUB_GRAPHQL_API_KEY}",
+    "Authorization": f"Bearer {settings.GIT_GRAPHQL_API_KEY}",
 }
 
 

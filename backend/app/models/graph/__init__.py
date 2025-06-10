@@ -1,3 +1,3 @@
-from .init_package import InitPackageRequest
+from .init_package import InitPackageRequest, NodeType
 
-__all__ = ["InitPackageRequest"]
+__all__ = ["InitPackageRequest", "NodeType"]

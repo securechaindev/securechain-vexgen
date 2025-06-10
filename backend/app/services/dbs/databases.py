@@ -21,18 +21,16 @@ def get_graph_db_driver() -> AsyncDriver:
 @lru_cache
 def get_collection(collection_name: str) -> AsyncIOMotorCollection:
     client: AsyncIOMotorClient = AsyncIOMotorClient(settings.VULN_DB_URI)
-    depex_db: AsyncIOMotorDatabase = client.depex
-    osv_db: AsyncIOMotorDatabase = client.osv
-    cwes_db: AsyncIOMotorDatabase = client.cwes
-    vulners_db: AsyncIOMotorDatabase = client.vulners_db
+    vexgen_db: AsyncIOMotorDatabase = client.get_database("vexgen_db")
+    security_db: AsyncIOMotorDatabase = client.get_database("security_db")
     match collection_name:
         case "users":
-            return depex_db.get_collection(collection_name)
+            return vexgen_db.get_collection(collection_name)
         case "vexs":
-            return depex_db.get_collection(collection_name)
+            return vexgen_db.get_collection(collection_name)
         case "vulnerabilities":
-            return osv_db.get_collection(collection_name)
+            return security_db.get_collection(collection_name)
         case "cwes":
-            return cwes_db.get_collection(collection_name)
+            return security_db.get_collection(collection_name)
         case "exploits":
-            return vulners_db.get_collection(collection_name)
+            return security_db.get_collection(collection_name)

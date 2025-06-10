@@ -1,8 +1,9 @@
+import os
 from datetime import datetime
 from glob import glob
-from json import JSONDecodeError, dumps, load
-from os import system
+from json import dumps, load
 from os.path import exists, isdir
+from shutil import rmtree
 from typing import Annotated, Any
 from zipfile import ZipFile
 
@@ -11,20 +12,32 @@ from fastapi.responses import FileResponse, JSONResponse
 from pytz import UTC
 
 from app.apis import get_last_commit_date_github
-from app.controllers import init_maven_package, init_npm_package, init_pypi_package
+from app.controllers import init_package
+from app.exceptions import (
+    InvalidMavenComponentException,
+    InvalidRepositoryException,
+    InvalidSbomException,
+    SbomNotFoundException,
+)
+from app.models.graph import InitPackageRequest, NodeType
 from app.models.vex import GenerateVEXRequest
 from app.services import (
     create_vex,
-    read_cve_by_id,
-    read_cve_ids_by_version_and_package,
-    read_cwes_by_cve_id,
-    read_exploits_by_cve_id,
     read_user_vexs,
     read_vex_by_id,
     read_vex_moment_by_owner_name_sbom_path,
+    read_vulnerability_by_id,
+    read_vulnerability_ids_by_version_and_package,
     update_user_vexs,
 )
-from app.utils import download_repository, get_used_artifacts, is_imported, json_encoder
+from app.utils import (
+    download_repository,
+    get_node_type,
+    get_used_artifacts,
+    is_imported,
+    json_encoder,
+    load_json_template,
+)
 
 router = APIRouter()
 
@@ -49,101 +62,103 @@ async def get_vex(vex_id: str) -> JSONResponse:
 @router.get("/api/vex/download/{vex_id}")
 async def download_vex(vex_id: str) -> FileResponse:
     vex = await read_vex_by_id(vex_id)
-    with ZipFile("vex.zip", "w") as myzip:
-        myzip.writestr("vex.json", dumps(vex["vex"], indent=2))
-        myzip.writestr("extended_vex.json", dumps(vex["extended_vex"], indent=2))
-    return FileResponse(path="vex.zip", filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
+    zip_path = "vex_tix_sbom.zip"
+    with ZipFile(zip_path, "w") as myzip:
+        myzip.writestr(f"vex_{vex['sbom_name']}.json", dumps(vex["vex"], indent=2))
+        myzip.writestr(f"tix_{vex['sbom_name']}.json", dumps(vex["tix"], indent=2))
+    return FileResponse(path=zip_path, filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
 
 
 @router.post("/api/vex/generate")
-async def generate_vex(
+async def generate_vex_tix(
     GenerateVEXRequest: Annotated[GenerateVEXRequest, Body()]
 ) -> FileResponse:
     last_commit_date = await get_last_commit_date_github(
         GenerateVEXRequest.owner, GenerateVEXRequest.name
     )
     if not last_commit_date:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=json_encoder({"message": "no_repo"}),
+        raise InvalidRepositoryException()
+    carpeta_descarga = await download_repository(GenerateVEXRequest.owner, GenerateVEXRequest.name)
+    sbom_files = await find_sbom_files(carpeta_descarga)
+    if not sbom_files:
+        raise SbomNotFoundException()
+    sboms_to_process = []
+    sboms_to_process_names = []
+    cached_results = []
+    for sbom_file in sbom_files:
+        relative_path = sbom_file.replace(carpeta_descarga + "/", "")
+        last_vex = await read_vex_moment_by_owner_name_sbom_path(
+            GenerateVEXRequest.owner,
+            GenerateVEXRequest.name,
+            relative_path
         )
-    last_vex = await read_vex_moment_by_owner_name_sbom_path(GenerateVEXRequest.owner, GenerateVEXRequest.name, GenerateVEXRequest.sbom_path)
-    if (
-        not last_vex
-        or last_vex["moment"].replace(tzinfo=UTC)
-        < last_commit_date.replace(tzinfo=UTC)
-    ):
-        carpeta_descarga = await download_repository(GenerateVEXRequest.owner, GenerateVEXRequest.name)
-        result = await init_generate_vex(carpeta_descarga, GenerateVEXRequest.owner, GenerateVEXRequest.sbom_path, GenerateVEXRequest.statements_group)
-        if isinstance(result, JSONResponse):
-            system("rm -rf " + carpeta_descarga)
-            return result
+        if (
+            last_vex
+            and last_vex["moment"].replace(tzinfo=UTC)
+            >= last_commit_date.replace(tzinfo=UTC)
+        ):
+            cached_results.append((last_vex["vex"], last_vex["tix"]))
+            await update_user_vexs(last_vex["_id"], GenerateVEXRequest.user_id)
         else:
-            vex, extended_vex = result
-        with ZipFile("vex.zip", "w") as myzip:
-            myzip.writestr("vex.json", dumps(vex, indent=2))
-            myzip.writestr("extended_vex.json", dumps(extended_vex, indent=2))
-        system("rm -rf " + carpeta_descarga)
-        vex_id = await create_vex({
-            "owner": GenerateVEXRequest.owner,
-            "name": GenerateVEXRequest.name,
-            "sbom_path": GenerateVEXRequest.sbom_path,
-            "moment": datetime.now(),
-            "vex": vex,
-            "extended_vex": extended_vex
-        })
-        await update_user_vexs(vex_id, GenerateVEXRequest.user_id)
-        return FileResponse(path="vex.zip", filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
-    else:
-        with ZipFile("vex.zip", "w") as myzip:
-            myzip.writestr("vex.json", dumps(last_vex["vex"], indent=2))
-            myzip.writestr("extended_vex.json", dumps(last_vex["extended_vex"], indent=2))
-        await update_user_vexs(last_vex["_id"], GenerateVEXRequest.user_id)
-        return FileResponse(path="vex.zip", filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
+            sboms_to_process.append(sbom_file)
+            sboms_to_process_names.append(relative_path)
+    if sboms_to_process:
+        paths = await get_files_path(carpeta_descarga)
+        result = await init_vex_tix(GenerateVEXRequest.owner, sboms_to_process, paths)
+        for (vex, tix), sbom_name in zip(result, sboms_to_process_names):
+            vex_id = await create_vex({
+                "owner": GenerateVEXRequest.owner,
+                "name": GenerateVEXRequest.name,
+                "sbom_name": sbom_name,
+                "moment": datetime.now(),
+                "vex": vex,
+                "tix": tix
+            })
+            await update_user_vexs(vex_id, GenerateVEXRequest.user_id)
+            cached_results.append((vex, tix))
+    zip_path = "vex_tix_sbom.zip"
+    with ZipFile(zip_path, "w") as myzip:
+        for (vex, tix), sbom_name in zip(cached_results, sboms_to_process_names):
+            myzip.writestr(f"vex_{sbom_name}.json", dumps(vex, indent=2))
+            myzip.writestr(f"tix_{sbom_name}.json", dumps(tix, indent=2))
+    rmtree(carpeta_descarga)
+    return FileResponse(path=zip_path, filename="vex_tix_sbom.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
 
 
-async def init_generate_vex(
-    carpeta_descarga: str,
-    owner: str,
-    sbom_path: str,
-    statements_group: str
-) -> tuple[dict[str, Any], dict[str, Any]] | JSONResponse:
-    paths = await get_files_path(carpeta_descarga)
-    s_path = ""
-    timestamp = str(datetime.now())
-    with open("app/templates/file/extended_vex_template.json", encoding="utf-8") as extended_vex_file:
-        extended_vex = load(extended_vex_file)
-    extended_vex["author"] = owner
-    extended_vex["timestamp"] = timestamp
-    extended_vex["last_updated"] = timestamp
-    with open("app/templates/file/vex_template.json", encoding="utf-8") as vex_file:
-        vex = load(vex_file)
-    vex["author"] = owner
-    vex["timestamp"] = timestamp
-    vex["last_updated"] = timestamp
+async def find_sbom_files(directory: str) -> list[str]:
+    sbom_files = []
     for branch in ("main", "master"):
-        if exists(f"{carpeta_descarga}/{branch}/{sbom_path}"):
-            s_path = f"{carpeta_descarga}/{branch}/{sbom_path}"
-            with open(f"{carpeta_descarga}/{branch}/{sbom_path}", encoding="utf-8") as sbom_file:
-                try:
-                    sbom_json = load(sbom_file)
-                except JSONDecodeError:
-                    return JSONResponse(
-                        status_code=status.HTTP_200_OK,
-                        content=json_encoder(
-                            {"message": "The sbom file is not correctly constructed"}
-                        ),
-                    )
-                if "components" in sbom_json and isinstance(sbom_json["components"], list):
-                    vex, extended_vex = await generate_statements(sbom_json["components"], paths, carpeta_descarga, timestamp, statements_group, vex, extended_vex)
-    if not s_path:
-        return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content=json_encoder(
-                {"message": "The repository don't have main or master branch"}
-            ),
-        )
-    return vex, extended_vex
+        if exists(f"{directory}/{branch}"):
+            for root, _, files in os.walk(f"{directory}/{branch}"):
+                for file in files:
+                    if file.endswith(".json") and "sbom" in file.lower():
+                        sbom_files.append(os.path.join(root, file))
+    return sbom_files
+
+async def init_vex_tix(
+    owner: str,
+    sbom_files: list[str],
+    paths: list[str]
+) -> list[tuple[dict[str, Any], dict[str, Any]]]:
+    timestamp = str(datetime.now())
+    result = []
+    for sbom_file in sbom_files:
+        with open(sbom_file, encoding="utf-8") as sbom_file_handle:
+            sbom_json = load(sbom_file_handle)
+            if "components" in sbom_json and isinstance(sbom_json["components"], list):
+                tix = await load_json_template("app/templates/file/tix_template.json")
+                tix["author"] = owner
+                tix["timestamp"] = timestamp
+                tix["last_updated"] = timestamp
+                vex = await load_json_template("app/templates/file/vex_template.json")
+                vex["author"] = owner
+                vex["timestamp"] = timestamp
+                vex["last_updated"] = timestamp
+                vex, tix = await generate_statements(sbom_json["components"], paths, timestamp, vex, tix)
+                result.append((vex, tix))
+    if not result:
+        raise InvalidSbomException()
+    return result
 
 
 async def get_files_path(directory_path: str) -> list[str]:
@@ -157,258 +172,72 @@ async def get_files_path(directory_path: str) -> list[str]:
 
 
 async def generate_statements(
-    components: dict[str, Any],
+    components: list[dict[str, Any]],
     paths: list[str],
-    carpeta_descarga: str,
     timestamp: str,
-    statements_group: str,
     vex: dict[str, Any],
-    extended_vex: dict[str, Any]
-) -> tuple[dict[str, Any], dict[str, Any]] | JSONResponse:
-    have_group = True
-    if statements_group == "no_grouping":
-        have_group = False
-        group = []
+    tix: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
     for component in components:
         if "name" in component:
             if "purl" in component and "version" in component:
                 package_manager = component["purl"].split(":")[1].split("/")[0]
-                if package_manager in ("pypi", "npm", "maven"):
-                    component_name = await init_package(component, package_manager)
-                    if isinstance(component_name, JSONResponse):
-                        system("rm -rf " + carpeta_descarga)
-                        return component_name
-                    cve_ids = await read_cve_ids_by_version_and_package(
-                        component["version"], package_manager, component["group"] if "group" in component else "none", component["name"]
+                if package_manager in ("pypi", "npm", "maven", "cargo", "nuget"):
+                    node_type = get_node_type(package_manager)
+                    component_name, import_name = await init_package_by_manager(component, node_type)
+                    vulnerabilities_ids = await read_vulnerability_ids_by_version_and_package(
+                        node_type.value, component_name, component["version"]
                     )
-                    for cve_id in cve_ids:
-                        if have_group:
-                            group, status, justification = await statements_grouping(statements_group, cve_id, paths, component_name, component["version"], timestamp, package_manager)
-                            if group is None:
-                                continue
-                        else:
-                            _group, status, justification = await generate_extended_statement(cve_id, paths, component_name, component["version"], timestamp, package_manager)
-                            if _group is None:
-                                continue
-                            group.append(_group)
+                    for vulnerability_id in vulnerabilities_ids:
+                        priority, status, justification, tix_statement = await generate_tix_statement(vulnerability_id, paths, import_name, component_name, component["version"], timestamp, package_manager)
+                        tix["statements"].append(tix_statement)
                         vex["statements"].append(
-                            await generate_statement(cve_id, timestamp, package_manager, status, justification)
+                            await generate_vex_statement(vulnerability_id, timestamp, package_manager, priority, status, justification)
                         )
-    if have_group:
-        void_keys = []
-        for key in group:
-            if group[key]:
-                group[key] = sorted(group[key], key=lambda d: d['priority'], reverse=True)
-            else:
-                void_keys.append(key)
-        for void_key in void_keys:
-            del group[void_key]
-    else:
-        group = sorted(group, key=lambda d: d['priority'], reverse=True)
-    extended_vex["extended_statements"] = group
-    return vex, extended_vex
+    vex["statements"] = sorted(vex["statements"], key=lambda d: d['priority'], reverse=True)
+    return vex, tix
 
 
-async def init_package(component: dict[str, Any], manager: str) -> str:
+async def init_package_by_manager(component: dict[str, Any], node_type: NodeType) -> str:
     if "group" in component:
-        match manager:
-            case "pypi":
-                component_name = component["name"]
-                await init_pypi_package(component_name)
-            case "npm":
-                component_name = f"{component["group"]}/{component["name"]}"
-                await init_npm_package(component_name)
-            case "maven":
-                component_name = f"{component["group"]}:{component["name"]}"
-                await init_maven_package(component["group"], component["name"])
-    else:
-        component_name = component["name"]
-        match manager:
-            case "pypi":
-                await init_pypi_package(component_name)
-            case "npm":
-                await init_npm_package(component_name)
-            case "maven":
-                if ":" not in component_name:
-                    return JSONResponse(
-                        status_code=status.HTTP_200_OK,
-                        content=json_encoder(
-                            {"message": "A maven dependency component is not well built, there is needed a group attribute or name atribute follow the pattern <group_id>:<artifact_id>"}
-                        ),
-                    )
-                group_id, artifact_id = component_name.split(":")
-                await init_maven_package(group_id, artifact_id)
-    return component_name
+        separator = ":" if node_type.value == "MavenPackage" else "/"
+        component["name"] = f"{component["group"]}{separator}{component["name"]}"
+    elif node_type.value == "MavenPackage":
+        if ":" not in component["name"]:
+            raise InvalidMavenComponentException()
+    component_name, import_name = await init_package(InitPackageRequest(name=component["name"], node_type=node_type))
+    return component_name, import_name
 
 
-async def generate_statement(cve_id: str, timestamp: str, manager: str, status: str, justification: str) -> dict[str, Any]:
-    statement_temp = open("app/templates/statement/statement_template.json", encoding="utf-8")
-    statement = load(statement_temp)
-    statement_temp.close()
-    cve = await read_cve_by_id(cve_id)
-    statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{cve["id"]}"
-    statement["vulnerability"]["name"] = cve["id"]
-    statement["vulnerability"]["description"] = cve["description"]
+async def generate_vex_statement(vulnerability_id: str, timestamp: str, manager: str, priority: float, status: str, justification: str) -> dict[str, Any]:
+    statement = await load_json_template("app/templates/statement/vex_statement_template.json")
+    vulnerability = await read_vulnerability_by_id(vulnerability_id)
+    statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{vulnerability["id"]}"
+    statement["vulnerability"]["name"] = vulnerability["id"]
+    statement["vulnerability"]["description"] = vulnerability["details"]
     statement["timestamp"] = timestamp
     statement["last_updated"] = timestamp
     statement["supplier"] = manager
-    statement["status"] = status
-    statement["justification"] = justification
+    if status:
+        statement["status"] = status
+    if justification:
+        statement["justification"] = justification
+    statement["priority"] = priority
     return statement
 
 
-async def statements_grouping(
-    statements_group: str,
-    cve_id: str,
-    paths: list[str],
-    name: str,
-    version: str,
-    timestamp: str,
-    manager: str
-) -> tuple[dict[str, list[dict[str, Any]]], str, str]:
-    with open(f"app/templates/group/{statements_group.value}.json", encoding="utf-8") as group_file:
-        group: dict[str, list[dict[str, Any]]] = load(group_file)
-    statement_info, status, justification = await generate_extended_statement(cve_id, paths, name, version, timestamp, manager)
-    if statement_info is None:
-        return None, None, None
-    match statements_group:
-        case "supplier":
-            group[manager].append(statement_info)
-        case "cwe_type":
-            if "cwes" in statement_info["vulnerability"]:
-                abstraction = await get_less_abstraction(statement_info["vulnerability"]["cwes"])
-                group[abstraction].append(statement_info)
-            else:
-                group["no_have_cwes"].append(statement_info)
-        case "attack_vector_av":
-            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
-                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
-                if av_parts:
-                    value = av_parts[0].split(":")[1]
-                    match value:
-                        case "N":
-                            group["network"].append(statement_info)
-                        case "A":
-                            group["adjacent"].append(statement_info)
-                        case "L":
-                            group["local"].append(statement_info)
-                else:
-                    group["no_have_attack_vector"].append(statement_info)
-        case "attack_vector_ac":
-            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
-                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
-                if av_parts:
-                    value = av_parts[1].split(":")[1]
-                    match value:
-                        case "H":
-                            group["high"].append(statement_info)
-                        case "M":
-                            group["medium"].append(statement_info)
-                        case "L":
-                            group["low"].append(statement_info)
-                else:
-                    group["no_have_attack_vector"].append(statement_info)
-        case "attack_vector_au":
-            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
-                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
-                if av_parts:
-                    value = av_parts[2].split(":")[1]
-                    match value:
-                        case "M":
-                            group["multiple"].append(statement_info)
-                        case "S":
-                            group["single"].append(statement_info)
-                        case "N":
-                            group["none"].append(statement_info)
-                else:
-                    group["no_have_attack_vector"].append(statement_info)
-        case "attack_vector_c":
-            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
-                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
-                if av_parts:
-                    value = av_parts[3].split(":")[1]
-                    match value:
-                        case "N":
-                            group["none"].append(statement_info)
-                        case "P":
-                            group["partial"].append(statement_info)
-                        case "C":
-                            group["complete"].append(statement_info)
-                else:
-                    group["no_have_attack_vector"].append(statement_info)
-        case "attack_vector_i":
-            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
-                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
-                if av_parts:
-                    value = av_parts[4].split(":")[1]
-                    match value:
-                        case "N":
-                            group["none"].append(statement_info)
-                        case "P":
-                            group["partial"].append(statement_info)
-                        case "C":
-                            group["complete"].append(statement_info)
-                else:
-                    group["no_have_attack_vector"].append(statement_info)
-        case "attack_vector_a":
-            if statement_info["vulnerability"]["cvss"]["version"] == "2.0":
-                av_parts = statement_info["vulnerability"]["cvss"]["attack_vector"].split("/")
-                if av_parts:
-                    value = av_parts[5].split(":")[1]
-                    match value:
-                        case "N":
-                            group["none"].append(statement_info)
-                        case "P":
-                            group["partial"].append(statement_info)
-                        case "C":
-                            group["complete"].append(statement_info)
-                else:
-                    group["no_have_attack_vector"].append(statement_info)
-        case "reachable_code":
-            if "reachable_code" not in statement_info:
-                group["no"].append(statement_info)
-            else:
-                group["yes"].append(statement_info)
-    return group, status, justification
-
-
-async def get_less_abstraction(cwes: list[ dict[str, Any]]) -> str:
-    abstraction = ""
-    for cwe in cwes:
-        match cwe["abstraction"]:
-            case "Pillar":
-                abstraction = "pillar" if abstraction not in ["class", "base", "variant"] else abstraction
-            case "Class":
-                abstraction = "class" if abstraction not in ["base", "variant"] else abstraction
-            case "Base":
-                abstraction = "base" if abstraction not in ["variant"] else abstraction
-            case "Variant":
-                abstraction = "variant"
-            case "Compound":
-                return "compound"
-    return abstraction
-
-
-async def generate_extended_statement(cve_id: str, paths: list[str], name: str, version: str, timestamp:str, manager: str) -> tuple[dict[str, Any], str, str]:
-    extended_statement_temp = open("app/templates/statement/extended_statement_template.json", encoding="utf-8")
-    extended_statement = load(extended_statement_temp)
-    extended_statement_temp.close()
-    extended_statement["affected_component"] = name
-    extended_statement["affected_component_version"] = version
-    extended_statement["timestamp"] = timestamp
-    extended_statement["last_updated"] = timestamp
-    extended_statement["supplier"] = manager
-    cve = await read_cve_by_id(cve_id)
-    if "id" not in cve:
-        return None, None, None
-    extended_statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{cve["id"]}"
-    extended_statement["vulnerability"]["name"] = cve["id"]
-    extended_statement["vulnerability"]["description"] = cve["description"]
-    extended_statement["vulnerability"]["cvss"]["vuln_impact"] = cve["vuln_impact"][0]
-    extended_statement["vulnerability"]["cvss"]["attack_vector"] = cve["attack_vector"][0]
-    extended_statement["vulnerability"]["cvss"]["version"] = cve["version"][0]
-
-    for cwe in await read_cwes_by_cve_id(cve_id):
+async def generate_tix_statement(vulnerability_id: str, paths: list[str], import_name: str, name: str, version: str, timestamp:str, manager: str) -> tuple[float, str, str, dict[str, Any]]:
+    vulnerability = await read_vulnerability_by_id(vulnerability_id)
+    tix_statement = await load_json_template("app/templates/statement/tix_statement_template.json")
+    tix_statement["purl"] = f"pkg:{manager}/{name}@{version}"
+    tix_statement["timestamp"] = timestamp
+    tix_statement["last_updated"] = timestamp
+    tix_statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{vulnerability["id"]}"
+    tix_statement["vulnerability"]["name"] = vulnerability["id"]
+    tix_statement["vulnerability"]["description"] = vulnerability["details"]
+    tix_statement["vulnerability"]["cvss"]["vuln_impact"] = vulnerability["vuln_impact"]
+    tix_statement["vulnerability"]["cvss"]["attack_vector"] = vulnerability["attack_vector"]
+    for cwe in vulnerability["cwes"]:
         _cwe = {}
         _cwe["@id"] = f"https://cwe.mitre.org/data/definitions/{cwe["@ID"]}.html"
         _cwe["abstraction"] = cwe["@Abstraction"]
@@ -424,22 +253,20 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
             _cwe["potential_mitigations"] = cwe["Potential_Mitigations"]["Mitigation"]
         if "Demonstrative_Examples" in cwe:
             _cwe["demonstrative_examples"] = cwe["Demonstrative_Examples"]["Demonstrative_Example"]
-        extended_statement["vulnerability"]["cwes"].append(_cwe)
-
+        tix_statement["vulnerability"]["cwes"].append(_cwe)
     is_imported_any = False
     for path in paths:
-        if await is_imported(path, name, manager):
+        if await is_imported(path, import_name, name, manager):
             is_imported_any = True
             reacheable_code = {}
             reacheable_code["path_to_file"] = path.replace("repositories/", "")
-            affected_artefacts = []
-            if "affected_artefacts" in cve:
-                affected_artefacts = cve["affected_artefacts"]
-            reacheable_code["used_artifacts"] = await get_used_artifacts(path, name, cve["description"], affected_artefacts, manager)
+            affected_artefacts = {}
+            if "affected_artefacts" in vulnerability:
+                affected_artefacts = vulnerability["affected_artefacts"]
+            reacheable_code["used_artifacts"] = await get_used_artifacts(path, import_name, name, vulnerability["details"], affected_artefacts, manager)
             if reacheable_code["used_artifacts"]:
-                extended_statement["reachable_code"].append(reacheable_code)
-
-    for exploit in await read_exploits_by_cve_id(cve_id):
+                tix_statement["reachable_code"].append(reacheable_code)
+    for exploit in vulnerability["exploits"]:
         _exploit = {}
         _exploit["@id"] = exploit["href"] if exploit["href"] else "Unknown"
         _exploit["attack_vector"] = exploit["cvss"]["vector"] if "cvss" in exploit else "NONE"
@@ -450,34 +277,21 @@ async def generate_extended_statement(cve_id: str, paths: list[str], name: str, 
         else:
             if "sourceData" in exploit:
                 _exploit["payload"] = exploit["sourceData"]
-        extended_statement["exploits"].append(_exploit)
-
-    if "affected_artefacts" in cve:
-        if not is_imported_any and cve["affected_artefacts"]:
-            extended_statement["status"] = "not_affected"
-            extended_statement["justification"] = "component_not_present"
-        else:
-            if not extended_statement["reachable_code"]:
-                extended_statement["status"] = "not_affected"
-                extended_statement["justification"] = "vulnerable_code_not_present"
-
-    priority = cve["vuln_impact"][0]*0.7
-
-    if not extended_statement["reachable_code"]:
-        del extended_statement["reachable_code"]
-    else:
+        tix_statement["exploits"].append(_exploit)
+    status = None
+    justification = None
+    if "affected_artefacts" in vulnerability:
+        if not is_imported_any and vulnerability["affected_artefacts"]:
+            status = "not_affected"
+            justification = "component_not_present"
+        elif vulnerability["affected_artefacts"] and not tix_statement["reachable_code"]:
+            status = "not_affected"
+            justification = "vulnerable_code_not_present"
+    priority = vulnerability["vuln_impact"]*0.7
+    if tix_statement["reachable_code"]:
         priority += 1
-
-    if not extended_statement["exploits"]:
-        del extended_statement["exploits"]
-    else:
+    if tix_statement["exploits"]:
         priority += 1
-
-    if not extended_statement["vulnerability"]["cwes"]:
-        del extended_statement["vulnerability"]["cwes"]
-    else:
+    if tix_statement["vulnerability"]["cwes"]:
         priority += 1
-
-    extended_statement["priority"] = priority
-
-    return extended_statement, extended_statement["status"], extended_statement["justification"]
+    return priority, status, justification, tix_statement

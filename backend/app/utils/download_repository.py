@@ -1,5 +1,6 @@
-from os import makedirs, system
+from os import makedirs
 from os.path import exists
+from shutil import rmtree
 
 from git import GitCommandError, Repo
 
@@ -9,7 +10,7 @@ mvn_files = ["pom.xml"]
 
 async def download_repository(owner: str, name: str) -> str:
     carpeta_descarga = "repositories/" + name
-    system("rm -rf " + carpeta_descarga)
+    rmtree(carpeta_descarga, ignore_errors=True)
     makedirs(carpeta_descarga)
     for branch in ("main", "master"):
         branch_dir = carpeta_descarga + "/" + branch

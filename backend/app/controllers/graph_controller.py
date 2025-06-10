@@ -2,12 +2,10 @@
 from datetime import datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter
 
 from app.models.graph import InitPackageRequest
 from app.services import read_package_by_name
-from app.utils import json_encoder
 
 from .managers import (
     cargo_create_package,
@@ -24,18 +22,14 @@ from .managers import (
 
 router = APIRouter()
 
-async def init_package(init_package_request: InitPackageRequest) -> JSONResponse:
-    init_package_request.name = init_package_request.name.lower()
-    package = await read_package_by_name(init_package_request.node_type.value, init_package_request.name)
+async def init_package(init_package_request: InitPackageRequest) -> tuple[str, str]:
+    name = init_package_request.name.lower()
+    package = await read_package_by_name(init_package_request.node_type.value, name)
     if not package:
         await create_package(init_package_request)
     elif package["moment"] < datetime.now() - timedelta(days=10):
         await search_new_versions(package, init_package_request.node_type.value)
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=json_encoder({"message": "initializing"}),
-    )
-
+    return package["name"], package["import_name"]
 
 async def create_package(init_package_request: InitPackageRequest) -> None:
     match init_package_request.node_type.value:

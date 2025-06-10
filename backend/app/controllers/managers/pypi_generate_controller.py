@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Any
 
-from backend.app.controllers import attribute_vulnerabilities
-
 from app.apis import get_pypi_versions
+from app.controllers.vulnerability_controller import attribute_vulnerabilities
 from app.services import (
     count_number_of_versions_by_package,
     create_package_and_versions,
@@ -37,10 +36,10 @@ async def pypi_create_package(
 
 async def pypi_search_new_versions(package: dict[str, Any]) -> None:
     all_versions = await get_pypi_versions(package["name"])
-    counter = await count_number_of_versions_by_package("pypi", "none", package["name"])
+    counter = await count_number_of_versions_by_package("PyPIPackage", package["name"])
     if counter < len(all_versions):
         new_versions: list[dict[str, Any]] = []
-        actual_versions = await read_versions_names_by_package("PyPIPackage", "none", package["name"])
+        actual_versions = await read_versions_names_by_package("PyPIPackage", package["name"])
         for version in all_versions:
             if version.get("name") not in actual_versions:
                 version["count"] = counter
@@ -52,4 +51,4 @@ async def pypi_search_new_versions(package: dict[str, Any]) -> None:
             "PyPIPackage",
             new_versions,
         )
-    await update_package_moment("PyPIPackage", "none", package["name"])
+    await update_package_moment("PyPIPackage", package["name"])

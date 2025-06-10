@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 0
     JWT_SECRET_KEY: str = ""
-    GITHUB_GRAPHQL_API_KEY: str = ""
+    GIT_GRAPHQL_API_KEY: str = ""
 
 
 @lru_cache

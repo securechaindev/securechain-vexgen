@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Any
 
-from backend.app.controllers import attribute_vulnerabilities
-
 from app.apis import get_nuget_versions
+from app.controllers.vulnerability_controller import attribute_vulnerabilities
 from app.services import (
     count_number_of_versions_by_package,
     create_package_and_versions,
@@ -37,10 +36,10 @@ async def nuget_create_package(
 
 async def nuget_search_new_versions(package: dict[str, Any]) -> None:
     all_versions = await get_nuget_versions(package["name"])
-    counter = await count_number_of_versions_by_package("nuget", "none", package["name"])
+    counter = await count_number_of_versions_by_package("NuGetPackage", package["name"])
     if counter < len(all_versions):
         new_versions: list[dict[str, Any]] = []
-        actual_versions = await read_versions_names_by_package("nuget", "none", package["name"])
+        actual_versions = await read_versions_names_by_package("NuGetPackage", package["name"])
         for version in all_versions:
             if version.get("name") not in actual_versions:
                 version["count"] = counter
@@ -52,4 +51,4 @@ async def nuget_search_new_versions(package: dict[str, Any]) -> None:
             "NuGetPackage",
             new_versions,
         )
-    await update_package_moment("nuget", "none", package["name"])
+    await update_package_moment("NuGetPackage", package["name"])

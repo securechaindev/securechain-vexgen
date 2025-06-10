@@ -135,6 +135,7 @@ async def find_sbom_files(directory: str) -> list[str]:
                         sbom_files.append(os.path.join(root, file))
     return sbom_files
 
+
 async def init_vex_tix(
     owner: str,
     sbom_files: list[str],
@@ -189,10 +190,10 @@ async def generate_statements(
                         node_type.value, component_name, component["version"]
                     )
                     for vulnerability_id in vulnerabilities_ids:
-                        priority, status, justification, tix_statement = await generate_tix_statement(vulnerability_id, paths, import_name, component_name, component["version"], timestamp, package_manager)
+                        priority, status, justification, impact_statement, tix_statement = await generate_tix_statement(vulnerability_id, paths, import_name, component_name, component["version"], timestamp, package_manager)
                         tix["statements"].append(tix_statement)
                         vex["statements"].append(
-                            await generate_vex_statement(vulnerability_id, timestamp, package_manager, priority, status, justification)
+                            await generate_vex_statement(vulnerability_id, timestamp, package_manager, priority, status, justification, impact_statement)
                         )
     vex["statements"] = sorted(vex["statements"], key=lambda d: d['priority'], reverse=True)
     return vex, tix
@@ -209,7 +210,7 @@ async def init_package_by_manager(component: dict[str, Any], node_type: NodeType
     return component_name, import_name
 
 
-async def generate_vex_statement(vulnerability_id: str, timestamp: str, manager: str, priority: float, status: str, justification: str) -> dict[str, Any]:
+async def generate_vex_statement(vulnerability_id: str, timestamp: str, manager: str, priority: float, status: str, justification: str, impact_statement: str) -> dict[str, Any]:
     statement = await load_json_template("app/templates/statement/vex_statement_template.json")
     vulnerability = await read_vulnerability_by_id(vulnerability_id)
     statement["vulnerability"]["@id"] = f"https://nvd.nist.gov/vuln/detail/{vulnerability["id"]}"
@@ -223,6 +224,8 @@ async def generate_vex_statement(vulnerability_id: str, timestamp: str, manager:
     if justification:
         statement["justification"] = justification
     statement["priority"] = priority
+    if impact_statement:
+        statement["impact_statement"] = impact_statement
     return statement
 
 
@@ -280,13 +283,16 @@ async def generate_tix_statement(vulnerability_id: str, paths: list[str], import
         tix_statement["exploits"].append(_exploit)
     status = None
     justification = None
+    impact_statement = None
     if "affected_artefacts" in vulnerability:
-        if not is_imported_any and vulnerability["affected_artefacts"]:
+        if not is_imported_any:
             status = "not_affected"
             justification = "component_not_present"
-        elif vulnerability["affected_artefacts"] and not tix_statement["reachable_code"]:
+        elif is_imported_any and not tix_statement["reachable_code"]:
             status = "not_affected"
             justification = "vulnerable_code_not_present"
+        else:
+            impact_statement = "The code contains vulnerable artefacts that you should check to see if you are actually affected by the vulnerability."
     priority = vulnerability["vuln_impact"]*0.7
     if tix_statement["reachable_code"]:
         priority += 1
@@ -294,4 +300,4 @@ async def generate_tix_statement(vulnerability_id: str, paths: list[str], import
         priority += 1
     if tix_statement["vulnerability"]["cwes"]:
         priority += 1
-    return priority, status, justification, tix_statement
+    return priority, status, justification, impact_statement, tix_statement

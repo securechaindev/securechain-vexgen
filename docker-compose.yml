@@ -1,20 +1,5 @@
 services:
-  frontend:
-    container_name: vexgen_frontend
-    build:
-      context: .
-      dockerfile: ./frontend/Dockerfile.dev
-    volumes:
-      - ./frontend:/frontend
-    depends_on:
-      backend:
-        condition: service_healthy
-    ports:
-      - '3000:3000'
-    networks:
-      - vexgen
-
-  backend:
+  vexgen_backend:
     container_name: vexgen_backend
     build:
       context: .
@@ -23,9 +8,9 @@ services:
     volumes:
       - ./backend:/backend
     depends_on:
-      graph_database:
+      neo4j:
         condition: service_healthy
-      vuln_database_seeder:
+      mongo_seeder:
         condition: service_completed_successfully
     ports:
       - '8000:8000'
@@ -33,15 +18,17 @@ services:
       - vexgen
     healthcheck:
       test: curl --fail http://localhost:8000/api/health || exit 1
-      interval: 10s
-      start_period: 35s
+      interval: 100s
+      timeout: 100s
+      retries: 10
+      start_period: 300s
 
-  graph_database:
+  neo4j:
     container_name: neo4j
-    image: neo4j:5.26
+    image: neo4j:5.26.4
     env_file: .env
     environment:
-      - EXTENSION_SCRIPT=/seeds/graphdb_seeder.sh
+      - EXTENSION_SCRIPT=/seeds/neo4j_seeder.sh
       - NEO4J_AUTH=${GRAPH_DB_USER}/${GRAPH_DB_PASSWORD}
       - NEO4J_PLUGINS=["apoc"]
       - NEO4J_server_http_listen__address=:7474
@@ -53,33 +40,34 @@ services:
       - '7474:7474'
       - '7687:7687'
     volumes:
-      - ./seeds/graphs/neo4j.dump:/backups/neo4j.dump
-      - ./seeds/graphdb_seeder.sh:/seeds/graphdb_seeder.sh
+      - ./seeds/neo4j/neo4j.dump:/backups/neo4j.dump
+      - ./seeds/neo4j_seeder.sh:/seeds/neo4j_seeder.sh
     networks:
       - vexgen
     healthcheck:
       test: wget http://localhost:7474 || exit 1
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 25s
+      interval: 100s
+      timeout: 100s
+      retries: 10
+      start_period: 300s
 
-  vuln_database_seeder:
-    container_name: mongodb_seeder
-    image: mongo:7.0.16
+  mongo_seeder:
+    container_name: mongo_seeder
+    image: mongo:8.0.5
     env_file: .env
     depends_on:
-      vuln_database:
+      mongo:
         condition: service_healthy
     volumes:
-      - ./seeds:/seeds
-    command: /seeds/vulndb_seeder.sh
+      - ./seeds/mongo:/seeds/mongo
+      - ./seeds/mongo_seeder.sh:/seeds/mongo_seeder.sh
+    command: /seeds/mongo_seeder.sh
     networks:
       - vexgen
 
-  vuln_database:
-    container_name: mongodb
-    image: mongo:7.0.16
+  mongo:
+    container_name: mongo
+    image: mongo:8.0.5
     env_file: .env
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${VULN_DB_USER}
@@ -89,11 +77,11 @@ services:
     networks:
       - vexgen
     healthcheck:
-      test: "echo 'db.stats().ok' | mongosh --username=${VULN_DB_USER} --password=${VULN_DB_PASSWORD} --authenticationDatabase=admin mongodb/testdb"
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 3s
+      test: "echo 'db.stats().ok' | mongosh --username=${VULN_DB_USER} --password=${VULN_DB_PASSWORD} --authenticationDatabase=admin mongo/testdb"
+      interval: 100s
+      timeout: 100s
+      retries: 10
+      start_period: 300s
 
 networks:
   vexgen:

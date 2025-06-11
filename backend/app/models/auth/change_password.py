@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.patterns import EMAIL_PATTERN
 from app.models.validators import validate_password
@@ -9,6 +9,6 @@ class ChangePasswordRequest(BaseModel):
     old_password: str = Field(...)
     new_password: str = Field(...)
 
-    @validator("new_password", "old_password")
+    @field_validator("new_password", "old_password")
     def validate_password(cls, value):
         return validate_password(value)

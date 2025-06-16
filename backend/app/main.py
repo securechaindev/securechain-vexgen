@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     await close_session()
 
 app = FastAPI(
-    title="Depex",
+    title="VEXGen",
     description=DESCRIPTION,
     # openapi_url=None,
     version="0.3.0",

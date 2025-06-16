@@ -35,7 +35,7 @@ async def create_package_and_versions(
     CREATE(v:Version{{
         name: version.name,
         count: version.count,
-        cves: version.cves,
+        vulnerabilities: version.vulnerabilities,
         mean: version.mean,
         weighted_mean: version.weighted_mean
     }})

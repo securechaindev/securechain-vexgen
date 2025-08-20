@@ -1,0 +1,1 @@
+MONGO_OBJECT_ID_PATTERN = r"^[a-fA-F0-9]{24}$"

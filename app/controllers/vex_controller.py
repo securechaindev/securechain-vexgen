@@ -7,7 +7,7 @@ from fastapi import APIRouter, Body, Depends, Request, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.limiter import limiter
-from app.schemas import GenerateVEXRequest
+from app.schemas import DownloadVEXTIXRequest, GenerateVEXTIXRequest
 from app.services import (
     read_tix_by_id,
     read_user_tixs,
@@ -111,7 +111,7 @@ async def get_tix(request: Request, tix_id: str) -> JSONResponse:
 
 
 @router.get(
-    "/vex_tix/download/{vex_id}",
+    "/vex_tix/download",
     summary="Download VEX and TIX SBOMs",
     description="Fetches the VEX and TIX SBOMs for a specific VEX document.",
     response_description="ZIP file containing VEX and TIX SBOMs.",
@@ -119,12 +119,16 @@ async def get_tix(request: Request, tix_id: str) -> JSONResponse:
     tags=["Secure Chain VEXGen - VEX/TIX"]
 )
 @limiter.limit("25/minute")
-async def download_vex_tix(request: Request, vex_id: str) -> FileResponse:
-    vex = await read_vex_by_id(vex_id)
+async def download_vex_tix(
+    request: Request,
+    DownloadVEXTIXRequest: Annotated[DownloadVEXTIXRequest, Body()]
+) -> FileResponse:
+    vex = await read_vex_by_id(DownloadVEXTIXRequest.vex_id)
+    tix = await read_tix_by_id(DownloadVEXTIXRequest.tix_id)
     zip_path = "vex_tix_sbom.zip"
     with ZipFile(zip_path, "w") as myzip:
         myzip.writestr(f"vex_{vex['sbom_name']}.json", dumps(vex["vex"], indent=2))
-        myzip.writestr(f"tix_{vex['sbom_name']}.json", dumps(vex["tix"], indent=2))
+        myzip.writestr(f"tix_{tix['sbom_name']}.json", dumps(tix["tix"], indent=2))
     return FileResponse(path=zip_path, filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
 
 
@@ -139,9 +143,9 @@ async def download_vex_tix(request: Request, vex_id: str) -> FileResponse:
 @limiter.limit("5/minute")
 async def generate_vex_tix(
     request: Request,
-    GenerateVEXRequest: Annotated[GenerateVEXRequest, Body()]
+    GenerateVEXTIXRequest: Annotated[GenerateVEXTIXRequest, Body()]
 ) -> FileResponse:
-    vexs, tixs, sboms_names, directory = await process_sboms(GenerateVEXRequest)
+    vexs, tixs, sboms_names, directory = await process_sboms(GenerateVEXTIXRequest)
     zip_path = "vex_tix_sbom.zip"
     with ZipFile(zip_path, "w") as myzip:
         for vex, tix, sbom_name in zip(vexs, tixs, sboms_names):

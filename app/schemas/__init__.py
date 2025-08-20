@@ -1,4 +1,4 @@
 from .utils import NodeType
-from .vex import GenerateVEXRequest
+from .vex import DownloadVEXTIXRequest, GenerateVEXTIXRequest
 
-__all__ = ["GenerateVEXRequest", "NodeType"]
+__all__ = ["DownloadVEXTIXRequest", "GenerateVEXTIXRequest", "NodeType"]

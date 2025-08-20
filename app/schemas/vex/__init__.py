@@ -1,5 +1,6 @@
-from .generate_vex_request import GenerateVEXRequest
+from .generate_vex_request import DownloadVEXTIXRequest, GenerateVEXTIXRequest
 
 __all__ = [
-    "GenerateVEXRequest"
+    "DownloadVEXTIXRequest",
+    "GenerateVEXTIXRequest"
 ]

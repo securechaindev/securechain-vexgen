@@ -73,4 +73,4 @@ async def download_tix(
     zip_path = "vex_tix_sbom.zip"
     with ZipFile(zip_path, "w") as myzip:
         myzip.writestr(f"tix_{tix['sbom_name']}.json", dumps(tix["tix"], indent=2))
-    return FileResponse(path=zip_path, filename="vex.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
+    return FileResponse(path=zip_path, filename="tix.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)

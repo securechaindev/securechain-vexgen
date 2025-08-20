@@ -1,0 +1,30 @@
+services:
+  securechain-vexgen:
+    container_name: securechain-vexgen
+    build:
+      context: ..
+      dockerfile: dev/Dockerfile
+    volumes:
+      - ../app:/app
+    env_file:
+      - ../app/.env
+    ports:
+      - '8003:8000'
+    networks:
+      - securechain
+
+  securechain-auth:
+    container_name: securechain-auth
+    image: ghcr.io/securechaindev/securechain-auth:latest
+    env_file:
+      - ../app/.env
+    ports:
+      - '8001:8000'
+    networks:
+      - securechain
+
+networks:
+  securechain:
+    name: securechain
+    external: true
+    driver: bridge

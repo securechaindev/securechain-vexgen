@@ -1,54 +1,86 @@
-# VexGen Project
+# VEXGen
 
-<!-- <p>
-  <a href="https://github.com/GermanMT/depex/releases" target="_blank">
-    <img src="https://img.shields.io/github/v/release/GermanMT/depex?color=green&logo=github" alt="release">
-  </a>
+## What is VEXGen?
 
-  <a href="https://github.com/GermanMT/depex/blob/main/LICENSE.md" target="_blank">
-    <img src="https://img.shields.io/github/license/GermanMT/depex?logo=gnu" alt="license">
-  </a>
+VEXGen is a tool that allows you to reason over the entire configuration space of the Software Supply Chain of an open-source software repository.
 
-  <a href="https://github.com/GermanMT/depex/actions/workflows/analisys.yml" target="_blank">
-    <img src="https://img.shields.io/github/actions/workflow/status/GermanMT/depex/analisys.yml?branch=main&event=push&label=code%20analisys" alt="code analisys">
-  </a>
-
-  <a href="https://doi.org/10.5281/zenodo.7692304">
-    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.7692304.svg" alt="DOI">
-  </a>
-</p> -->
-
-## Video tutorial
-
-https://github.com/user-attachments/assets/5750712e-8429-410b-b697-ce8414fe5063
-
-## Deployment requirements
+## Development requirements
 
 1. [Docker](https://www.docker.com/) to deploy the tool.
-
-2. [Git Large Files Storage](https://git-lfs.com/) (git-lfs) for cloning correctly the seeds of the repository.
+2. [Docker Compose](https://docs.docker.com/compose/) for container orchestration.
+3. It is recommended to use a GUI such as [MongoDB Compass](https://www.mongodb.com/en/products/compass).
+4. The Neo4J browser interface to visualize the graph built from the data is in [localhost:7474](http://0.0.0.0:7474/browser/) when the container is running.
+5. Python 3.13 or higher.
 
 ## Deployment with docker
 
-### Step 1
- Create a .env file from template.env
+### 1. Clone the repository
+Clone the repository from the official GitHub repository:
+```bash
+git clone https://github.com/securechaindev/securechain-vexgen.git
+cd securechain-vexgen
+```
+
+### 2. Configure environment variables
+Create a `.env` file from the `template.env` file and place it in the `app/` directory.
 
 #### Get API Keys
 
-- How to get a GitHub [API key](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+- How to get a *GitHub* [API key](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
 
-- Modify the **Json Web Token (JWT)** secret key with your own. You can generate your own with the command **node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"**.
+- Modify the **Json Web Token (JWT)** secret key and algorithm with your own. You can generate your own secret key with the command **openssl rand -base64 32**.
 
-### Step 2
-Create the **graphs** folder inside the **seeds** folder in the root of the project, download the graphs seed from this [link](https://goo.su/YjuzmQ), and insert it into the **graphs** folder.
+### 3. Create Docker network
+Ensure you have the `securechain` Docker network created. If not, create it with:
+```bash
+docker network create securechain
+```
 
-### Step 3
-Run command *docker compose up --build*.
+### 4. Databases containers
 
-### Step 4
-Enter [here](http://0.0.0.0:3000) for the frontend Web API.
+For graphs and vulnerabilities information you need to download the zipped [data dumps]() from Zenodo. Once you have unzipped the dumps, inside the root folder run the command:
+```bash
+docker compose up --build
+```
 
-#### Other tools
-1. It is recommended to use a GUI such as [MongoDB Compass](https://www.mongodb.com/en/products/compass) to see what information is being indexed in vulnerability database
+The containerized databases will also be seeded automatically.
 
-2. You can see the created graph built for [here](http://0.0.0.0:7474/browser/), using the Neo4J browser interfaces.
+### 5. Start the application
+Run the command from the project root:
+```bash
+docker compose -f dev/docker-compose.yml up --build
+```
+
+### 6. Access the application
+The API will be available at [http://localhost:8002](http://localhost:8002). You can access the API documentation at [http://localhost:8002/docs](http://localhost:8002/docs). Also, in [http://localhost:8001/docs](http://localhost:8001/docs) you can access the auth API documetation.
+
+## Python Environment
+The project uses Python 3.13 and the dependencies are listed in `requirements.txt`.
+
+### Setting up the development environment
+
+1. **Create a virtual environment**:
+   ```bash
+   python3.13 -m venv vexgen-env
+   ```
+
+2. **Activate the virtual environment**:
+   ```bash
+   source vexgen-env/bin/activate
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+[GNU General Public License 3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Links
+- [Secure Chain Team](mailto:hi@securechain.dev)
+- [Secure Chain Organization](https://github.com/securechaindev)
+- [Secure Chain Documentation](https://securechaindev.github.io/)

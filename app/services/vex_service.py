@@ -53,12 +53,13 @@ async def read_user_vexs(user_id: str) -> list[dict[str, Any]]:
                 "as": 'lookup'
             }
         },
+        {"$unwind": "$lookup"},
         {
             "$project": {
-                "_id": {"$first": "$lookup._id"},
-                "owner": {"$first": "$lookup.owner"},
-                "name": {"$first": "$lookup.name"},
-                "sbom_name": {"$first" : "$lookup.sbom_name"}
+                "_id": "$lookup._id",
+                "owner": "$lookup.owner",
+                "name": "$lookup.name",
+                "sbom_name": "$lookup.sbom_name"
             }
         }
     ]
@@ -86,12 +87,13 @@ async def read_user_tixs(user_id: str) -> list[dict[str, Any]]:
                 "as": 'lookup'
             }
         },
+        {"$unwind": "$lookup"},
         {
             "$project": {
-                "_id": {"$first": "$lookup._id"},
-                "owner": {"$first": "$lookup.owner"},
-                "name": {"$first": "$lookup.name"},
-                "sbom_name": {"$first" : "$lookup.sbom_name"}
+                "_id": "$lookup._id",
+                "owner": "$lookup.owner",
+                "name": "$lookup.name",
+                "sbom_name": "$lookup.sbom_name"
             }
         }
     ]

@@ -2,7 +2,7 @@
 
 ## What is VEXGen?
 
-VEXGen is a tool that allows you to reason over the entire configuration space of the Software Supply Chain of an open-source software repository.
+VEXGen is a simple generating tool of Vulnerability Exploitability eXchange (VEX) and Thread Intelligence eXchange (TIX) files.
 
 ## Development requirements
 

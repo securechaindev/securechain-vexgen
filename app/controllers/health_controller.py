@@ -14,5 +14,5 @@ router = APIRouter()
 )
 async def health_check(request: Request):
     return JSONResponse(
-        status_code=status.HTTP_200_OK, content=await json_encoder({"code": "healthy"})
+        status_code=status.HTTP_200_OK, content=await json_encoder({"detail": "healthy"})
     )

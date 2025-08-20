@@ -35,7 +35,12 @@ async def get_vexs(request: Request, user_id: str) -> JSONResponse:
     vexs = await read_user_vexs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(vexs),
+        content=await json_encoder(
+            {
+                "vexs": vexs,
+                "detail": "success_vexs_retrieved"
+            }
+        ),
     )
 
 
@@ -52,7 +57,12 @@ async def get_tixs(request: Request,user_id: str) -> JSONResponse:
     tixs = await read_user_tixs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(tixs),
+        content=await json_encoder(
+            {
+                "tixs": tixs,
+                "detail": "success_tixs_retrieved"
+            },
+        ),
     )
 
 
@@ -69,7 +79,12 @@ async def get_vex(request: Request, vex_id: str) -> JSONResponse:
     vex = await read_vex_by_id(vex_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(vex),
+        content=await json_encoder(
+            {
+                "vex": vex,
+                "detail": "success_vex_retrieved"
+            }
+        ),
     )
 
 
@@ -86,7 +101,12 @@ async def get_tix(request: Request, tix_id: str) -> JSONResponse:
     tix = await read_tix_by_id(tix_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(tix),
+        content=await json_encoder(
+            {
+                "tix": tix,
+                "detail": "success_tix_retrieved"
+            }
+        ),
     )
 
 

@@ -28,18 +28,8 @@ async def generate_tix_statement(
         _cwe = {}
         _cwe["@id"] = f"https://cwe.mitre.org/data/definitions/{cwe["@ID"]}.html"
         _cwe["abstraction"] = cwe["@Abstraction"]
-        _cwe["name"] = cwe["@ID"]
+        _cwe["name"] = f"CWE-{cwe["@ID"]}"
         _cwe["description"] = cwe["Extended_Description"] if "Extended_Description" in cwe else cwe["Description"]
-        if "Background_Details" in cwe:
-            _cwe["background_detail"] = cwe["Background_Details"]["Background_Detail"]
-        if "Common_Consequences" in cwe:
-            _cwe["consequences"] = cwe["Common_Consequences"]["Consequence"]
-        if "Detection_Methods" in cwe:
-            _cwe["detection_methods"] = cwe["Detection_Methods"]["Detection_Method"]
-        if "Potential_Mitigations" in cwe:
-            _cwe["potential_mitigations"] = cwe["Potential_Mitigations"]["Mitigation"]
-        if "Demonstrative_Examples" in cwe:
-            _cwe["demonstrative_examples"] = cwe["Demonstrative_Examples"]["Demonstrative_Example"]
         statement["vulnerability"]["cwes"].append(_cwe)
     is_imported_any = False
     for path in paths:

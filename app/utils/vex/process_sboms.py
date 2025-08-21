@@ -9,8 +9,8 @@ from app.schemas import GenerateVEXTIXRequest
 from app.services import (
     create_tix,
     create_vex,
-    read_tix_moment_by_owner_name_sbom_name,
-    read_vex_moment_by_owner_name_sbom_name,
+    read_tix_by_owner_name_sbom_name,
+    read_vex_by_owner_name_sbom_name,
     update_user_tixs,
     update_user_vexs,
 )
@@ -34,7 +34,7 @@ async def process_sboms(GenerateVEXTIXRequest: GenerateVEXTIXRequest) -> tuple[l
     tixs = []
     for sbom_file in sbom_files:
         relative_path = sbom_file.replace(directory + "/", "")
-        last_vex = await read_vex_moment_by_owner_name_sbom_name(
+        last_vex = await read_vex_by_owner_name_sbom_name(
             GenerateVEXTIXRequest.owner,
             GenerateVEXTIXRequest.name,
             relative_path
@@ -44,7 +44,7 @@ async def process_sboms(GenerateVEXTIXRequest: GenerateVEXTIXRequest) -> tuple[l
             and last_vex["moment"].replace(tzinfo=UTC)
             >= last_commit_date.replace(tzinfo=UTC)
         ):
-            last_tix = await read_tix_moment_by_owner_name_sbom_name(
+            last_tix = await read_tix_by_owner_name_sbom_name(
                 GenerateVEXTIXRequest.owner,
                 GenerateVEXTIXRequest.name,
                 relative_path

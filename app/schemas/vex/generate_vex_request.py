@@ -20,7 +20,7 @@ class DownloadTIXRequest(BaseModel):
 class GenerateVEXTIXRequest(BaseModel):
     owner: str = Field(min_lengt=1)
     name: str = Field(min_length=1)
-    Field(
+    user_id: str = Field(
         ...,
         pattern=MONGO_OBJECT_ID_PATTERN
     )

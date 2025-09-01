@@ -2,7 +2,7 @@
 
 ## What is VEXGen?
 
-VEXGen is a simple generating tool of Vulnerability Exploitability eXchange (VEX) and Thread Intelligence eXchange (TIX) files.
+VEXGen is a simple generating tool of Vulnerability Exploitability eXchange (VEX) and Threat Intelligence eXchange (TIX) files.
 
 ## Development requirements
 

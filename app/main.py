@@ -16,7 +16,7 @@ from app.middleware import log_request_middleware
 from app.router import api_router
 
 DESCRIPTION = """
-A simple generating tool of Vulnerability Exploitability eXchange (VEX) and Thread Intelligence eXchange (TIX) files.
+A simple generating tool of Vulnerability Exploitability eXchange (VEX) and Threat Intelligence eXchange (TIX) files.
 """
 
 @asynccontextmanager

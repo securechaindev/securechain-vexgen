@@ -26,9 +26,9 @@ async def generate_tix_statement(
     statement["last_updated"] = timestamp
     for cwe in vulnerability["cwes"]:
         _cwe = {}
-        _cwe["@id"] = f"https://cwe.mitre.org/data/definitions/{cwe["@ID"]}.html"
+        _cwe["@id"] = cwe["ExternalReference"]
         _cwe["abstraction"] = cwe["@Abstraction"]
-        _cwe["name"] = f"CWE-{cwe["@ID"]}"
+        _cwe["name"] = cwe["id"]
         _cwe["description"] = cwe["Extended_Description"] if "Extended_Description" in cwe else cwe["Description"]
         statement["vulnerability"]["cwes"].append(_cwe)
     is_imported_any = False

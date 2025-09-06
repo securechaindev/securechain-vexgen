@@ -13,5 +13,7 @@ async def get_node_type(purl: str) -> str:
         return NodeType.nuget_package.value
     elif "maven" in purl:
         return NodeType.maven_package.value
+    elif "gem" in purl:
+        return NodeType.rubygems_package.value
     else:
         raise ComponentNotSupportedException()

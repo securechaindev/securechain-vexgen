@@ -30,7 +30,7 @@ async def rb_get_used_artifacts(
             if not search(r"require|require_relative|include|extend", line):
                 for (artifact, _type, source) in used_artifacts:
                     if artifact in line:
-                        used_artifacts[(artifact, _type, source)].append(current_line)
+                        used_artifacts[(artifact, _type, source)].append(str(current_line))
             current_line += 1
         used_artifacts = {
             (artifact, _type, source): lines
@@ -40,7 +40,7 @@ async def rb_get_used_artifacts(
         result = []
         groups_by_name_type = {}
         for (artifact_name, artifact_type, source), used_in_lines in used_artifacts.items():
-            groups_by_name_type.setdefault((artifact_name, artifact_type, used_in_lines), []).append(source)
+            groups_by_name_type.setdefault((artifact_name, artifact_type, ",".join(used_in_lines)), []).append(source)
         for (artifact_name, artifact_type, used_in_lines), sources in groups_by_name_type.items():
             result.append({
                 "artifact_name": artifact_name,
@@ -58,8 +58,8 @@ async def get_child_artifacts(
     cve_description: str,
     affected_artefacts: dict[str, dict[str, list[str]]],
     visited: set[str]
-) -> dict[tuple[str, str, str], list[int]]:
-    used_artifacts: dict[tuple[str, str, str], list[int]] = {}
+) -> dict[tuple[str, str, str], list[str]]:
+    used_artifacts: dict[tuple[str, str, str], list[str]] = {}
     patterns = []
     for target in [name, gem_name]:
         escaped = escape(target)

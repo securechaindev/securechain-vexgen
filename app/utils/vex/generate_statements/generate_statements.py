@@ -22,7 +22,7 @@ async def generate_statements(
         if "name" in component:
             if "purl" in component and "version" in component:
                 node_type = await get_node_type(component["purl"])
-                package_name, import_name = await read_package_by_name(node_type, component["name"].lower())
+                package_name, import_names = await read_package_by_name(node_type, component["name"].lower())
                 vulnerabilities_ids = await read_vulnerability_ids_by_version_and_package(
                     node_type, package_name, component["version"]
                 )
@@ -33,7 +33,7 @@ async def generate_statements(
                         component["purl"],
                         timestamp,
                         paths,
-                        import_name,
+                        import_names,
                         package_name,
                         node_type
                     )

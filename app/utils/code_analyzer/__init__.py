@@ -1,6 +1,6 @@
-from .code_analyzer import get_used_artifacts, is_imported
+from .code_analyzer import get_used_artefacts, is_imported
 
 __all__ = [
-    "get_used_artifacts",
+    "get_used_artefacts",
     "is_imported",
 ]

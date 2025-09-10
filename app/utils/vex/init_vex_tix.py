@@ -2,7 +2,6 @@ from datetime import datetime
 from json import load
 from typing import Any
 
-from app.exceptions import InvalidSbomException
 from app.templates import create_tix_template, create_vex_template
 
 from .generate_statements import generate_statements
@@ -28,6 +27,4 @@ async def init_vex_tix(
                 tix["last_updated"] = vex["last_updated"] = timestamp
                 vex, tix = await generate_statements(sbom_json["components"], paths, timestamp, vex, tix)
                 result.append((vex, tix))
-    if not result:
-        raise InvalidSbomException()
     return result

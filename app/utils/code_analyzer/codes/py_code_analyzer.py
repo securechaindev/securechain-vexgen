@@ -74,9 +74,9 @@ async def get_child_artefacts(
         patterns.extend([
             (rf"{escaped}\.[^\(\)\s:]+", "dot_access"),
             (rf"from\s+{escaped}\.[^\s]+\s+import\s+[\w,\s]+", "from_submodule_import"),
-            (rf"from\s+{escaped}\s+import\s+[\w,\s]+", "from_module_import"),
+            (rf"from\s+{escaped}\s+import\s+[\w,\s]+", "from_module_import")
         ])
-    patterns.append((r"(\w+)\.(\w+)\s*\(", "alias_method_call", None))
+    patterns.append((r"(\w+)\.(\w+)\s*\(", "alias_method_call"))
     new_artefacts = []
     for pattern, pattern_type in patterns:
         for match in finditer(pattern, code):

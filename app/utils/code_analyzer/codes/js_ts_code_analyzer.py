@@ -74,7 +74,7 @@ async def get_child_artefacts(
         patterns.extend([
             (rf"{escaped}\.[^\(\)\s:;]+", "dot_access"),
             (rf"import\s+{{[^}}]+}}\s+from\s+['\"]{escaped}['\"]", "named_import"),
-            (rf"const\s+{{[^}}]+}}\s*=\s*require\(['\"]{escaped}['\"]\)", "named_import"),
+            (rf"const\s+{{[^}}]+}}\s*=\s*require\(['\"]{escaped}['\"]\)", "named_import")
         ])
     patterns.append((r"(\w+)\.(\w+)\s*\(", "alias_method_call"))
     new_artefacts = []

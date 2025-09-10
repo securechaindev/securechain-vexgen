@@ -77,7 +77,7 @@ async def get_child_artefacts(
             (rf"require\s+['\"]({escaped}/[^'\"]+)['\"]", "split_by_slash"),
             (rf"require_relative\s+['\"]({escaped}/[^'\"]+)['\"]", "split_by_slash"),
             (rf"include\s+{escaped}::[^\s\(\)\.:;]+", "split_by_double_colon_include"),
-            (rf"extend\s+{escaped}::[^\s\(\)\.:;]+", "split_by_double_colon_extend"),
+            (rf"extend\s+{escaped}::[^\s\(\)\.:;]+", "split_by_double_colon_extend")
         ])
     patterns.append((r"(\w+)\.(\w+)", "alias_method_call"))
     new_artefacts = []

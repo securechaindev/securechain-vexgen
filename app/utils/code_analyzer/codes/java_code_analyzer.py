@@ -73,7 +73,7 @@ async def get_child_artefacts(
         escaped = escape(target)
         patterns.extend([
             (rf"{escaped}\.[^\(\)\s:;]+", "split_by_dot", target),
-            (rf"import\s+{escaped}\.[^\(\)\s:;]+;", "split_by_import", target),
+            (rf"import\s+{escaped}\.[^\(\)\s:;]+;", "split_by_import", target)
         ])
     patterns.append((r"(\w+(?:\.\w+)?)\.(\w+)\s*\(", "alias_method_call", None))
     new_artefacts = []

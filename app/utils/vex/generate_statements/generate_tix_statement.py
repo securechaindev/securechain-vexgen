@@ -12,24 +12,23 @@ async def generate_tix_statement(
     timestamp: str,
     paths: list[str],
     import_names: list[str],
-    name: str,
     node_type: str
 ) -> tuple[float, str, str, dict[str, Any]]:
     statement = await create_tix_statement_template()
-    statement["vulnerability"]["@id"] = f"https://osv.dev/vulnerability/{vulnerability["id"]}"
-    statement["vulnerability"]["name"] = vulnerability["id"]
-    statement["vulnerability"]["description"] = vulnerability["details"]
-    statement["vulnerability"]["cvss"]["vuln_impact"] = vulnerability["vuln_impact"]
-    statement["vulnerability"]["cvss"]["attack_vector"] = vulnerability["attack_vector"]
+    statement["vulnerability"]["@id"] = f"https://osv.dev/vulnerability/{vulnerability.get('id', '')}"
+    statement["vulnerability"]["name"] = vulnerability.get("id", "")
+    statement["vulnerability"]["description"] = vulnerability.get("details", "")
+    statement["vulnerability"]["cvss"]["vuln_impact"] = vulnerability.get("vuln_impact", "")
+    statement["vulnerability"]["cvss"]["attack_vector"] = vulnerability.get("attack_vector", "")
     statement["products"][0]["identifiers"]["purl"] = purl
     statement["timestamp"] = timestamp
     statement["last_updated"] = timestamp
-    for cwe in vulnerability["cwes"]:
+    for cwe in vulnerability.get("cwes", []):
         _cwe = {}
-        _cwe["@id"] = cwe["ExternalReference"]
-        _cwe["abstraction"] = cwe["@Abstraction"]
-        _cwe["name"] = cwe["id"]
-        _cwe["description"] = cwe["Description"] if "Description" in cwe else "Don't have description."
+        _cwe["@id"] = cwe.get("ExternalReference", "")
+        _cwe["abstraction"] = cwe.get("@Abstraction", "")
+        _cwe["name"] = cwe.get("id", "")
+        _cwe["description"] = cwe.get("Description", "Don't have description.")
         statement["vulnerability"]["cwes"].append(_cwe)
     is_imported_any = False
     for path in paths:
@@ -38,22 +37,21 @@ async def generate_tix_statement(
             reacheable_code = {}
             reacheable_code["path_to_file"] = path.replace("repositories/", "")
             affected_artefacts = {}
-            if "affected_artefacts" in vulnerability:
-                affected_artefacts = vulnerability["affected_artefacts"]
-            reacheable_code["used_artefacts"] = await get_used_artefacts(path, import_names, vulnerability["details"], affected_artefacts, node_type)
+            affected_artefacts = vulnerability.get("affected_artefacts", {})
+            reacheable_code["used_artefacts"] = await get_used_artefacts(path, import_names, vulnerability.get("details", ""), affected_artefacts, node_type)
             if reacheable_code["used_artefacts"]:
                 statement["reachable_code"].append(reacheable_code)
-    for exploit in vulnerability["exploits"]:
+    for exploit in vulnerability.get("exploits", []):
         _exploit = {}
-        _exploit["@id"] = exploit["href"] if exploit["href"] else "Unknown"
-        _exploit["attack_vector"] = exploit["cvss"]["vector"] if "cvss" in exploit else "NONE"
-        _exploit["description"] = "" if exploit["type"] == "githubexploit" else exploit["description"]
+        _exploit["@id"] = exploit.get("href", "Unknown")
+        _exploit["attack_vector"] = exploit.get("cvss", {}).get("vector", "NONE")
+        _exploit["description"] = "" if exploit.get("type") == "githubexploit" else exploit.get("description", "")
         _exploit["payload"] = ""
-        if exploit["type"] == "githubexploit":
-            _exploit["payload"] = exploit["description"]
+        if exploit.get("type") == "githubexploit":
+            _exploit["payload"] = exploit.get("description", "")
         else:
             if "sourceData" in exploit:
-                _exploit["payload"] = exploit["sourceData"]
+                _exploit["payload"] = exploit.get("sourceData", "")
         statement["exploits"].append(_exploit)
     priority, status, justification, impact_statement = await generate_vex_properties(vulnerability, statement, is_imported_any)
     return priority, status, justification, impact_statement, statement

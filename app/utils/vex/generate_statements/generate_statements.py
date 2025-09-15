@@ -34,7 +34,6 @@ async def generate_statements(
                         timestamp,
                         paths,
                         import_names,
-                        package_name,
                         node_type
                     )
                     tix["statements"].append(tix_statement)

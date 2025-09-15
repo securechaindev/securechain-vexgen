@@ -27,11 +27,27 @@ async def java_get_used_artefacts(
         code = file.read()
         current_line = 1
         used_artefacts = await get_child_artefacts(import_names, code, cve_description, affected_artefacts, set())
+        inside_block_comment = False
         for line in code.split("\n"):
-            if "import" not in line:
-                for (artefact, _type, source) in used_artefacts:
-                    if artefact in line:
-                        used_artefacts[(artefact, _type, source)].append(str(current_line))
+            stripped = line.strip()
+            if inside_block_comment:
+                if "*/" in stripped:
+                    inside_block_comment = False
+                current_line += 1
+                continue
+            if stripped.startswith("/*"):
+                inside_block_comment = True
+                current_line += 1
+                continue
+            if stripped.startswith("//"):
+                current_line += 1
+                continue
+            if "import" in stripped:
+                current_line += 1
+                continue
+            for (artefact, _type, source) in used_artefacts:
+                if artefact in line:
+                    used_artefacts[(artefact, _type, source)].append(str(current_line))
             current_line += 1
         used_artefacts = {
             (artefact, _type, source): lines
@@ -61,7 +77,9 @@ async def get_child_artefacts(
 ) -> dict[tuple[str, str, str], list[str]]:
     used_artefacts: dict[tuple[str, str, str], list[str]] = {}
     known_aliases: set[str] = set()
-    assignment_pattern = compile(r"(?:(?:[\w<>]+\s+)|this\.)?(\w+)\s*=\s*new\s+(\w+)\s*\(")
+    assignment_pattern = compile(
+        r"(?:(?:[\w<>]+\s+)|this\.)?(\w+)\s*=\s*[\w\.]+\([^)]*\)"
+    )
     for line in code.splitlines():
         match = assignment_pattern.search(line)
         if match:

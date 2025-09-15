@@ -28,10 +28,16 @@ async def py_get_used_artefacts(
         current_line = 1
         used_artefacts = await get_child_artefacts(import_names, code, cve_description, affected_artefacts, set())
         for line in code.split("\n"):
-            if "import" not in line:
-                for (artefact, _type, source) in used_artefacts:
-                    if artefact in line:
-                        used_artefacts[(artefact, _type, source)].append(str(current_line))
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                current_line += 1
+                continue
+            if "import" in stripped:
+                current_line += 1
+                continue
+            for (artefact, _type, source) in used_artefacts:
+                if artefact in line:
+                    used_artefacts[(artefact, _type, source)].append(str(current_line))
             current_line += 1
         used_artefacts = {
             (artefact, _type, source): lines

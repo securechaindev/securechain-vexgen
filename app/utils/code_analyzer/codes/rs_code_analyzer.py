@@ -27,11 +27,27 @@ async def rs_get_used_artefacts(
         code = file.read()
         current_line = 1
         used_artefacts = await get_child_artefacts(import_names, code, cve_description, affected_artefacts, set())
+        inside_block_comment = False
         for line in code.split("\n"):
-            if not search(r"extern crate\s|use\s", line):
-                for (artefact, _type, source) in used_artefacts:
-                    if artefact in line:
-                        used_artefacts[(artefact, _type, source)].append(str(current_line))
+            stripped = line.strip()
+            if inside_block_comment:
+                if "*/" in stripped:
+                    inside_block_comment = False
+                current_line += 1
+                continue
+            if stripped.startswith("/*"):
+                inside_block_comment = True
+                current_line += 1
+                continue
+            if stripped.startswith("//"):
+                current_line += 1
+                continue
+            if search(r"extern crate\s|use\s", line):
+                current_line += 1
+                continue
+            for (artefact, _type, source) in used_artefacts:
+                if artefact in line:
+                    used_artefacts[(artefact, _type, source)].append(str(current_line))
             current_line += 1
         used_artefacts = {
             (artefact, _type, source): lines

@@ -43,6 +43,7 @@ async def generate_tix_statement(
                 statement["reachable_code"].append(reacheable_code)
     for exploit in vulnerability.get("exploits", []):
         _exploit = {}
+        _exploit["name"] = exploit.get("id", "Unknown")
         _exploit["@id"] = exploit.get("href", "Unknown")
         _exploit["attack_vector"] = exploit.get("cvss", {}).get("vector", "NONE")
         _exploit["description"] = "" if exploit.get("type") == "githubexploit" else exploit.get("description", "")
@@ -52,6 +53,7 @@ async def generate_tix_statement(
         else:
             if "sourceData" in exploit:
                 _exploit["payload"] = exploit.get("sourceData", "")
-        statement["exploits"].append(_exploit)
+        if _exploit["@id"] != "Unknown":
+            statement["exploits"].append(_exploit)
     priority, status, justification, impact_statement = await generate_vex_properties(vulnerability, statement, is_imported_any)
     return priority, status, justification, impact_statement, statement

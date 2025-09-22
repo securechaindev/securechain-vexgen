@@ -3,6 +3,7 @@ from typing import Any
 from regex import compile, escape, finditer, search
 
 from .is_relevant import is_relevant
+from .validation import is_valid_artefact_name
 
 
 async def js_ts_is_imported(file_path: str, import_names: list[str]) -> bool:
@@ -26,7 +27,10 @@ async def js_ts_get_used_artefacts(
     with open(filename, encoding="utf-8") as file:
         code = file.read()
         current_line = 1
-        used_artefacts = await get_child_artefacts(import_names, code, cve_description, affected_artefacts, set())
+        found_artefacts = await get_child_artefacts(import_names, code, cve_description, affected_artefacts, set())
+        used_artefacts: dict[tuple[str, str, str], list[str]] = {}
+        for key in found_artefacts.keys():
+            used_artefacts[key] = []
         inside_block_comment = False
         for line in code.split("\n"):
             stripped = line.strip()
@@ -45,26 +49,30 @@ async def js_ts_get_used_artefacts(
             if search(r"import\s|require\(", line):
                 current_line += 1
                 continue
-            for (artefact, _type, source) in used_artefacts:
+            for (artefact, _type, source) in found_artefacts.keys():
                 if artefact in line:
                     used_artefacts[(artefact, _type, source)].append(str(current_line))
             current_line += 1
         used_artefacts = {
-            (artefact, _type, source): lines
-            for (artefact, _type, source), lines in used_artefacts.items()
+            key: lines
+            for key, lines in used_artefacts.items()
             if lines
         }
         result = []
         groups_by_name_type = {}
         for (artefact_name, artefact_type, source), used_in_lines in used_artefacts.items():
-            groups_by_name_type.setdefault((artefact_name, artefact_type, ",".join(used_in_lines)), []).append(source)
+            line_numbers = ",".join(used_in_lines)
+            groups_by_name_type.setdefault((artefact_name, artefact_type, line_numbers), []).append(source)
         for (artefact_name, artefact_type, used_in_lines), sources in groups_by_name_type.items():
-            result.append({
-                "artefact_name": artefact_name,
-                "artefact_type": artefact_type,
-                "sources": sources,
-                "used_in_lines": used_in_lines
-            })
+            if (artefact_name and artefact_type and
+                is_valid_artefact_name(artefact_name) and
+                is_valid_artefact_name(artefact_type)):
+                result.append({
+                    "artefact_name": artefact_name.strip(),
+                    "artefact_type": artefact_type.strip(),
+                    "sources": [s.strip() for s in sources if s and s.strip()],
+                    "used_in_lines": used_in_lines
+                })
         return result
 
 
@@ -100,16 +108,21 @@ async def get_child_artefacts(
                 content = match.group(0).split("{")[1].split("}")[0]
                 artefacts = [a.strip() for a in content.split(",")]
                 for artefact in artefacts:
+                    clean_artefact = artefact.strip()
+                    if not clean_artefact or not is_valid_artefact_name(clean_artefact):
+                        continue
                     for source, data in affected_artefacts.items():
                         for artefact_type, artefacts_list in data.get("artefacts", {}).items():
-                            if await is_relevant(artefact, artefacts_list, cve_description):
-                                used_artefacts.setdefault((artefact, artefact_type, source), [])
-                                new_artefacts.append(artefact)
+                            if await is_relevant(clean_artefact, artefacts_list, cve_description):
+                                used_artefacts.setdefault((clean_artefact, artefact_type, source), [])
+                                new_artefacts.append(clean_artefact)
             elif split_type == "dot_access":
                 match_str = match.group(0)
                 artefacts = match_str.split(".")[1:]
                 for artefact in artefacts:
                     clean = artefact.strip()
+                    if not clean or not is_valid_artefact_name(clean):
+                        continue
                     for source, data in affected_artefacts.items():
                         for artefact_type, artefacts_list in data.get("artefacts", {}).items():
                             if await is_relevant(clean, artefacts_list, cve_description):

@@ -55,5 +55,5 @@ async def generate_tix_statement(
                 _exploit["payload"] = exploit.get("sourceData", "")
         if _exploit["@id"] != "Unknown":
             statement["exploits"].append(_exploit)
-    priority, status, justification, impact_statement = await generate_vex_properties(vulnerability, statement, is_imported_any)
-    return priority, status, justification, impact_statement, statement
+    status, justification, impact_statement, priority = await generate_vex_properties(vulnerability, statement, is_imported_any)
+    return status, justification, impact_statement, priority, statement

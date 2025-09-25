@@ -28,7 +28,7 @@ async def generate_statements(
                 )
                 for vulnerability_id in vulnerabilities_ids:
                     vulnerability = await read_vulnerability_by_id(vulnerability_id)
-                    priority, status, justification, impact_statement, tix_statement = await generate_tix_statement(
+                    status, justification, impact_statement, priority, tix_statement = await generate_tix_statement(
                         vulnerability,
                         component["purl"],
                         timestamp,

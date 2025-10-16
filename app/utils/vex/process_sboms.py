@@ -3,7 +3,7 @@ from typing import Any
 
 from pytz import UTC
 
-from app.apis import get_last_commit_date_github
+from app.apis import GitHubService
 from app.exceptions import SbomNotFoundException
 from app.schemas import GenerateVEXTIXRequest
 from app.services import (
@@ -19,9 +19,10 @@ from .download_repository import download_repository
 from .find_sbom_files import find_sbom_files
 from .init_vex_tix import init_vex_tix
 
+github_service = GitHubService()
 
 async def process_sboms(GenerateVEXTIXRequest: GenerateVEXTIXRequest) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str], str]:
-    last_commit_date = await get_last_commit_date_github(
+    last_commit_date = await github_service.get_last_commit_date(
         GenerateVEXTIXRequest.owner, GenerateVEXTIXRequest.name
     )
     directory = await download_repository(GenerateVEXTIXRequest.owner, GenerateVEXTIXRequest.name)

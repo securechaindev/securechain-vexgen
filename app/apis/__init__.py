@@ -1,3 +1,3 @@
-from .github_service import get_last_commit_date_github
+from .github_service import GitHubService
 
-__all__ = ["get_last_commit_date_github"]
+__all__ = ["GitHubService"]

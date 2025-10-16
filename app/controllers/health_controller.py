@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
-from app.utils import json_encoder
+from app.utils import JSONEncoder
 
 router = APIRouter()
+json_encoder = JSONEncoder()
 
 @router.get(
     "/health",
@@ -14,5 +15,5 @@ router = APIRouter()
 )
 async def health_check(request: Request):
     return JSONResponse(
-        status_code=status.HTTP_200_OK, content=await json_encoder({"detail": "healthy"})
+        status_code=status.HTTP_200_OK, content=json_encoder.encode({"detail": "healthy"})
     )

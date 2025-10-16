@@ -8,9 +8,10 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.limiter import limiter
 from app.schemas import DownloadVEXRequest
 from app.services import read_user_vexs, read_vex_by_id
-from app.utils import JWTBearer, json_encoder
+from app.utils import JWTBearer, JSONEncoder
 
 router = APIRouter()
+json_encoder = JSONEncoder()
 
 @router.get(
     "/vex/user/{user_id}",
@@ -25,7 +26,7 @@ async def get_vexs(request: Request, user_id: str) -> JSONResponse:
     vexs = await read_user_vexs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(
+        content=json_encoder.encode(
             {
                 "vexs": vexs,
                 "detail": "success_vexs_retrieved"
@@ -47,7 +48,7 @@ async def get_vex(request: Request, vex_id: str) -> JSONResponse:
     vex = await read_vex_by_id(vex_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(
+        content=json_encoder.encode(
             {
                 "vex": vex,
                 "detail": "success_vex_retrieved"

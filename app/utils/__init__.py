@@ -1,9 +1,9 @@
-from .others import JWTBearer, get_node_type, json_encoder
+from .others import JWTBearer, get_node_type, JSONEncoder
 from .vex import process_sboms
 
 __all__ = [
     "JWTBearer",
     "get_node_type",
-    "json_encoder",
+    "JSONEncoder",
     "process_sboms",
 ]

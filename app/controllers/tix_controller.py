@@ -8,9 +8,10 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.limiter import limiter
 from app.schemas import DownloadTIXRequest
 from app.services import read_tix_by_id, read_user_tixs
-from app.utils import JWTBearer, json_encoder
+from app.utils import JWTBearer, JSONEncoder
 
 router = APIRouter()
+json_encoder = JSONEncoder()
 
 @router.get(
     "/tix/user/{user_id}",
@@ -25,7 +26,7 @@ async def get_tixs(request: Request,user_id: str) -> JSONResponse:
     tixs = await read_user_tixs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(
+        content=json_encoder.encode(
             {
                 "tixs": tixs,
                 "detail": "success_tixs_retrieved"
@@ -47,7 +48,7 @@ async def get_tix(request: Request, tix_id: str) -> JSONResponse:
     tix = await read_tix_by_id(tix_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=await json_encoder(
+        content=json_encoder.encode(
             {
                 "tix": tix,
                 "detail": "success_tix_retrieved"

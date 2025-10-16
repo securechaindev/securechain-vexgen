@@ -12,13 +12,14 @@ from app.utils import JSONEncoder, JWTBearer
 
 router = APIRouter()
 json_encoder = JSONEncoder()
+jwt_bearer = JWTBearer()
 
 @router.get(
     "/tix/user/{user_id}",
     summary="Retrieve TIX documents for a user",
     description="Fetches all TIX documents associated with a specific user.",
     response_description="List of TIX documents with their metadata and content in JSON format.",
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[Depends(jwt_bearer)],
     tags=["Secure Chain VEXGen - TIX"]
 )
 @limiter.limit("25/minute")
@@ -40,7 +41,7 @@ async def get_tixs(request: Request,user_id: str) -> JSONResponse:
     summary="Retrieve a specific TIX document",
     description="Fetches a specific TIX document by its ID.",
     response_description="TIX document metadata and content in JSON format.",
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[Depends(jwt_bearer)],
     tags=["Secure Chain VEXGen - TIX"]
 )
 @limiter.limit("25/minute")
@@ -62,7 +63,7 @@ async def get_tix(request: Request, tix_id: str) -> JSONResponse:
     summary="Download TIX",
     description="Fetches the TIX for a specific TIX ID.",
     response_description="ZIP file containing TIX.",
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[Depends(jwt_bearer)],
     tags=["Secure Chain VEXGen - TIX"]
 )
 @limiter.limit("25/minute")

@@ -14,13 +14,14 @@ from app.utils import (
 )
 
 router = APIRouter()
+jwt_bearer = JWTBearer()
 
 @router.post(
     "/vex_tix/generate",
     summary="Generate VEX and TIX from a repository",
     description="Generates VEX and TIX for a specific GitHub repository.",
     response_description="ZIP file containing generated VEX and TIX.",
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[Depends(jwt_bearer)],
     tags=["Secure Chain VEXGen - VEX/TIX"]
 )
 @limiter.limit("5/minute")

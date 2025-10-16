@@ -12,13 +12,14 @@ from app.utils import JSONEncoder, JWTBearer
 
 router = APIRouter()
 json_encoder = JSONEncoder()
+jwt_bearer = JWTBearer()
 
 @router.get(
     "/vex/user/{user_id}",
     summary="Retrieve VEX documents for a user",
     description="Fetches all VEX documents associated with a specific user.",
     response_description="List of VEX documents with their metadata and content in JSON format.",
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[Depends(jwt_bearer)],
     tags=["Secure Chain VEXGen - VEX"]
 )
 @limiter.limit("25/minute")
@@ -40,7 +41,7 @@ async def get_vexs(request: Request, user_id: str) -> JSONResponse:
     summary="Retrieve a specific VEX document",
     description="Fetches a specific VEX document by its ID.",
     response_description="VEX document metadata and content in JSON format.",
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[Depends(jwt_bearer)],
     tags=["Secure Chain VEXGen - VEX"]
 )
 @limiter.limit("25/minute")
@@ -61,7 +62,7 @@ async def get_vex(request: Request, vex_id: str) -> JSONResponse:
     summary="Download VEX",
     description="Fetches the VEX for a specific VEX ID.",
     response_description="ZIP file containing VEX.",
-    dependencies=[Depends(JWTBearer())],
+    dependencies=[Depends(jwt_bearer)],
     tags=["Secure Chain VEXGen - VEX"]
 )
 @limiter.limit("25/minute")

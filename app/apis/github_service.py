@@ -1,4 +1,4 @@
-from asyncio import TimeoutError, sleep
+from asyncio import sleep
 from datetime import datetime
 
 from aiohttp import ClientConnectorError, ClientSession

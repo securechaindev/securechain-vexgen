@@ -3,7 +3,7 @@ from .jwt_encoder import JWTBearer
 from .node_type_mapping import get_node_type
 
 __all__ = [
+    "JSONEncoder",
     "JWTBearer",
-    "get_node_type",
-    "JSONEncoder"
+    "get_node_type"
 ]

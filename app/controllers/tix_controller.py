@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.limiter import limiter
 from app.schemas import DownloadTIXRequest
 from app.services import read_tix_by_id, read_user_tixs
-from app.utils import JWTBearer, JSONEncoder
+from app.utils import JSONEncoder, JWTBearer
 
 router = APIRouter()
 json_encoder = JSONEncoder()

@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.limiter import limiter
 from app.schemas import DownloadVEXRequest
 from app.services import read_user_vexs, read_vex_by_id
-from app.utils import JWTBearer, JSONEncoder
+from app.utils import JSONEncoder, JWTBearer
 
 router = APIRouter()
 json_encoder = JSONEncoder()

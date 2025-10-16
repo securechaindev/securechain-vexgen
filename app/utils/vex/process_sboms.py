@@ -58,7 +58,7 @@ async def process_sboms(GenerateVEXTIXRequest: GenerateVEXTIXRequest) -> tuple[l
             sboms_names.append(relative_path)
     if sboms_to_process:
         result = await init_vex_tix(GenerateVEXTIXRequest.owner, sboms_to_process, directory)
-        for (vex, tix), sbom_name in zip(result, sboms_names):
+        for (vex, tix), sbom_name in zip(result, sboms_names, strict=False):
             vex_id = await create_vex({
                 "owner": GenerateVEXTIXRequest.owner,
                 "name": GenerateVEXTIXRequest.name,

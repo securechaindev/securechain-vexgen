@@ -31,7 +31,7 @@ async def generate_vex_tix(
     vexs, tixs, sboms_names, directory = await process_sboms(GenerateVEXTIXRequest)
     zip_path = "vex_tix_sbom.zip"
     with ZipFile(zip_path, "w") as myzip:
-        for vex, tix, sbom_name in zip(vexs, tixs, sboms_names):
+        for vex, tix, sbom_name in zip(vexs, tixs, sboms_names, strict=False):
             myzip.writestr(f"vex_{sbom_name}.json", dumps(vex, indent=2))
             myzip.writestr(f"tix_{sbom_name}.json", dumps(tix, indent=2))
     rmtree(directory)

@@ -1,4 +1,5 @@
 from functools import lru_cache
+from os import environ
 
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
@@ -18,6 +19,36 @@ class Settings(BaseSettings):
     ALGORITHM: str = ""
     JWT_ACCESS_SECRET_KEY: str = ""
     GITHUB_GRAPHQL_API_KEY: str = ""
+    VEX_VULNERABILITY_IMPACT_WEIGHT: float = 0.7
+    VEX_REACHABLE_CODE_PRIORITY_BONUS: float = 1.0
+    VEX_EXPLOITS_PRIORITY_BONUS: float = 1.0
+    VEX_CWES_PRIORITY_BONUS: float = 1.0
+    GIT_CLONE_DEPTH: int = 1
+    GIT_FSCK_OBJECTS: bool = True
+
+    @staticmethod
+    def get_os_environment() -> dict[str, str]:
+        return dict(environ)
+
+    @staticmethod
+    def get_git_config() -> dict[str, str]:
+        return {
+            "core.hooksPath": "hooks-empty",
+            "submodule.recurse": "false",
+            "fetch.fsckObjects": "true" if settings.GIT_FSCK_OBJECTS else "false",
+            "transfer.fsckObjects": "true" if settings.GIT_FSCK_OBJECTS else "false",
+            "core.autocrlf": "false",
+            "core.safecrlf": "true",
+        }
+
+    @staticmethod
+    def get_git_clone_options() -> list[str]:
+        return [
+            f"--depth={settings.GIT_CLONE_DEPTH}",
+            "--single-branch",
+            "--no-tags",
+            "--filter=blob:none",
+        ]
 
 
 @lru_cache

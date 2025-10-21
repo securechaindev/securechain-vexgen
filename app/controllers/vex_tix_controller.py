@@ -1,39 +1,69 @@
 from json import dumps
+from os import replace as atomic_rename
 from shutil import rmtree
+from tempfile import NamedTemporaryFile
 from typing import Annotated
 from zipfile import ZipFile
 
 from fastapi import APIRouter, Body, Depends, Request, status
 from fastapi.responses import FileResponse
 
+from app.apis import GitHubService
+from app.constants import RateLimit
+from app.dependencies import get_jwt_bearer, get_tix_service, get_vex_service
+from app.domain import SBOMProcessor
 from app.limiter import limiter
 from app.schemas import GenerateVEXTIXRequest
-from app.utils import (
-    JWTBearer,
-    process_sboms,
-)
+from app.services import TIXService, VEXService
 
 router = APIRouter()
-jwt_bearer = JWTBearer()
+github_service = GitHubService()
 
 @router.post(
     "/vex_tix/generate",
     summary="Generate VEX and TIX from a repository",
     description="Generates VEX and TIX for a specific GitHub repository.",
     response_description="ZIP file containing generated VEX and TIX.",
-    dependencies=[Depends(jwt_bearer)],
+    dependencies=[Depends(get_jwt_bearer)],
     tags=["Secure Chain VEXGen - VEX/TIX"]
 )
-@limiter.limit("5/minute")
+@limiter.limit(RateLimit.DOWNLOAD)
 async def generate_vex_tix(
     request: Request,
-    GenerateVEXTIXRequest: Annotated[GenerateVEXTIXRequest, Body()]
+    generate_vex_tix_request: Annotated[GenerateVEXTIXRequest, Body()],
+    vex_service: VEXService = Depends(get_vex_service),
+    tix_service: TIXService = Depends(get_tix_service)
 ) -> FileResponse:
-    vexs, tixs, sboms_names, directory = await process_sboms(GenerateVEXTIXRequest)
-    zip_path = "vex_tix_sbom.zip"
-    with ZipFile(zip_path, "w") as myzip:
-        for vex, tix, sbom_name in zip(vexs, tixs, sboms_names, strict=False):
-            myzip.writestr(f"vex_{sbom_name}.json", dumps(vex, indent=2))
-            myzip.writestr(f"tix_{sbom_name}.json", dumps(tix, indent=2))
-    rmtree(directory)
-    return FileResponse(path=zip_path, filename="vex_tix_sbom.zip", headers={'Access-Control-Expose-Headers': 'Content-Disposition'}, status_code=status.HTTP_200_OK)
+    sbom_processor = SBOMProcessor(
+        generate_vex_tix_request,
+        github_service,
+        vex_service,
+        tix_service
+    )
+    result = await sbom_processor.process_sboms()
+
+    final_zip_path = "vex_tix_sbom.zip"
+
+    with NamedTemporaryFile(mode='wb', delete=False, suffix='.zip') as temp_file:
+        temp_zip_path = temp_file.name
+
+    try:
+        with ZipFile(temp_zip_path, "w") as myzip:
+            for vex, tix, sbom_path in zip(result.vex_list, result.tix_list, result.sbom_paths, strict=False):
+                myzip.writestr(f"vex_{sbom_path}.json", dumps(vex, indent=2))
+                myzip.writestr(f"tix_{sbom_path}.json", dumps(tix, indent=2))
+
+        atomic_rename(temp_zip_path, final_zip_path)
+    except Exception:
+        if temp_zip_path:
+            rmtree(temp_zip_path, ignore_errors=True)
+        raise
+    finally:
+        rmtree(result.directory, ignore_errors=True)
+
+    return FileResponse(
+        path=final_zip_path,
+        filename="vex_tix_sbom.zip",
+        headers={'Access-Control-Expose-Headers': 'Content-Disposition'},
+        status_code=status.HTTP_200_OK
+    )

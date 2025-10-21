@@ -68,7 +68,7 @@ docker compose -f dev/docker-compose.yml up --build
 - **Neo4j Browser**: [http://localhost:7474](http://localhost:7474)
 - **MongoDB**: `mongodb://localhost:27017`
 
-## 💻 Local Development
+## Local Development
 
 ### Python Environment Setup
 

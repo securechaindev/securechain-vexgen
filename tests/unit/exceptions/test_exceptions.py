@@ -3,7 +3,6 @@ from fastapi import HTTPException
 
 from app.exceptions.expired_token_exception import ExpiredTokenException
 from app.exceptions.invalid_repository_exception import InvalidRepositoryException
-from app.exceptions.invalid_sbom_exception import InvalidSbomException
 from app.exceptions.invalid_token_exception import InvalidTokenException
 from app.exceptions.not_authenticated_exception import NotAuthenticatedException
 
@@ -72,30 +71,13 @@ class TestInvalidRepositoryException:
         assert exc_info.value.detail == "repository_not_found"
 
 
-class TestInvalidSBOMException:
-    def test_invalid_sbom_exception_creation(self):
-        exc = InvalidSbomException()
-
-        assert isinstance(exc, HTTPException)
-        assert exc.status_code == 500
-        assert exc.detail == "invalid_sbom"
-
-    def test_invalid_sbom_exception_can_be_raised(self):
-        with pytest.raises(InvalidSbomException) as exc_info:
-            raise InvalidSbomException()
-
-        assert exc_info.value.status_code == 500
-        assert exc_info.value.detail == "invalid_sbom"
-
-
 class TestExceptionInheritance:
     def test_all_exceptions_inherit_from_http_exception(self):
         exceptions = [
             ExpiredTokenException(),
             InvalidTokenException(),
             NotAuthenticatedException(),
-            InvalidRepositoryException(),
-            InvalidSbomException()
+            InvalidRepositoryException()
         ]
 
         for exc in exceptions:
@@ -109,7 +91,6 @@ class TestExceptionInheritance:
         ]
 
         assert InvalidRepositoryException().status_code == 404
-        assert InvalidSbomException().status_code == 500
 
         for exc in auth_exceptions:
             assert exc.status_code == 401
@@ -119,8 +100,7 @@ class TestExceptionInheritance:
             ExpiredTokenException(),
             InvalidTokenException(),
             NotAuthenticatedException(),
-            InvalidRepositoryException(),
-            InvalidSbomException()
+            InvalidRepositoryException()
         ]
 
         for exc in exceptions:

@@ -1,8 +1,8 @@
 # SecureChain VEXGen
 
-[![Python Version](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688.svg)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Lint & Test](https://github.com/securechaindev/securechain-vexgen/actions/workflows/lint-test.yml/badge.svg)]()
+[![GHCR](https://img.shields.io/badge/GHCR-securechain--vexgen-blue?logo=docker)](https://github.com/orgs/securechaindev/packages/container/package/securechain-vexgen)
 
 ## What is VEXGen?
 

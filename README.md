@@ -1,10 +1,10 @@
-# 🔒 SecureChain VEXGen
+# SecureChain VEXGen
 
 [![Python Version](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688.svg)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-## 📋 What is VEXGen?
+## What is VEXGen?
 
 **VEXGen** is an automated tool for generating **VEX (Vulnerability Exploitability eXchange)** and **TIX (Threat Intelligence eXchange)** documents from GitHub repositories.
 
@@ -12,10 +12,8 @@
 
 - 🔍 **Automatic SBOM Discovery** - Finds and processes Software Bill of Materials files
 - 🧠 **Smart Code Analysis** - Multi-language analyzer detects actual component usage
-- 📊 **Vulnerability Assessment** - Determines exploitability using Neo4j graph database
+- 📊 **Vulnerability Assessment** - Determines exploitability using package affected artefacts
 - 📦 **VEX/TIX Generation** - Creates standards-compliant security documents
-- 🚀 **FastAPI Backend** - Async, high-performance REST API
-- 🔐 **Security First** - Git validation, path sanitization, rate limiting
 
 ## 🛠️ Development Requirements
 
@@ -25,7 +23,7 @@
 4. **[Neo4j Browser](http://localhost:7474)** - Graph database visualization (runs on container)
 5. **Python 3.13+** - For local development
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone the Repository
 ```bash
@@ -110,7 +108,7 @@ ruff check app/
 ruff format app/
 ```
 
-## 🧪 Testing
+## Testing
 
 The project has comprehensive test coverage (87%) with unit and integration tests.
 
@@ -154,73 +152,7 @@ uv run pytest tests/unit/services/test_vex_service.py -v
 uv run pytest tests/ -k "test_analyzer" -v
 ```
 
-### Test Structure
-```
-tests/
-├── unit/                # Unit tests (87% coverage)
-│   ├── code_analyzer/   # Language analyzers
-│   ├── controllers/     # API controllers
-│   ├── processors/      # SBOM/VEX processors
-│   ├── services/        # Business logic
-│   └── templates/       # VEX/TIX templates
-└── integration/         # Integration tests
-```
-
-### Coverage Report
-Current coverage: **87%** (475 tests passing)
-
-Key areas covered:
-- ✅ All language analyzers (Python, JS/TS, Java, C#, Ruby, Rust)
-- ✅ VEX/TIX generation pipeline
-- ✅ SBOM processing
-- ✅ Service layer (Version, Package, Vulnerability)
-- ✅ Templates and exceptions
-
-
-```
-app/
-├── main.py              # FastAPI entry point
-├── database.py          # DatabaseManager singleton
-├── dependencies.py      # ServiceContainer (DI)
-├── validators.py        # Security validators
-├── constants.py         # Enums and configs
-├── controllers/         # API endpoints
-├── services/            # Business logic
-├── domain/              # Domain logic (DDD)
-│   ├── code_analyzer/   # Multi-language analysis
-│   └── vex_generation/  # VEX/TIX generation
-├── schemas/             # Pydantic models
-└── templates/           # VEX/TIX templates
-```
-
-For detailed architecture documentation, see **[CLAUDE.md](./CLAUDE.md)** (AI agent context).
-
-## 📁 Project Structure
-
-VEXGen follows **Domain-Driven Design (DDD)** principles:
-
-- **Singleton Pattern**: DatabaseManager, ServiceContainer
-- **Dependency Injection**: FastAPI `Depends()`
-- **Factory Pattern**: CodeAnalyzerFactory
-- **Security Validators**: GitValidator, PathValidator
-
-### Key Technologies
-- **FastAPI 0.116.1** - Async REST API
-- **MongoDB Motor 3.6.0** - Document storage
-- **Neo4j 5.27.0** - Graph database
-- **Pydantic v2** - Data validation
-- **aiofiles, aiohttp** - Async I/O
-
-## 🔐 Security Features
-
-- ✅ Git URL validation (whitelist: github.com, gitlab.com, bitbucket.org)
-- ✅ Path traversal prevention
-- ✅ Command injection protection
-- ✅ Rate limiting by IP
-- ✅ JWT authentication
-- ✅ Input validation with Pydantic
-
-## 🤝 Contributing
+## Contributing
 
 Pull requests are welcome! For major changes, please open an issue first.
 
@@ -234,25 +166,6 @@ test: add tests
 chore: maintenance
 ```
 
-## 📄 License
+## License
 
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html)
-
-## 📞 Contact
-
-- **Team**: Secure Chain Team
-- **Email**: [hi@securechain.dev](mailto:hi@securechain.dev)
-- **GitHub**: [@securechaindev](https://github.com/securechaindev)
-- **Docs**: [securechaindev.github.io](https://securechaindev.github.io/)
-
-## 📚 References
-
-- [VEX Specification](https://www.cisa.gov/resources-tools/resources/minimum-elements-vulnerability-exploitability-exchange-vex)
-- [SBOM Standards](https://cyclonedx.org/)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-
----
-
-**Version**: 1.1.0  
-**Status**: Production  
-**Last Updated**: October 2025

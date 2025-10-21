@@ -1,0 +1,76 @@
+from datetime import datetime
+from json import load
+from typing import Any
+
+from pytz import UTC
+
+from app.domain.vex_generation.generators import StatementHelpers
+from app.templates import create_tix_template, create_vex_template
+
+from .statement_generator import StatementsGenerator
+
+
+class VEXTIXInitializer:
+    def __init__(self, directory: str):
+        self.directory = directory
+        self.sbom_components_key = "components"
+
+    async def init_vex_tix(
+        self,
+        owner: str,
+        sbom_files: list[str],
+    ) -> list[tuple[dict[str, Any], dict[str, Any]]]:
+        timestamp = datetime.now(UTC).isoformat()
+        results = []
+
+        for sbom_file in sbom_files:
+            vex_tix = await self.process_single_sbom(sbom_file, owner, timestamp)
+            results.append(vex_tix)
+
+        return results
+
+    async def process_single_sbom(
+        self,
+        sbom_file: str,
+        owner: str,
+        timestamp: str
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        sbom_json = await self.load_sbom_file(sbom_file)
+
+        if not await self.validate_sbom_structure(sbom_json):
+            raise ValueError(f"Invalid SBOM structure in file: {sbom_file}")
+
+        vex = await create_vex_template()
+        tix = await create_tix_template()
+
+        vex["author"] = owner
+        tix["author"] = owner
+        await StatementHelpers.set_timestamps(vex, timestamp)
+        await StatementHelpers.set_timestamps(tix, timestamp)
+
+        statements_generator = StatementsGenerator(self.directory)
+        vex, tix = await statements_generator.generate_statements(
+            sbom_json[self.sbom_components_key],
+            timestamp,
+            vex,
+            tix
+        )
+
+        return vex, tix
+
+    async def load_sbom_file(self, sbom_file: str) -> dict[str, Any]:
+        with open(sbom_file, encoding="utf-8") as f:
+            return load(f)
+
+    async def validate_sbom_structure(self, sbom_json: Any) -> bool:
+        if not isinstance(sbom_json, dict):
+            return False
+
+        if self.sbom_components_key not in sbom_json:
+            return False
+
+        components = sbom_json[self.sbom_components_key]
+        if not isinstance(components, list):
+            return False
+
+        return True

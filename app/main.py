@@ -5,6 +5,7 @@ from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.database import get_database_manager
 from app.exception_handler import ExceptionHandler
 from app.http_session import close_session
 from app.limiter import limiter
@@ -17,8 +18,11 @@ A simple generating tool of Vulnerability Exploitability eXchange (VEX) and Thre
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    db_manager = get_database_manager()
+    await db_manager.initialize()
     yield
     await close_session()
+    await db_manager.close()
 
 app = FastAPI(
     title="VEXGen",

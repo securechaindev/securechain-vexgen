@@ -15,7 +15,7 @@
 - 📊 **Vulnerability Assessment** - Determines exploitability using package affected artefacts
 - 📦 **VEX/TIX Generation** - Creates standards-compliant security documents
 
-## 🛠️ Development Requirements
+## Development Requirements
 
 1. **[Docker](https://www.docker.com/)** - Container runtime
 2. **[Docker Compose](https://docs.docker.com/compose/)** - Multi-container orchestration

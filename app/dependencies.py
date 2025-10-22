@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from app.database import DatabaseManager, get_database_manager
 from app.services import (
     PackageService,
@@ -10,7 +12,7 @@ from app.utils import JSONEncoder, JWTBearer
 
 
 class ServiceContainer:
-    instance: "ServiceContainer" | None = None
+    instance: ServiceContainer | None = None
     db_manager: DatabaseManager | None = None
     vex_service: VEXService | None = None
     tix_service: TIXService | None = None
@@ -20,7 +22,7 @@ class ServiceContainer:
     json_encoder: JSONEncoder | None = None
     jwt_bearer: JWTBearer | None = None
 
-    def __new__(cls) -> "ServiceContainer":
+    def __new__(cls) -> ServiceContainer:
         if cls.instance is None:
             cls.instance = super().__new__(cls)
         return cls.instance

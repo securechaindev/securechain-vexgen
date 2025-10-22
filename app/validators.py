@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from regex import match
 
-from app.constants import FileConfig, GitConfig
+from app.constants import FileRules, GitRules
 
 
 class GitValidator:
@@ -15,7 +15,7 @@ class GitValidator:
         url = url.strip()
 
         url_lower = url.lower()
-        for dangerous_pattern in GitConfig.DANGEROUS_URL_PATTERNS:
+        for dangerous_pattern in GitRules.DANGEROUS_URL_PATTERNS:
             if dangerous_pattern in url_lower:
                 raise ValueError(f"Dangerous URL scheme detected: {dangerous_pattern}")
 
@@ -27,8 +27,8 @@ class GitValidator:
         if parsed.scheme not in ("https", "http"):
             raise ValueError("Only HTTPS/HTTP URLs are allowed for Git repositories")
 
-        if parsed.netloc not in GitConfig.ALLOWED_GIT_HOSTS:
-            raise ValueError(f"Git host not allowed. Allowed hosts: {', '.join(GitConfig.ALLOWED_GIT_HOSTS)}")
+        if parsed.netloc not in GitRules.ALLOWED_GIT_HOSTS:
+            raise ValueError(f"Git host not allowed. Allowed hosts: {', '.join(GitRules.ALLOWED_GIT_HOSTS)}")
 
         if "github.com" in parsed.netloc:
             if not GitValidator._is_valid_github_url(url):
@@ -86,7 +86,7 @@ class PathValidator:
 
         file_path = file_path.strip()
 
-        for dangerous in FileConfig.DANGEROUS_PATH_COMPONENTS:
+        for dangerous in FileRules.DANGEROUS_PATH_COMPONENTS:
             if dangerous in file_path:
                 raise ValueError(f"Path contains dangerous component: {dangerous}")
 
@@ -111,9 +111,9 @@ class PathValidator:
     def validate_sbom_file(file_path: str) -> Path:
         path = PathValidator.sanitize_path(file_path)
 
-        if path.suffix.lower() not in FileConfig.ALLOWED_SBOM_EXTENSIONS:
+        if path.suffix.lower() not in FileRules.ALLOWED_SBOM_EXTENSIONS:
             raise ValueError(
-                f"Invalid SBOM file extension. Allowed: {', '.join(FileConfig.ALLOWED_SBOM_EXTENSIONS)}"
+                f"Invalid SBOM file extension. Allowed: {', '.join(FileRules.ALLOWED_SBOM_EXTENSIONS)}"
             )
 
         return path

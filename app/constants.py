@@ -9,7 +9,7 @@ class RateLimit(str, Enum):
     DOWNLOAD = "5/minute"
 
 
-class GitConfig:
+class GitRules:
     ALLOWED_GIT_HOSTS = frozenset([
         "github.com",
         "gitlab.com",
@@ -27,7 +27,7 @@ class GitConfig:
     GIT_TIMEOUT_SECONDS = 300
 
 
-class FileConfig:
+class FileRules:
     ALLOWED_SBOM_EXTENSIONS = frozenset([
         ".json",
         ".xml",
@@ -44,14 +44,3 @@ class FileConfig:
         "\\",
     ])
     MAX_FILE_SIZE_MB = 10
-
-
-class DatabaseConfig:
-    VEXS_COLLECTION = "vex"
-    TIXS_COLLECTION = "tix"
-    USERS_COLLECTION = "user"
-    MIN_POOL_SIZE = 10
-    MAX_POOL_SIZE = 100
-    MAX_IDLE_TIME_MS = 60000
-    DEFAULT_QUERY_TIMEOUT_MS = 5000
-    LONG_QUERY_TIMEOUT_MS = 30000

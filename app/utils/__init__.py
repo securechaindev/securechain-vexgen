@@ -1,5 +1,5 @@
 from .json_encoder import JSONEncoder
-from .jwt_encoder import JWTBearer
+from .jwt_bearer import JWTBearer
 
 __all__ = [
     "JSONEncoder",

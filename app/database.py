@@ -7,9 +7,8 @@ from motor.motor_asyncio import (
 )
 from neo4j import AsyncDriver, AsyncGraphDatabase
 
-from app.config import settings
-from app.constants import DatabaseConfig
 from app.logger import logger
+from app.settings import settings
 
 
 class DatabaseManager:
@@ -29,10 +28,10 @@ class DatabaseManager:
             logger.info("Initializing MongoDB connection pool...")
             self.mongo_client = AsyncIOMotorClient(
                 settings.VULN_DB_URI,
-                minPoolSize=DatabaseConfig.MIN_POOL_SIZE,
-                maxPoolSize=DatabaseConfig.MAX_POOL_SIZE,
-                maxIdleTimeMS=DatabaseConfig.MAX_IDLE_TIME_MS,
-                serverSelectionTimeoutMS=DatabaseConfig.DEFAULT_QUERY_TIMEOUT_MS,
+                minPoolSize=settings.MIN_POOL_SIZE,
+                maxPoolSize=settings.MAX_POOL_SIZE,
+                maxIdleTimeMS=settings.MAX_IDLE_TIME_MS,
+                serverSelectionTimeoutMS=settings.DEFAULT_QUERY_TIMEOUT_MS,
             )
             self.securechain_db = self.mongo_client.get_database("securechain")
             self.vulnerabilities_db = self.mongo_client.get_database("vulnerabilities")
@@ -43,7 +42,7 @@ class DatabaseManager:
             self.neo4j_driver = AsyncGraphDatabase.driver(
                 uri=settings.GRAPH_DB_URI,
                 auth=(settings.GRAPH_DB_USER, settings.GRAPH_DB_PASSWORD),
-                max_connection_pool_size=DatabaseConfig.MAX_POOL_SIZE,
+                max_connection_pool_size=settings.MAX_POOL_SIZE,
             )
             logger.info("Neo4j driver initialized")
 
@@ -65,17 +64,17 @@ class DatabaseManager:
     def get_user_collection(self) -> AsyncIOMotorCollection:
         if self.securechain_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self._securechain_db.get_collection(DatabaseConfig.USERS_COLLECTION)
+        return self.securechain_db.get_collection(settings.USERS_COLLECTION)
 
     def get_vexs_collection(self) -> AsyncIOMotorCollection:
-        if self._securechain_db is None:
+        if self.securechain_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self._securechain_db.get_collection(DatabaseConfig.VEXS_COLLECTION)
+        return self.securechain_db.get_collection(settings.VEXS_COLLECTION)
 
     def get_tixs_collection(self) -> AsyncIOMotorCollection:
-        if self._securechain_db is None:
+        if self.securechain_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self._securechain_db.get_collection(DatabaseConfig.TIXS_COLLECTION)
+        return self.securechain_db.get_collection(settings.TIXS_COLLECTION)
 
     def get_vulnerabilities_collection(self) -> AsyncIOMotorCollection:
         if self.vulnerabilities_db is None:

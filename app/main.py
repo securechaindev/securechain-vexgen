@@ -4,12 +4,12 @@ from fastapi import FastAPI
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import settings
 from app.database import DatabaseManager
 from app.exception_handler import ExceptionHandler
 from app.limiter import limiter
 from app.middleware import LogRequestMiddleware
 from app.router import api_router
+from app.settings import settings
 
 DESCRIPTION = """
 A simple generating tool of Vulnerability Exploitability eXchange (VEX) and Threat Intelligence eXchange (TIX) files.

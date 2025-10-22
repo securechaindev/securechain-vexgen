@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.config import settings
+from app.settings import settings
 from app.templates import create_vex_statement_template
 
 from .statement_helpers import StatementHelpers

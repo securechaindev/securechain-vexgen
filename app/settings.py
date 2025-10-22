@@ -26,6 +26,16 @@ class Settings(BaseSettings):
     GIT_CLONE_DEPTH: int = 1
     GIT_FSCK_OBJECTS: bool = True
 
+    # Database Configuration
+    VEXS_COLLECTION: str = "vex"
+    TIXS_COLLECTION: str = "tix"
+    USERS_COLLECTION: str = "user"
+    MIN_POOL_SIZE: int = 10
+    MAX_POOL_SIZE: int = 100
+    MAX_IDLE_TIME_MS: int = 60000
+    DEFAULT_QUERY_TIMEOUT_MS: int = 5000
+    LONG_QUERY_TIMEOUT_MS: int = 30000
+
     @staticmethod
     def get_os_environment() -> dict[str, str]:
         return dict(environ)

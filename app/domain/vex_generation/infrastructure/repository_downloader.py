@@ -6,8 +6,8 @@ from uuid import uuid4
 
 from git import GitCommandError, Repo
 
-from app.config import settings
 from app.exceptions import CloneRepoException
+from app.settings import settings
 from app.validators import GitValidator
 
 

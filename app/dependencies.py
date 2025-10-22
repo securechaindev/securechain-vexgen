@@ -66,43 +66,33 @@ class ServiceContainer:
         return self.jwt_bearer
 
 
-container: ServiceContainer | None = None
-
-
-def get_service_container() -> ServiceContainer:
-    global container
-    if container is None:
-        container = ServiceContainer()
-    return container
-
-
 def get_db() -> DatabaseManager:
-    return get_service_container().get_db()
+    return ServiceContainer().get_db()
 
 
 def get_vex_service() -> VEXService:
-    return get_service_container().get_vex_service()
+    return ServiceContainer().get_vex_service()
 
 
 def get_tix_service() -> TIXService:
-    return get_service_container().get_tix_service()
+    return ServiceContainer().get_tix_service()
 
 
 def get_package_service() -> PackageService:
-    return get_service_container().get_package_service()
+    return ServiceContainer().get_package_service()
 
 
 def get_version_service() -> VersionService:
-    return get_service_container().get_version_service()
+    return ServiceContainer().get_version_service()
 
 
 def get_vulnerability_service() -> VulnerabilityService:
-    return get_service_container().get_vulnerability_service()
+    return ServiceContainer().get_vulnerability_service()
 
 
 def get_json_encoder() -> JSONEncoder:
-    return get_service_container().get_json_encoder()
+    return ServiceContainer().get_json_encoder()
 
 
 def get_jwt_bearer() -> JWTBearer:
-    return get_service_container().get_jwt_bearer()
+    return ServiceContainer().get_jwt_bearer()

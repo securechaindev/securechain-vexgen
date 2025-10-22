@@ -10,7 +10,7 @@ from app.utils import JSONEncoder, JWTBearer
 
 
 class ServiceContainer:
-    instance: "ServiceContainer | None" = None
+    instance: "ServiceContainer" | None = None
     db_manager: DatabaseManager | None = None
     vex_service: VEXService | None = None
     tix_service: TIXService | None = None

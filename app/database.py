@@ -11,7 +11,7 @@ from app.logger import logger
 
 
 class DatabaseManager:
-    instance: "DatabaseManager | None" = None
+    instance: "DatabaseManager" | None = None
     mongo_client: AsyncIOMotorClient | None = None
     neo4j_driver: AsyncDriver | None = None
     securechain_db: AsyncIOMotorDatabase | None = None

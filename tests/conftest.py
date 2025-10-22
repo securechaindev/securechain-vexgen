@@ -25,14 +25,14 @@ def mock_db_manager():
 @pytest.fixture
 def mock_service_container(mock_db_manager):
     container = Mock(spec=ServiceContainer)
-    container._get_db = Mock(return_value=mock_db_manager)
+    container.get_db = Mock(return_value=mock_db_manager)
     return container
 
 
 @pytest_asyncio.fixture
 async def client(mock_db_manager):
     with patch("app.database.get_database_manager", return_value=mock_db_manager):
-        with patch.object(ServiceContainer, "_get_db", return_value=mock_db_manager):
+        with patch.object(ServiceContainer, "get_db", return_value=mock_db_manager):
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport, base_url="http://test") as ac:
                 yield ac

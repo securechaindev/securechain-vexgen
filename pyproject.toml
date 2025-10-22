@@ -16,7 +16,7 @@ dependencies = [
     "univers==30.12.1",
     "GitPython==3.1.43",
     "toml==0.10.2",
-    "regex==2024.11.6",
+    "regex==2025.10.23",
     "pyjwt==2.10.1",
     "aiohttp==3.11.11",
     "aiofiles==24.1.0",

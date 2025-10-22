@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.database import DatabaseManager, get_database_manager
+from app.database import DatabaseManager
 from app.services import (
     PackageService,
     TIXService,
@@ -29,7 +29,7 @@ class ServiceContainer:
 
     def get_db(self) -> DatabaseManager:
         if self.db_manager is None:
-            self.db_manager = get_database_manager()
+            self.db_manager = DatabaseManager()
         return self.db_manager
 
     def get_vex_service(self) -> VEXService:

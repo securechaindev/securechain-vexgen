@@ -33,7 +33,7 @@ class TestStatementsGenerator:
 
     @pytest.fixture
     def generator(self, mock_package_service, mock_version_service, mock_vulnerability_service):
-        with patch('app.domain.vex_generation.processors.statement_generator.get_database_manager'):
+        with patch('app.domain.vex_generation.processors.statement_generator.DatabaseManager'):
             return StatementsGenerator(
                 directory="/tmp/test",
                 package_service=mock_package_service,
@@ -449,7 +449,7 @@ class TestStatementsGenerator:
 
     @pytest.mark.asyncio
     async def test_initialization_with_default_services(self):
-        with patch('app.domain.vex_generation.processors.statement_generator.get_database_manager') as mock_db:
+        with patch('app.domain.vex_generation.processors.statement_generator.DatabaseManager') as mock_db:
             mock_db.return_value = MagicMock()
 
             with patch('app.domain.vex_generation.processors.statement_generator.PackageService') as mock_pkg:

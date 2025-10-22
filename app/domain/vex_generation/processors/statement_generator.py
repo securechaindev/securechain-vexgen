@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.database import get_database_manager
+from app.database import DatabaseManager
 from app.domain.vex_generation.generators import (
     TIXStatementGenerator,
     VEXStatementGenerator,
@@ -21,7 +21,7 @@ class StatementsGenerator:
         self.directory = directory
 
         # Get database manager instance
-        db = get_database_manager()
+        db = DatabaseManager()
 
         # Initialize services with database manager
         self.package_service = package_service or PackageService(db)

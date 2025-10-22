@@ -96,11 +96,3 @@ class DatabaseManager:
         if self.neo4j_driver is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
         return self.neo4j_driver
-
-db_manager: DatabaseManager | None = None
-
-def get_database_manager() -> DatabaseManager:
-    global db_manager
-    if db_manager is None:
-        db_manager = DatabaseManager()
-    return db_manager

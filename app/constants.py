@@ -47,9 +47,9 @@ class FileConfig:
 
 
 class DatabaseConfig:
-    VEXS_COLLECTION = "vexs"
-    TIXS_COLLECTION = "tixs"
-    USERS_COLLECTION = "users"
+    VEXS_COLLECTION = "vex"
+    TIXS_COLLECTION = "tix"
+    USERS_COLLECTION = "user"
     MIN_POOL_SIZE = 10
     MAX_POOL_SIZE = 100
     MAX_IDLE_TIME_MS = 60000

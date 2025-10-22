@@ -10,74 +10,74 @@ from app.utils import JSONEncoder, JWTBearer
 
 
 class ServiceContainer:
-    _instance: "ServiceContainer | None" = None
-    _db_manager: DatabaseManager | None = None
-    _vex_service: VEXService | None = None
-    _tix_service: TIXService | None = None
-    _package_service: PackageService | None = None
-    _version_service: VersionService | None = None
-    _vulnerability_service: VulnerabilityService | None = None
-    _json_encoder: JSONEncoder | None = None
-    _jwt_bearer: JWTBearer | None = None
+    instance: "ServiceContainer | None" = None
+    db_manager: DatabaseManager | None = None
+    vex_service: VEXService | None = None
+    tix_service: TIXService | None = None
+    package_service: PackageService | None = None
+    version_service: VersionService | None = None
+    vulnerability_service: VulnerabilityService | None = None
+    json_encoder: JSONEncoder | None = None
+    jwt_bearer: JWTBearer | None = None
 
     def __new__(cls) -> "ServiceContainer":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+        if cls.instance is None:
+            cls.instance = super().__new__(cls)
+        return cls.instance
 
-    def _get_db(self) -> DatabaseManager:
-        if self._db_manager is None:
-            self._db_manager = get_database_manager()
-        return self._db_manager
+    def get_db(self) -> DatabaseManager:
+        if self.db_manager is None:
+            self.db_manager = get_database_manager()
+        return self.db_manager
 
     def get_vex_service(self) -> VEXService:
-        if self._vex_service is None:
-            self._vex_service = VEXService(self._get_db())
-        return self._vex_service
+        if self.vex_service is None:
+            self.vex_service = VEXService(self.get_db())
+        return self.vex_service
 
     def get_tix_service(self) -> TIXService:
-        if self._tix_service is None:
-            self._tix_service = TIXService(self._get_db())
-        return self._tix_service
+        if self.tix_service is None:
+            self.tix_service = TIXService(self.get_db())
+        return self.tix_service
 
     def get_package_service(self) -> PackageService:
-        if self._package_service is None:
-            self._package_service = PackageService(self._get_db())
-        return self._package_service
+        if self.package_service is None:
+            self.package_service = PackageService(self.get_db())
+        return self.package_service
 
     def get_version_service(self) -> VersionService:
-        if self._version_service is None:
-            self._version_service = VersionService(self._get_db())
-        return self._version_service
+        if self.version_service is None:
+            self.version_service = VersionService(self.get_db())
+        return self.version_service
 
     def get_vulnerability_service(self) -> VulnerabilityService:
-        if self._vulnerability_service is None:
-            self._vulnerability_service = VulnerabilityService(self._get_db())
-        return self._vulnerability_service
+        if self.vulnerability_service is None:
+            self.vulnerability_service = VulnerabilityService(self.get_db())
+        return self.vulnerability_service
 
     def get_json_encoder(self) -> JSONEncoder:
-        if self._json_encoder is None:
-            self._json_encoder = JSONEncoder()
-        return self._json_encoder
+        if self.json_encoder is None:
+            self.json_encoder = JSONEncoder()
+        return self.json_encoder
 
     def get_jwt_bearer(self) -> JWTBearer:
-        if self._jwt_bearer is None:
-            self._jwt_bearer = JWTBearer()
-        return self._jwt_bearer
+        if self.jwt_bearer is None:
+            self.jwt_bearer = JWTBearer()
+        return self.jwt_bearer
 
 
-_container: ServiceContainer | None = None
+container: ServiceContainer | None = None
 
 
 def get_service_container() -> ServiceContainer:
-    global _container
-    if _container is None:
-        _container = ServiceContainer()
-    return _container
+    global container
+    if container is None:
+        container = ServiceContainer()
+    return container
 
 
 def get_db() -> DatabaseManager:
-    return get_service_container()._get_db()
+    return get_service_container().get_db()
 
 
 def get_vex_service() -> VEXService:

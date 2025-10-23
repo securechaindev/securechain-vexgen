@@ -133,7 +133,8 @@ class StatementsGenerator:
             purl,
             node_type,
             timestamp,
-            tix_statement
+            tix_statement,
+            self.tix_statement_generator.is_dependency_imported
         )
         vex["statements"].append(vex_statement)
 

@@ -17,6 +17,7 @@ class TIXStatementGenerator:
         self.directory = directory
         self.skip_dirs = SKIP_DIRECTORIES
         self.text_extensions = TEXT_FILE_EXTENSIONS
+        self.is_dependency_imported: bool = False
 
     async def generate_tix_statement(
         self,
@@ -24,7 +25,7 @@ class TIXStatementGenerator:
         purl: str,
         timestamp: str,
         import_names: list[str],
-        node_type: str
+        node_type: str,
     ) -> dict[str, Any]:
         tix_statement = await create_tix_statement_template()
 
@@ -72,6 +73,8 @@ class TIXStatementGenerator:
             analyzer = CodeAnalyzerFactory.get_analyzer(node_type)
             if not await analyzer.is_imported(path, import_names):
                 continue
+
+            self.is_dependency_imported = True
 
             reachable_code_entry = await self.build_reachable_code_entry(
                 path,

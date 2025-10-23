@@ -20,6 +20,7 @@ class VEXStatementGenerator:
         node_type: str,
         timestamp: str,
         tix_statement: dict[str, Any],
+        is_dependency_imported: bool,
     ) -> dict[str, Any]:
         vex_statement = await create_vex_statement_template()
         vex_statement["vulnerability"]["@id"] = await StatementHelpers.build_vulnerability_id(vulnerability["id"])
@@ -31,7 +32,8 @@ class VEXStatementGenerator:
         await self.add_vex_properties(
             vex_statement,
             tix_statement,
-            vulnerability
+            vulnerability,
+            is_dependency_imported
         )
         await self.add_vex_priority(vex_statement, vulnerability["vuln_impact"])
         return vex_statement
@@ -40,19 +42,21 @@ class VEXStatementGenerator:
         self,
         vex_statement: dict[str, Any],
         tix_statement: dict[str, Any],
-        vulnerability: dict[str, Any]
+        vulnerability: dict[str, Any],
+        is_dependency_imported: bool,
     ) -> None:
-        is_imported_any = tix_statement["reachable_code"] != []
         status = "under_investigation"
-        justification = ""
-        impact_statement = "The vulnerability doesn't have affected artefacts. The status cannot be inferred."
+        justification = "It is needed to analyze the code reachability to determine the status of the vulnerability."
+        impact_statement = "The vulnerability does not have affected artefacts. The status cannot be inferred."
         if "affected_artefacts" in vulnerability:
-            if not is_imported_any:
+            if not is_dependency_imported:
                 status = "not_affected"
                 justification = "component_not_present"
-            elif is_imported_any:
+                impact_statement = "The dependency is not imported in the code."
+            elif is_dependency_imported and not tix_statement.get("reachable_code", []):
                 status = "not_affected"
                 justification = "vulnerable_code_not_present"
+                impact_statement = "There is no affected artefact present in the code."
             else:
                 impact_statement = "The code contains vulnerable artefacts that you should check to see if you are actually affected by the vulnerability."
         vex_statement["status"] = status
@@ -73,4 +77,4 @@ class VEXStatementGenerator:
         if vex_statement.get("vulnerability", {}).get("cwes", []):
             priority += self.cwes_priority_bonus
 
-        vex_statement["priority"] = priority
+        vex_statement["priority"] = round(priority, 2)

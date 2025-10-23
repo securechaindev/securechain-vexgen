@@ -1,22 +1,23 @@
 FROM python:3.13-slim
 
-WORKDIR /
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_SYSTEM_PYTHON=1 \
+    PATH="/.venv/bin:$PATH"
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-    git \
-    curl \
+ && apt-get install -y --no-install-recommends git \
  && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:$PATH"
+WORKDIR /
 
-COPY pyproject.toml ./
-COPY README.md ./
+COPY pyproject.toml uv.lock README.md ./
 
-RUN /root/.local/bin/uv pip install --system -e .
+COPY app ./app
 
-COPY . .
+RUN uv sync --frozen --no-cache
 
 EXPOSE 8000
 

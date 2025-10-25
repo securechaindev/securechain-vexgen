@@ -11,10 +11,10 @@ from fastapi.responses import FileResponse
 from app.apis import GitHubService
 from app.constants import RateLimit
 from app.dependencies import (
+    get_github_service,
     get_jwt_bearer,
     get_tix_service,
     get_vex_service,
-    get_github_service,
 )
 from app.domain import SBOMProcessor
 from app.limiter import limiter

@@ -46,7 +46,8 @@ class TestVEXStatementGenerator:
                 purl="pkg:npm/example@1.0.0",
                 node_type="npm",
                 timestamp="2023-10-20T12:00:00Z",
-                tix_statement=sample_tix_statement
+                tix_statement=sample_tix_statement,
+                is_dependency_imported=False
             )
 
         assert result["vulnerability"]["name"] == "CVE-2023-12345"
@@ -62,7 +63,7 @@ class TestVEXStatementGenerator:
             "impact_statement": ""
         }
 
-        await generator.add_vex_properties(vex_statement, sample_tix_statement, sample_vulnerability)
+        await generator.add_vex_properties(vex_statement, sample_tix_statement, sample_vulnerability, is_dependency_imported=False)
 
         assert vex_statement["status"] == "not_affected"
         assert vex_statement["justification"] == "component_not_present"
@@ -74,10 +75,10 @@ class TestVEXStatementGenerator:
             "impact_statement": ""
         }
         tix_statement = {
-            "reachable_code": ["some_code"]
+            "reachable_code": []
         }
 
-        await generator.add_vex_properties(vex_statement, tix_statement, sample_vulnerability)
+        await generator.add_vex_properties(vex_statement, tix_statement, sample_vulnerability, is_dependency_imported=True)
 
         assert vex_statement["status"] == "not_affected"
         assert vex_statement["justification"] == "vulnerable_code_not_present"
@@ -94,11 +95,11 @@ class TestVEXStatementGenerator:
             "vuln_impact": 7.5
         }
 
-        await generator.add_vex_properties(vex_statement, sample_tix_statement, vulnerability)
+        await generator.add_vex_properties(vex_statement, sample_tix_statement, vulnerability, is_dependency_imported=False)
 
         assert vex_statement["status"] == "under_investigation"
-        assert vex_statement["justification"] == ""
-        assert "doesn't have affected artefacts" in vex_statement["impact_statement"]
+        assert vex_statement["justification"] == "It is needed to analyze the code reachability to determine the status of the vulnerability."
+        assert "does not have affected artefacts" in vex_statement["impact_statement"]
 
     async def test_add_vex_priority_base_impact(self, generator):
         vex_statement = {}

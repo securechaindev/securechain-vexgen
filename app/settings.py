@@ -34,7 +34,6 @@ class Settings(BaseSettings):
     MAX_POOL_SIZE: int = 100
     MAX_IDLE_TIME_MS: int = 60000
     DEFAULT_QUERY_TIMEOUT_MS: int = 5000
-    LONG_QUERY_TIMEOUT_MS: int = 30000
 
     @staticmethod
     def get_os_environment() -> dict[str, str]:

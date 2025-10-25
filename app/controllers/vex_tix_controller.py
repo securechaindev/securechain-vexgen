@@ -10,14 +10,18 @@ from fastapi.responses import FileResponse
 
 from app.apis import GitHubService
 from app.constants import RateLimit
-from app.dependencies import get_jwt_bearer, get_tix_service, get_vex_service
+from app.dependencies import (
+    get_jwt_bearer,
+    get_tix_service,
+    get_vex_service,
+    get_github_service,
+)
 from app.domain import SBOMProcessor
 from app.limiter import limiter
 from app.schemas import GenerateVEXTIXRequest
 from app.services import TIXService, VEXService
 
 router = APIRouter()
-github_service = GitHubService()
 
 @router.post(
     "/vex_tix/generate",
@@ -32,7 +36,8 @@ async def generate_vex_tix(
     request: Request,
     generate_vex_tix_request: Annotated[GenerateVEXTIXRequest, Body()],
     vex_service: VEXService = Depends(get_vex_service),
-    tix_service: TIXService = Depends(get_tix_service)
+    tix_service: TIXService = Depends(get_tix_service),
+    github_service: GitHubService = Depends(get_github_service)
 ) -> FileResponse:
     sbom_processor = SBOMProcessor(
         generate_vex_tix_request,

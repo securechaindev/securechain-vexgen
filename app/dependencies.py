@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.apis.github_service import GitHubService
 from app.database import DatabaseManager
 from app.services import (
     PackageService,
@@ -19,6 +20,7 @@ class ServiceContainer:
     package_service: PackageService | None = None
     version_service: VersionService | None = None
     vulnerability_service: VulnerabilityService | None = None
+    github_service: GitHubService | None = None
     json_encoder: JSONEncoder | None = None
     jwt_bearer: JWTBearer | None = None
 
@@ -57,6 +59,11 @@ class ServiceContainer:
             self.vulnerability_service = VulnerabilityService(self.get_db())
         return self.vulnerability_service
 
+    def get_github_service(self) -> GitHubService:
+        if self.github_service is None:
+            self.github_service = GitHubService()
+        return self.github_service
+
     def get_json_encoder(self) -> JSONEncoder:
         if self.json_encoder is None:
             self.json_encoder = JSONEncoder()
@@ -90,6 +97,10 @@ def get_version_service() -> VersionService:
 
 def get_vulnerability_service() -> VulnerabilityService:
     return ServiceContainer().get_vulnerability_service()
+
+
+def get_github_service() -> GitHubService:
+    return ServiceContainer().get_github_service()
 
 
 def get_json_encoder() -> JSONEncoder:

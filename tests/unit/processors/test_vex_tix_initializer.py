@@ -61,56 +61,42 @@ class TestVEXTIXInitializer:
             with pytest.raises(json.JSONDecodeError):
                 await initializer.load_sbom_file(f.name)
 
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-    async def test_validate_sbom_structure_valid(self, initializer, valid_sbom):
-        result = await initializer.validate_sbom_structure(valid_sbom)
+    def test_validate_sbom_structure_valid(self, initializer, valid_sbom):
+        result = initializer.validate_sbom_structure(valid_sbom)
         assert result is True
 
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-    async def test_validate_sbom_structure_not_dict(self, initializer):
-        result = await initializer.validate_sbom_structure([])
+    def test_validate_sbom_structure_not_dict(self, initializer):
+        result = initializer.validate_sbom_structure([])
         assert result is False
 
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-    async def test_validate_sbom_structure_missing_components(self, initializer):
+    def test_validate_sbom_structure_missing_components(self, initializer):
         sbom = {
             "bomFormat": "CycloneDX",
             "specVersion": "1.4"
         }
-        result = await initializer.validate_sbom_structure(sbom)
+        result = initializer.validate_sbom_structure(sbom)
         assert result is False
 
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-    async def test_validate_sbom_structure_components_not_list(self, initializer):
+    def test_validate_sbom_structure_components_not_list(self, initializer):
         sbom = {
             "components": "not a list"
         }
-        result = await initializer.validate_sbom_structure(sbom)
+        result = initializer.validate_sbom_structure(sbom)
         assert result is False
 
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-    async def test_validate_sbom_structure_empty_components(self, initializer):
+    def test_validate_sbom_structure_empty_components(self, initializer):
         sbom = {
             "components": []
         }
-        result = await initializer.validate_sbom_structure(sbom)
+        result = initializer.validate_sbom_structure(sbom)
         assert result is True
 
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-    async def test_validate_sbom_structure_none(self, initializer):
-        result = await initializer.validate_sbom_structure(None)
+    def test_validate_sbom_structure_none(self, initializer):
+        result = initializer.validate_sbom_structure(None)
         assert result is False
 
-    @pytest.mark.asyncio
-    @pytest.mark.asyncio
-    async def test_validate_sbom_structure_string(self, initializer):
-        result = await initializer.validate_sbom_structure("not a dict")
+    def test_validate_sbom_structure_string(self, initializer):
+        result = initializer.validate_sbom_structure("not a dict")
         assert result is False
 
     @pytest.mark.asyncio

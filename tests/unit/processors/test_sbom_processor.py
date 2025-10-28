@@ -308,7 +308,7 @@ class TestSBOMProcessor:
         mock_downloader.download_repository.return_value = directory
         mock_downloader_class.return_value = mock_downloader
 
-        async def mock_get_relative_path(file_path, base_dir):
+        def mock_get_relative_path(file_path, base_dir):
             return "sbom.json"
 
         mock_path_helper.get_relative_path = mock_get_relative_path

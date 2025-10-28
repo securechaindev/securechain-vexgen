@@ -1,4 +1,3 @@
-import pytest
 
 from app.templates.file.tix_template import create_tix_template
 from app.templates.file.tix_template import template as tix_template
@@ -31,19 +30,17 @@ class TestVEXTemplate:
         assert tmpl["version"] == 1
         assert tmpl["statements"] == []
 
-    @pytest.mark.asyncio
-    async def test_create_vex_template(self):
-        tmpl1 = await create_vex_template()
-        tmpl2 = await create_vex_template()
+    def test_create_vex_template(self):
+        tmpl1 = create_vex_template()
+        tmpl2 = create_vex_template()
 
         assert tmpl1 == tmpl2
 
         tmpl1["author"] = "test"
         assert tmpl2["author"] == ""
 
-    @pytest.mark.asyncio
-    async def test_create_vex_template_is_mutable(self):
-        tmpl = await create_vex_template()
+    def test_create_vex_template_is_mutable(self):
+        tmpl = create_vex_template()
         tmpl["statements"].append({"test": "statement"})
 
         original = template()
@@ -73,19 +70,17 @@ class TestTIXTemplate:
         assert tmpl["statements"] == []
         assert "TIX" in tmpl["role"]
 
-    @pytest.mark.asyncio
-    async def test_create_tix_template(self):
-        tmpl1 = await create_tix_template()
-        tmpl2 = await create_tix_template()
+    def test_create_tix_template(self):
+        tmpl1 = create_tix_template()
+        tmpl2 = create_tix_template()
 
         assert tmpl1 == tmpl2
 
         tmpl1["author"] = "test"
         assert tmpl2["author"] == ""
 
-    @pytest.mark.asyncio
-    async def test_create_tix_template_is_mutable(self):
-        tmpl = await create_tix_template()
+    def test_create_tix_template_is_mutable(self):
+        tmpl = create_tix_template()
         tmpl["statements"].append({"test": "statement"})
 
         original = tix_template()
@@ -114,19 +109,17 @@ class TestVEXStatementTemplate:
         assert isinstance(tmpl["products"], list)
         assert len(tmpl["products"]) == 1
 
-    @pytest.mark.asyncio
-    async def test_create_vex_statement_template(self):
-        stmt1 = await create_vex_statement_template()
-        stmt2 = await create_vex_statement_template()
+    def test_create_vex_statement_template(self):
+        stmt1 = create_vex_statement_template()
+        stmt2 = create_vex_statement_template()
 
         assert stmt1 == stmt2
 
         stmt1["vulnerability"]["@id"] = "CVE-2023-1234"
         assert stmt2["vulnerability"]["@id"] == ""
 
-    @pytest.mark.asyncio
-    async def test_create_vex_statement_template_is_mutable(self):
-        stmt = await create_vex_statement_template()
+    def test_create_vex_statement_template_is_mutable(self):
+        stmt = create_vex_statement_template()
         stmt["products"].append({"test": "product"})
 
         original = vex_stmt_template()
@@ -153,19 +146,17 @@ class TestTIXStatementTemplate:
         assert tmpl["last_updated"] == ""
         assert isinstance(tmpl["products"], list)
 
-    @pytest.mark.asyncio
-    async def test_create_tix_statement_template(self):
-        stmt1 = await create_tix_statement_template()
-        stmt2 = await create_tix_statement_template()
+    def test_create_tix_statement_template(self):
+        stmt1 = create_tix_statement_template()
+        stmt2 = create_tix_statement_template()
 
         assert stmt1 == stmt2
 
         stmt1["vulnerability"]["@id"] = "CVE-2023-5678"
         assert stmt2["vulnerability"]["@id"] == ""
 
-    @pytest.mark.asyncio
-    async def test_create_tix_statement_template_is_mutable(self):
-        stmt = await create_tix_statement_template()
+    def test_create_tix_statement_template_is_mutable(self):
+        stmt = create_tix_statement_template()
         stmt["products"].append({"test": "product"})
 
         original = tix_stmt_template()

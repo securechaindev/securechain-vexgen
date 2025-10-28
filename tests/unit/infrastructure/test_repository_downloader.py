@@ -23,18 +23,16 @@ class TestRepositoryDownloader:
         assert downloader.git_config is not None
         assert downloader.clone_options is not None
 
-    @pytest.mark.asyncio
-    async def test_prepare_directory_creates_new(self, downloader):
+    def test_prepare_directory_creates_new(self, downloader):
         with TemporaryDirectory() as temp_dir:
             test_dir = f"{temp_dir}/test_repo"
 
-            await downloader.prepare_directory(test_dir)
+            downloader.prepare_directory(test_dir)
 
             assert Path(test_dir).exists()
             assert Path(test_dir).is_dir()
 
-    @pytest.mark.asyncio
-    async def test_prepare_directory_removes_existing(self, downloader):
+    def test_prepare_directory_removes_existing(self, downloader):
         with TemporaryDirectory() as temp_dir:
             test_dir = f"{temp_dir}/test_repo"
             Path(test_dir).mkdir()
@@ -42,23 +40,21 @@ class TestRepositoryDownloader:
             test_file = Path(test_dir) / "existing.txt"
             test_file.write_text("old content")
 
-            await downloader.prepare_directory(test_dir)
+            downloader.prepare_directory(test_dir)
 
             assert Path(test_dir).exists()
             assert not test_file.exists()
 
-    @pytest.mark.asyncio
-    async def test_prepare_directory_ignores_errors(self, downloader):
+    def test_prepare_directory_ignores_errors(self, downloader):
         with TemporaryDirectory() as temp_dir:
             test_dir = f"{temp_dir}/test_repo"
 
-            await downloader.prepare_directory(test_dir)
+            downloader.prepare_directory(test_dir)
             assert Path(test_dir).exists()
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.Repo')
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.settings')
-    async def test_clone_repository_success(self, mock_settings, mock_repo_class, downloader):
+    def test_clone_repository_success(self, mock_settings, mock_repo_class, downloader):
         mock_settings.get_os_environment.return_value = {"GIT_TERMINAL_PROMPT": "0"}
         mock_repo = MagicMock(spec=Repo)
         mock_repo_class.clone_from.return_value = mock_repo
@@ -66,7 +62,7 @@ class TestRepositoryDownloader:
         url = "https://github.com/owner/repo.git"
         directory = "/tmp/test_repo"
 
-        result = await downloader.clone_repository(url, directory)
+        result = downloader.clone_repository(url, directory)
 
         assert result == mock_repo
         mock_repo_class.clone_from.assert_called_once_with(
@@ -89,9 +85,8 @@ class TestRepositoryDownloader:
         with pytest.raises(CloneRepoException):
             await downloader.clone_repository(url, directory)
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.Path')
-    async def test_configure_repository_success(self, mock_path_class, downloader):
+    def test_configure_repository_success(self, mock_path_class, downloader):
         mock_repo = MagicMock(spec=Repo)
         mock_repo.git.config = MagicMock()
 
@@ -111,12 +106,11 @@ class TestRepositoryDownloader:
             "user.email": "test@example.com"
         }
 
-        await downloader.configure_repository(mock_repo, directory)
+        downloader.configure_repository(mock_repo, directory)
 
         assert mock_repo.git.config.call_count == 3
 
-    @pytest.mark.asyncio
-    async def test_configure_repository_creates_hooks_directory(self, downloader):
+    def test_configure_repository_creates_hooks_directory(self, downloader):
         with TemporaryDirectory() as temp_dir:
             git_dir = Path(temp_dir) / ".git"
             git_dir.mkdir()
@@ -126,7 +120,7 @@ class TestRepositoryDownloader:
 
             downloader.git_config = {"user.name": "test"}
 
-            await downloader.configure_repository(mock_repo, temp_dir)
+            downloader.configure_repository(mock_repo, temp_dir)
 
             hooks_dir = git_dir / "hooks-empty"
             assert hooks_dir.exists()
@@ -143,8 +137,8 @@ class TestRepositoryDownloader:
         with pytest.raises(CloneRepoException):
             await downloader.configure_repository(mock_repo, directory)
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.GitValidator')
+    @pytest.mark.asyncio
     async def test_download_repository_validates_url(self, mock_validator, downloader):
         mock_validator.validate_git_url = MagicMock()
 
@@ -156,8 +150,8 @@ class TestRepositoryDownloader:
         expected_url = "https://github.com/owner/repo.git"
         mock_validator.validate_git_url.assert_called_once_with(expected_url)
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.GitValidator')
+    @pytest.mark.asyncio
     async def test_download_repository_unique_directory(self, mock_validator, downloader):
         mock_validator.validate_git_url = MagicMock()
 
@@ -172,8 +166,8 @@ class TestRepositoryDownloader:
                 assert call_arg.startswith("repositories/repo_")
                 assert len(call_arg.split("_")[-1]) == 8
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.GitValidator')
+    @pytest.mark.asyncio
     async def test_download_repository_full_flow_success(self, mock_validator, downloader):
         mock_validator.validate_git_url = MagicMock()
         mock_repo = MagicMock(spec=Repo)
@@ -189,8 +183,8 @@ class TestRepositoryDownloader:
 
                     assert result.startswith("repositories/test-repo_")
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.GitValidator')
+    @pytest.mark.asyncio
     async def test_download_repository_clone_error(self, mock_validator, downloader):
         mock_validator.validate_git_url = MagicMock()
 
@@ -199,8 +193,8 @@ class TestRepositoryDownloader:
                 with pytest.raises(CloneRepoException):
                     await downloader.download_repository("owner", "repo")
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.GitValidator')
+    @pytest.mark.asyncio
     async def test_download_repository_config_error(self, mock_validator, downloader):
         mock_validator.validate_git_url = MagicMock()
         mock_repo = MagicMock(spec=Repo)
@@ -211,8 +205,7 @@ class TestRepositoryDownloader:
                     with pytest.raises(CloneRepoException):
                         await downloader.download_repository("owner", "repo")
 
-    @pytest.mark.asyncio
-    async def test_configure_repository_hooks_path_special_handling(self, downloader):
+    def test_configure_repository_hooks_path_special_handling(self, downloader):
         with TemporaryDirectory() as temp_dir:
             git_dir = Path(temp_dir) / ".git"
             git_dir.mkdir()
@@ -230,7 +223,7 @@ class TestRepositoryDownloader:
                 "user.name": "test"
             }
 
-            await downloader.configure_repository(mock_repo, temp_dir)
+            downloader.configure_repository(mock_repo, temp_dir)
 
             hooks_path_call = next(call for call in config_calls if call[0] == "core.hooksPath")
             assert "hooks-empty" in str(hooks_path_call[1])
@@ -238,8 +231,8 @@ class TestRepositoryDownloader:
             user_name_call = next(call for call in config_calls if call[0] == "user.name")
             assert user_name_call[1] == "test"
 
-    @pytest.mark.asyncio
     @patch('app.domain.vex_generation.infrastructure.repository_downloader.GitValidator')
+    @pytest.mark.asyncio
     async def test_download_repository_multiple_calls_unique_dirs(self, mock_validator, downloader):
         mock_validator.validate_git_url = MagicMock()
         mock_repo = MagicMock(spec=Repo)

@@ -185,7 +185,7 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.extract_type = AsyncMock(return_value="npm")
+        generator.purl_parser.extract_type = MagicMock(return_value="npm")
         generator.package_service.read_package_by_name.return_value = ("express", ["express"])
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-2023-1234"]
 
@@ -213,7 +213,7 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.extract_type = AsyncMock(return_value=None)
+        generator.purl_parser.extract_type = MagicMock(return_value=None)
 
         await generator.process_component(component, "2024-01-01T00:00:00Z", vex, tix)
 
@@ -230,7 +230,7 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.extract_type = AsyncMock(return_value="unknown")
+        generator.purl_parser.extract_type = MagicMock(return_value="unknown")
 
         with patch.object(generator, 'map_node_type', side_effect=ComponentNotSupportedException()):
             await generator.process_component(component, "2024-01-01T00:00:00Z", vex, tix)
@@ -248,7 +248,7 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.extract_type = AsyncMock(return_value="npm")
+        generator.purl_parser.extract_type = MagicMock(return_value="npm")
         generator.package_service.read_package_by_name.return_value = ("express", ["express"])
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = []
 
@@ -267,7 +267,7 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.extract_type = AsyncMock(return_value="npm")
+        generator.purl_parser.extract_type = MagicMock(return_value="npm")
         generator.package_service.read_package_by_name.return_value = ("express", ["express"])
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = [
             "CVE-2023-1234",
@@ -314,8 +314,8 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.is_valid = AsyncMock(return_value=True)
-        generator.purl_parser.extract_type = AsyncMock(return_value="npm")
+        generator.purl_parser.is_valid = MagicMock(return_value=True)
+        generator.purl_parser.extract_type = MagicMock(return_value="npm")
 
         generator.package_service.read_package_by_name.return_value = ("pkg", ["pkg"])
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-1"]
@@ -366,8 +366,8 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.is_valid = AsyncMock(return_value=True)
-        generator.purl_parser.extract_type = AsyncMock(return_value="npm")
+        generator.purl_parser.is_valid = MagicMock(return_value=True)
+        generator.purl_parser.extract_type = MagicMock(return_value="npm")
         generator.package_service.read_package_by_name.return_value = ("pkg", ["pkg"])
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-1"]
         generator.vulnerability_service.read_vulnerability_by_id.return_value = {"id": "CVE-1"}
@@ -411,8 +411,8 @@ class TestStatementsGenerator:
         vex = {"statements": [{"existing": "vex", "priority": 1}]}
         tix = {"statements": [{"existing": "tix"}]}
 
-        generator.purl_parser.is_valid = AsyncMock(return_value=True)
-        generator.purl_parser.extract_type = AsyncMock(return_value="npm")
+        generator.purl_parser.is_valid = MagicMock(return_value=True)
+        generator.purl_parser.extract_type = MagicMock(return_value="npm")
         generator.package_service.read_package_by_name.return_value = ("pkg", ["pkg"])
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-1"]
         generator.vulnerability_service.read_vulnerability_by_id.return_value = {"id": "CVE-1"}
@@ -471,7 +471,7 @@ class TestStatementsGenerator:
         vex = {"statements": []}
         tix = {"statements": []}
 
-        generator.purl_parser.extract_type = AsyncMock(return_value="npm")
+        generator.purl_parser.extract_type = MagicMock(return_value="npm")
         generator.package_service.read_package_by_name.return_value = ("express", ["express"])
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = []
 

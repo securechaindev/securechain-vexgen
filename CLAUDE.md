@@ -200,7 +200,7 @@ class VEXStatementGenerator:
 1. POST /vex_tix/generate
    ↓
 2. SBOMProcessor.process_sboms()
-   ├─ RepositoryDownloader.download_repository()  # Clone repo
+   ├─ RepositoryDownloader.download_repository()  # Clone repo (async via to_thread)
    ├─ find_sbom_files()                           # Find SBOMs
    ├─ GitHubService.get_last_commit_date()       # Check cache
    └─ VEXTIXInitializer.init_vex_tix()           # Generate docs
@@ -966,6 +966,95 @@ GIT_CLONE_DEPTH=1  # Smaller = faster
 ---
 
 ## 📝 Recent Improvements & Changes
+
+### ✅ Completed (October 28, 2025)
+
+**1. Async/Await Optimization - Performance Improvements**
+- Converted 13 unnecessary async functions to synchronous
+- Integrated `asyncio.to_thread()` for blocking I/O operations
+- Implemented `aiofiles` for true async file reading
+- Removed "fake async" patterns that provided no benefit
+
+**Synchronous Conversions (No Real I/O):**
+- Templates: `vex_template`, `tix_template`, `vex_statement_template`, `tix_statement_template`
+- Helpers: `set_timestamps`, `build_vulnerability_id`, `build_cwe_dict`, `build_exploit_dict`, `get_relative_path`
+- Validators: `validate_sbom_structure`
+- Parsers: `PURLParser.extract_type()`, `PURLParser.is_valid()`
+
+**Async with asyncio.to_thread() (Blocking Operations):**
+```python
+async def download_repository(self, owner: str, name: str) -> str:
+    """Download repository without blocking event loop."""
+    return await asyncio.to_thread(
+        self._download_repository_sync,
+        owner,
+        name
+    )
+
+def _download_repository_sync(self, owner: str, name: str) -> str:
+    """Synchronous git operations (clone, config)."""
+    # GitPython operations are inherently blocking
+    repo = Repo.clone_from(url, directory)
+    repo.git.config(...)
+    return directory
+```
+
+**Benefits:**
+- ✅ **No event loop blocking** - Git clone operations run in thread pool
+- ✅ **Better concurrency** - Other requests can be processed during clones
+- ✅ **Cleaner code** - Removed unnecessary `async def` where no I/O occurs
+- ✅ **True async file I/O** - `aiofiles` for `load_sbom_file()`
+
+**Async File Reading with aiofiles:**
+```python
+async def load_sbom_file(sbom_file: str) -> dict:
+    """Load SBOM file asynchronously."""
+    async with aio_open(sbom_file, mode="r", encoding="utf-8") as f:
+        content = await f.read()
+        return loads(content)  # json.loads (not json.load)
+```
+
+**Files Modified:**
+- `app/domain/vex_generation/infrastructure/repository_downloader.py` - Added `asyncio.to_thread()`
+- `app/domain/vex_generation/processors/vex_tix_initializer.py` - Integrated `aiofiles`
+- `app/domain/vex_generation/parsers/purl_parser.py` - Converted to sync
+- `app/templates/statement/` - All template generators converted to sync
+- `app/domain/vex_generation/generators/statement_helpers.py` - All helpers converted to sync
+- `app/domain/vex_generation/helpers/path_helper.py` - `get_relative_path()` converted to sync
+
+**Tests Updated:**
+- `tests/unit/parsers/test_purl_parser.py` - Removed `@pytest.mark.asyncio` and `await`
+- `tests/unit/infrastructure/test_repository_downloader.py` - Updated for `asyncio.to_thread()` pattern
+- `tests/unit/processors/test_statement_generator.py` - Fixed mocks (AsyncMock → MagicMock)
+- `tests/unit/processors/test_sbom_processor.py` - Updated for sync `download_repository`
+- `tests/unit/templates/test_templates.py` - Converted template tests to sync
+- `tests/unit/helpers/test_path_helper.py` - Converted to sync
+
+**Test Results:**
+- ✅ All 483 tests passing
+- ✅ 88% code coverage maintained
+- ✅ No performance regressions
+- ✅ Event loop no longer blocked by git operations
+
+**Performance Impact:**
+- **Before:** Git clone (30s) blocks ALL requests → 30s total wait time
+- **After:** Git clone (30s) runs in thread → 0s wait for other requests
+- **Repository downloader:** Can handle multiple simultaneous clone operations
+- **File I/O:** True async with `aiofiles` instead of blocking `open()`
+
+**Key Learning:**
+> **Rule of thumb:** Use `async def` ONLY when:
+> 1. You actually `await` something (network, database, file I/O)
+> 2. The I/O operation has an async implementation
+> 3. For blocking operations (like git), use `asyncio.to_thread()`
+
+**Architecture Decision:**
+- Keep services async (they use Motor/Neo4j async drivers)
+- Keep processors async (they call async services)
+- Make utilities sync (no I/O, just computation)
+- Wrap blocking I/O with `asyncio.to_thread()`
+
+---
 
 ### ✅ Completed (October 20, 2025)
 

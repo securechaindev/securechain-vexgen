@@ -1,7 +1,8 @@
 from datetime import datetime
-from json import load
+from json import loads
 from typing import Any
 
+from aiofiles import open as aio_open
 from pytz import UTC
 
 from app.domain.vex_generation.generators import StatementHelpers
@@ -37,16 +38,16 @@ class VEXTIXInitializer:
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         sbom_json = await self.load_sbom_file(sbom_file)
 
-        if not await self.validate_sbom_structure(sbom_json):
+        if not self.validate_sbom_structure(sbom_json):
             raise ValueError(f"Invalid SBOM structure in file: {sbom_file}")
 
-        vex = await create_vex_template()
-        tix = await create_tix_template()
+        vex = create_vex_template()
+        tix = create_tix_template()
 
         vex["author"] = owner
         tix["author"] = owner
-        await StatementHelpers.set_timestamps(vex, timestamp)
-        await StatementHelpers.set_timestamps(tix, timestamp)
+        StatementHelpers.set_timestamps(vex, timestamp)
+        StatementHelpers.set_timestamps(tix, timestamp)
 
         statements_generator = StatementsGenerator(self.directory)
         vex, tix = await statements_generator.generate_statements(
@@ -59,10 +60,11 @@ class VEXTIXInitializer:
         return vex, tix
 
     async def load_sbom_file(self, sbom_file: str) -> dict[str, Any]:
-        with open(sbom_file, encoding="utf-8") as f:
-            return load(f)
+        async with aio_open(sbom_file, encoding="utf-8") as f:
+            content = await f.read()
+            return loads(content)
 
-    async def validate_sbom_structure(self, sbom_json: Any) -> bool:
+    def validate_sbom_structure(self, sbom_json: Any) -> bool:
         if not isinstance(sbom_json, dict):
             return False
 

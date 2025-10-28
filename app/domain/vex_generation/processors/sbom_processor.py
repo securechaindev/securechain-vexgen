@@ -50,7 +50,7 @@ class SBOMProcessor:
 
         sboms_to_process = [
             sbom for sbom in sbom_files
-            if await PathHelper.get_relative_path(sbom, directory) not in cached_paths
+            if PathHelper.get_relative_path(sbom, directory) not in cached_paths
         ]
 
         if sboms_to_process:
@@ -60,7 +60,7 @@ class SBOMProcessor:
             vex_list.extend(new_vexs)
             tix_list.extend(new_tixs)
 
-        all_sbom_paths = [await PathHelper.get_relative_path(sbom, directory) for sbom in sbom_files]
+        all_sbom_paths = [PathHelper.get_relative_path(sbom, directory) for sbom in sbom_files]
 
         return ProcessedSBOMResult(
             vex_list=vex_list,
@@ -80,7 +80,7 @@ class SBOMProcessor:
         cached_paths = []
 
         for sbom_file in sbom_files:
-            sbom_path = await PathHelper.get_relative_path(sbom_file, directory)
+            sbom_path = PathHelper.get_relative_path(sbom_file, directory)
 
             last_vex = await self.vex_service.read_vex_by_owner_name_sbom_name(
                 self.request.owner,
@@ -124,7 +124,7 @@ class SBOMProcessor:
         tix_list = []
 
         for sbom_file, (vex, tix) in zip(sboms_to_process, results, strict=True):
-            sbom_path = await PathHelper.get_relative_path(sbom_file, directory)
+            sbom_path = PathHelper.get_relative_path(sbom_file, directory)
             await self.save_vex_tix(vex, tix, sbom_path)
             vex_list.append(vex)
             tix_list.append(tix)

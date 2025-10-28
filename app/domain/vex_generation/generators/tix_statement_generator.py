@@ -27,7 +27,7 @@ class TIXStatementGenerator:
         import_names: list[str],
         node_type: str,
     ) -> dict[str, Any]:
-        tix_statement = await create_tix_statement_template()
+        tix_statement = create_tix_statement_template()
 
         await self.populate_vulnerability_info(tix_statement, vulnerability, purl, timestamp)
 
@@ -49,17 +49,17 @@ class TIXStatementGenerator:
         purl: str,
         timestamp: str
     ) -> None:
-        tix_statement["vulnerability"]["@id"] = await StatementHelpers.build_vulnerability_id(vulnerability.get("id", ""))
+        tix_statement["vulnerability"]["@id"] = StatementHelpers.build_vulnerability_id(vulnerability.get("id", ""))
         tix_statement["vulnerability"]["name"] = vulnerability.get("id", "")
         tix_statement["vulnerability"]["description"] = vulnerability.get("details", "")
         tix_statement["vulnerability"]["cvss"]["vuln_impact"] = vulnerability.get("vuln_impact", "")
         tix_statement["vulnerability"]["cvss"]["attack_vector"] = vulnerability.get("attack_vector", "")
         tix_statement["products"][0]["identifiers"]["purl"] = purl
-        await StatementHelpers.set_timestamps(tix_statement, timestamp)
+        StatementHelpers.set_timestamps(tix_statement, timestamp)
 
         for cwe in vulnerability.get("cwes", []):
             tix_statement["vulnerability"]["cwes"].append(
-                await StatementHelpers.build_cwe_dict(cwe)
+                StatementHelpers.build_cwe_dict(cwe)
             )
 
     async def populate_reachable_code(
@@ -93,7 +93,7 @@ class TIXStatementGenerator:
         import_names: list[str],
         analyzer: CodeAnalyzerFactory
     ) -> dict[str, Any]:
-        relative_path = await PathHelper.get_relative_path(path, self.directory)
+        relative_path = PathHelper.get_relative_path(path, self.directory)
         affected_artefacts = vulnerability.get("affected_artefacts", {})
         used_artefacts = await analyzer.get_used_artefacts(
             path,
@@ -113,7 +113,7 @@ class TIXStatementGenerator:
         vulnerability: dict[str, Any]
     ) -> None:
         for exploit in vulnerability.get("exploits", []):
-            exploit_dict = await StatementHelpers.build_exploit_dict(exploit)
+            exploit_dict = StatementHelpers.build_exploit_dict(exploit)
             if exploit_dict["@id"] != "Unknown":
                 tix_statement["exploits"].append(exploit_dict)
 

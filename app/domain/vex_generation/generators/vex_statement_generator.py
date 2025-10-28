@@ -22,13 +22,13 @@ class VEXStatementGenerator:
         tix_statement: dict[str, Any],
         is_dependency_imported: bool,
     ) -> dict[str, Any]:
-        vex_statement = await create_vex_statement_template()
-        vex_statement["vulnerability"]["@id"] = await StatementHelpers.build_vulnerability_id(vulnerability["id"])
+        vex_statement = create_vex_statement_template()
+        vex_statement["vulnerability"]["@id"] = StatementHelpers.build_vulnerability_id(vulnerability["id"])
         vex_statement["vulnerability"]["name"] = vulnerability["id"]
         vex_statement["vulnerability"]["description"] = vulnerability["details"]
         vex_statement["products"][0]["identifiers"]["purl"] = purl
         vex_statement["supplier"] = node_type
-        await StatementHelpers.set_timestamps(vex_statement, timestamp)
+        StatementHelpers.set_timestamps(vex_statement, timestamp)
         await self.add_vex_properties(
             vex_statement,
             tix_statement,

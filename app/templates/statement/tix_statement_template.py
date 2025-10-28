@@ -31,5 +31,5 @@ def template() -> dict:
     )
 
 
-async def create_tix_statement_template() -> dict:
+def create_tix_statement_template() -> dict:
     return deepcopy(template())

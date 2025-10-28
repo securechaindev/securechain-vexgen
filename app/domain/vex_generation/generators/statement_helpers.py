@@ -3,16 +3,16 @@ from typing import Any
 
 class StatementHelpers:
     @staticmethod
-    async def set_timestamps(file: dict[str, Any], timestamp: str) -> None:
+    def set_timestamps(file: dict[str, Any], timestamp: str) -> None:
         file["timestamp"] = timestamp
         file["last_updated"] = timestamp
 
     @staticmethod
-    async def build_vulnerability_id(vuln_id: str) -> str:
+    def build_vulnerability_id(vuln_id: str) -> str:
         return f"https://osv.dev/vulnerability/{vuln_id}"
 
     @staticmethod
-    async def build_cwe_dict(cwe: dict[str, Any]) -> dict[str, Any]:
+    def build_cwe_dict(cwe: dict[str, Any]) -> dict[str, Any]:
         return {
             "@id": cwe.get("ExternalReference", ""),
             "abstraction": cwe.get("@Abstraction", ""),
@@ -21,7 +21,7 @@ class StatementHelpers:
         }
 
     @staticmethod
-    async def build_exploit_dict(exploit: dict[str, Any]) -> dict[str, Any]:
+    def build_exploit_dict(exploit: dict[str, Any]) -> dict[str, Any]:
         is_github_exploit = exploit.get("type") == "githubexploit"
 
         description = "" if is_github_exploit else exploit.get("description", "")

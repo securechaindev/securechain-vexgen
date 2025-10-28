@@ -5,6 +5,6 @@ from app.validators import PathValidator
 
 class PathHelper:
     @staticmethod
-    async def get_relative_path(file_path: str, base_dir: str) -> str:
+    def get_relative_path(file_path: str, base_dir: str) -> str:
         sanitized_path = PathValidator.sanitize_path(file_path, base_dir)
         return relpath(str(sanitized_path), base_dir)

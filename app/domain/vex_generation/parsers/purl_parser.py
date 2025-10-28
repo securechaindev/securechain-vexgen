@@ -7,7 +7,7 @@ class PURLParser:
     def __init__(self) -> None:
         self.purl_pattern: Pattern= compile(r'^pkg:([^/]+)/.*$')
 
-    async def extract_type(self, purl: str) -> str | None:
+    def extract_type(self, purl: str) -> str | None:
         if not purl or not isinstance(purl, str):
             return None
 
@@ -17,8 +17,8 @@ class PURLParser:
         match = self.purl_pattern.match(purl)
         return match.group(1) if match else None
 
-    async def is_valid(self, purl: str) -> bool:
-        purl_type = await self.extract_type(purl)
+    def is_valid(self, purl: str) -> bool:
+        purl_type = self.extract_type(purl)
         if purl_type is None:
             return False
         return purl_type.lower() in NodeTypeMapper.get_supported_purl_types()

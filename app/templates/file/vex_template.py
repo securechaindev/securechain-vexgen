@@ -19,5 +19,5 @@ def template() -> dict:
     )
 
 
-async def create_vex_template() -> dict:
+def create_vex_template() -> dict:
     return deepcopy(template())

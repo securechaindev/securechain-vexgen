@@ -62,7 +62,7 @@ class StatementsGenerator:
             return False
 
         purl = component.get(self.component_purl_key, "")
-        if not await self.purl_parser.is_valid(purl):
+        if not self.purl_parser.is_valid(purl):
             return False
 
         return True
@@ -75,7 +75,7 @@ class StatementsGenerator:
         tix: dict[str, Any]
     ) -> None:
         purl = component[self.component_purl_key]
-        purl_type = await self.purl_parser.extract_type(purl)
+        purl_type = self.purl_parser.extract_type(purl)
 
         if not purl_type:
             return

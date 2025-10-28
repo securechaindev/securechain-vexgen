@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.apis.github_service import GitHubService
 from app.database import DatabaseManager
+from app.logger import LoggerManager
 from app.services import (
     PackageService,
     TIXService,
@@ -23,6 +24,7 @@ class ServiceContainer:
     github_service: GitHubService | None = None
     json_encoder: JSONEncoder | None = None
     jwt_bearer: JWTBearer | None = None
+    logger: LoggerManager | None = None
 
     def __new__(cls) -> ServiceContainer:
         if cls.instance is None:
@@ -74,6 +76,11 @@ class ServiceContainer:
             self.jwt_bearer = JWTBearer()
         return self.jwt_bearer
 
+    def get_logger(self) -> LoggerManager:
+        if self.logger is None:
+            self.logger = LoggerManager("logs/errors.log")
+        return self.logger
+
 
 def get_db() -> DatabaseManager:
     return ServiceContainer().get_db()
@@ -109,3 +116,7 @@ def get_json_encoder() -> JSONEncoder:
 
 def get_jwt_bearer() -> JWTBearer:
     return ServiceContainer().get_jwt_bearer()
+
+
+def get_logger() -> LoggerManager:
+    return ServiceContainer().get_logger()

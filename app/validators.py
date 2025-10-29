@@ -31,7 +31,7 @@ class GitValidator:
             raise ValueError(f"Git host not allowed. Allowed hosts: {', '.join(GitRules.ALLOWED_GIT_HOSTS)}")
 
         if "github.com" in parsed.netloc:
-            if not GitValidator._is_valid_github_url(url):
+            if not GitValidator.is_valid_github_url(url):
                 raise ValueError("Invalid GitHub repository URL format")
 
         dangerous_chars = ['`', '$', ';', '|', '&', '\n', '\r', '\0']
@@ -41,7 +41,7 @@ class GitValidator:
         return url
 
     @staticmethod
-    def _is_valid_github_url(url: str) -> bool:
+    def is_valid_github_url(url: str) -> bool:
         github_pattern = r"^https://github\.com/[\w\-]+/[\w\-\.]+(?:\.git)?$"
         return bool(match(github_pattern, url))
 

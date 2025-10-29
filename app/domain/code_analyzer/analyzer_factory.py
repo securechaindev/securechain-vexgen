@@ -14,7 +14,7 @@ from .analyzers import (
 
 
 class CodeAnalyzerFactory:
-    _analyzers: ClassVar[dict[str, BaseCodeAnalyzer]] = {
+    analyzers: ClassVar[dict[str, BaseCodeAnalyzer]] = {
         "PyPIPackage": PythonAnalyzer(),
         "NPMPackage": JavaScriptTypeScriptAnalyzer(),
         "MavenPackage": JavaAnalyzer(),
@@ -25,7 +25,7 @@ class CodeAnalyzerFactory:
 
     @classmethod
     def get_analyzer(cls, node_type: str) -> BaseCodeAnalyzer:
-        analyzer = cls._analyzers.get(node_type)
+        analyzer = cls.analyzers.get(node_type)
         if analyzer is None:
             raise ComponentNotSupportedException()
         return analyzer

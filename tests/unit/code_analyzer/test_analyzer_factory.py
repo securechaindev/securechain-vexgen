@@ -52,7 +52,7 @@ class TestCodeAnalyzerFactory:
         assert analyzer1 is analyzer2
 
     def test_all_analyzers_available(self):
-        analyzers = CodeAnalyzerFactory._analyzers
+        analyzers = CodeAnalyzerFactory.analyzers
         assert len(analyzers) == 6
         assert "PyPIPackage" in analyzers
         assert "NPMPackage" in analyzers

@@ -38,7 +38,7 @@ class TestPackageService:
             "package_name": "django",
             "import_names": ["django", "django.conf", "django.db", "org.django"]
         }.get(key))
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -76,7 +76,7 @@ class TestPackageService:
             "package_name": "test",
             "import_names": ["test", ""]
         }.get(key))
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -103,7 +103,7 @@ class TestPackageService:
             "package_name": "commons-lang3",
             "import_names": ["org.apache.commons", "commons-lang3", "org.apache.commons"]
         }.get(key))
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -124,7 +124,7 @@ class TestPackageService:
             "package_name": "test-package",
             "import_names": ["test-package", ""]
         }.get(key))
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -149,7 +149,7 @@ class TestPackageService:
             "package_name": "pkg",
             "import_names": ["pkg", ""]
         }.get(key))
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)

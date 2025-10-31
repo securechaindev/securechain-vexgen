@@ -37,7 +37,7 @@ class TestVersionService:
 
         mock_record = Mock()
         mock_record.get = Mock(return_value=["CVE-2023-1234", "CVE-2023-5678"])
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -80,7 +80,7 @@ class TestVersionService:
 
         mock_record = Mock()
         mock_record.get = Mock(return_value=[])
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -99,7 +99,7 @@ class TestVersionService:
 
         mock_record = Mock()
         mock_record.get = Mock(return_value=["1.0.0", "1.1.0", "2.0.0"])
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -135,7 +135,7 @@ class TestVersionService:
 
         mock_record = Mock()
         mock_record.get = Mock(return_value=[])
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -152,7 +152,7 @@ class TestVersionService:
 
         mock_record = Mock()
         mock_record.get = Mock(return_value="CVE-2024-0001")
-        
+
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)

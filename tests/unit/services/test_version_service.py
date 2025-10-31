@@ -35,7 +35,9 @@ class TestVersionService:
     ):
         _, mock_session = mock_db
 
-        mock_record = [["CVE-2023-1234", "CVE-2023-5678"]]
+        mock_record = Mock()
+        mock_record.get = Mock(return_value=["CVE-2023-1234", "CVE-2023-5678"])
+        
         mock_result = AsyncMock()
         mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
@@ -76,8 +78,11 @@ class TestVersionService:
     ):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(return_value=[])
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=[[]])
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         result = await version_service.read_vulnerability_ids_by_version_and_package(
@@ -92,8 +97,11 @@ class TestVersionService:
     ):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(return_value=["1.0.0", "1.1.0", "2.0.0"])
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=[["1.0.0", "1.1.0", "2.0.0"]])
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         result = await version_service.read_versions_names_by_package(
@@ -125,8 +133,11 @@ class TestVersionService:
     ):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(return_value=[])
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=[[]])
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         result = await version_service.read_versions_names_by_package(
@@ -139,8 +150,11 @@ class TestVersionService:
     async def test_different_node_types(self, version_service, mock_db):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(return_value="CVE-2024-0001")
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=["CVE-2024-0001"])
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         for node_type in ["PypiPackage", "NpmPackage", "MavenPackage", "GemPackage"]:

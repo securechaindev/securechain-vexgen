@@ -33,10 +33,14 @@ class TestPackageService:
     async def test_read_package_by_name_found(self, package_service, mock_db):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(side_effect=lambda key: {
+            "package_name": "django",
+            "import_names": ["django", "django.conf", "django.db", "org.django"]
+        }.get(key))
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(
-            return_value=["django", ["django", "django.conf", "django.db", "org.django"]]
-        )
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         package_name, imports = await package_service.read_package_by_name(
@@ -67,8 +71,14 @@ class TestPackageService:
     async def test_read_package_query_structure(self, package_service, mock_db):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(side_effect=lambda key: {
+            "package_name": "test",
+            "import_names": ["test", ""]
+        }.get(key))
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=["test", ["test", ""]])
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         await package_service.read_package_by_name("PypiPackage", "test")
@@ -88,10 +98,14 @@ class TestPackageService:
     async def test_read_package_with_group_id(self, package_service, mock_db):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(side_effect=lambda key: {
+            "package_name": "commons-lang3",
+            "import_names": ["org.apache.commons", "commons-lang3", "org.apache.commons"]
+        }.get(key))
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(
-            return_value=["commons-lang3", ["org.apache.commons", "commons-lang3", "org.apache.commons"]]
-        )
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         package_name, imports = await package_service.read_package_by_name(
@@ -105,8 +119,14 @@ class TestPackageService:
     async def test_read_package_different_node_types(self, package_service, mock_db):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(side_effect=lambda key: {
+            "package_name": "test-package",
+            "import_names": ["test-package", ""]
+        }.get(key))
+        
         mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=["test-package", ["test-package", ""]])
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         for node_type in ["PypiPackage", "NpmPackage", "MavenPackage", "GemPackage"]:
@@ -124,9 +144,14 @@ class TestPackageService:
     async def test_read_package_returns_tuple(self, package_service, mock_db):
         _, mock_session = mock_db
 
+        mock_record = Mock()
+        mock_record.get = Mock(side_effect=lambda key: {
+            "package_name": "pkg",
+            "import_names": ["pkg", ""]
+        }.get(key))
+        
         mock_result = AsyncMock()
-
-        mock_result.single = AsyncMock(return_value=["pkg", ["pkg", ""]])
+        mock_result.single = AsyncMock(return_value=mock_record)
         mock_session.run = AsyncMock(return_value=mock_result)
 
         result = await package_service.read_package_by_name("PypiPackage", "pkg")

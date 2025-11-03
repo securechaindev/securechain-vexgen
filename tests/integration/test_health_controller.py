@@ -9,7 +9,10 @@ class TestHealthController:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        assert "detail" in data
+        assert "code" in data
+        assert "message" in data
+        assert data["code"] == "success_health_check"
+        assert data["message"] == "API is healthy"
 
     @pytest.mark.asyncio
     async def test_health_check_returns_json(self, client):

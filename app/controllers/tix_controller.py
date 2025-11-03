@@ -5,10 +5,11 @@ from zipfile import ZipFile
 from fastapi import APIRouter, Body, Depends, Request, status
 from fastapi.responses import FileResponse, JSONResponse
 
-from app.constants import RateLimit
+from app.constants import RateLimit, ResponseCode, ResponseMessage
 from app.dependencies import get_json_encoder, get_jwt_bearer, get_tix_service
+from app.exceptions import TixNotFoundException
 from app.limiter import limiter
-from app.schemas import DownloadTIXRequest, HTTPStatusMessage, TIXIdPath, UserIdPath
+from app.schemas import DownloadTIXRequest, TIXIdPath, UserIdPath
 from app.services import TIXService
 from app.utils import JSONEncoder
 
@@ -35,7 +36,8 @@ async def get_tixs(
         content=json_encoder.encode(
             {
                 "tixs": [tix.model_dump(by_alias=True) for tix in tixs],
-                "detail": HTTPStatusMessage.SUCCESS_TIXS_RETRIEVED
+                "code": ResponseCode.SUCCESS_TIXS_RETRIEVED,
+                "message": ResponseMessage.SUCCESS_TIXS_RETRIEVED
             },
         ),
     )
@@ -58,16 +60,14 @@ async def get_tix(
 ) -> JSONResponse:
     tix = await tix_service.read_tix_by_id(path.tix_id)
     if not tix:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"detail": HTTPStatusMessage.ERROR_TIX_NOT_FOUND}
-        )
+        raise TixNotFoundException()
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(
             {
                 "tix": tix.model_dump(by_alias=True),
-                "detail": HTTPStatusMessage.SUCCESS_TIX_RETRIEVED
+                "code": ResponseCode.SUCCESS_TIX_RETRIEVED,
+                "message": ResponseMessage.SUCCESS_TIX_RETRIEVED
             }
         ),
     )
@@ -89,10 +89,7 @@ async def download_tix(
 ) -> FileResponse:
     tix = await tix_service.read_tix_by_id(DownloadTIXRequest.tix_id)
     if not tix:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"detail": HTTPStatusMessage.ERROR_TIX_NOT_FOUND}
-        )
+        raise TixNotFoundException()
 
     tix_dict = tix.model_dump(by_alias=True)
     zip_path = "vex_tix_sbom.zip"

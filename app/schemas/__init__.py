@@ -1,5 +1,4 @@
 from .commons import (
-    HTTPStatusMessage,
     MongoObjectId,
     NodeType,
     ProcessedSBOMResult,
@@ -27,7 +26,6 @@ __all__ = [
     "DownloadTIXRequest",
     "DownloadVEXRequest",
     "GenerateVEXTIXRequest",
-    "HTTPStatusMessage",
     "MongoObjectId",
     "NodeType",
     "ProcessedSBOMResult",

@@ -5,10 +5,11 @@ from zipfile import ZipFile
 from fastapi import APIRouter, Body, Depends, Request, status
 from fastapi.responses import FileResponse, JSONResponse
 
-from app.constants import RateLimit
+from app.constants import RateLimit, ResponseCode, ResponseMessage
 from app.dependencies import get_json_encoder, get_jwt_bearer, get_vex_service
+from app.exceptions import VexNotFoundException
 from app.limiter import limiter
-from app.schemas import DownloadVEXRequest, HTTPStatusMessage, UserIdPath, VEXIdPath
+from app.schemas import DownloadVEXRequest, UserIdPath, VEXIdPath
 from app.services import VEXService
 from app.utils import JSONEncoder
 
@@ -35,7 +36,8 @@ async def get_vexs(
         content=json_encoder.encode(
             {
                 "vexs": [vex.model_dump(by_alias=True) for vex in vexs],
-                "detail": HTTPStatusMessage.SUCCESS_VEXS_RETRIEVED
+                "code": ResponseCode.SUCCESS_VEXS_RETRIEVED,
+                "message": ResponseMessage.SUCCESS_VEXS_RETRIEVED
             }
         ),
     )
@@ -58,16 +60,14 @@ async def get_vex(
 ) -> JSONResponse:
     vex = await vex_service.read_vex_by_id(path.vex_id)
     if not vex:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"detail": HTTPStatusMessage.ERROR_VEX_NOT_FOUND}
-        )
+        raise VexNotFoundException()
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(
             {
                 "vex": vex.model_dump(by_alias=True),
-                "detail": HTTPStatusMessage.SUCCESS_VEX_RETRIEVED
+                "code": ResponseCode.SUCCESS_VEX_RETRIEVED,
+                "message": ResponseMessage.SUCCESS_VEX_RETRIEVED
             }
         ),
     )
@@ -88,10 +88,7 @@ async def download_vex(
 ) -> FileResponse:
     vex = await vex_service.read_vex_by_id(DownloadVEXRequest.vex_id)
     if not vex:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"detail": HTTPStatusMessage.ERROR_VEX_NOT_FOUND}
-        )
+        raise VexNotFoundException()
 
     vex_dict = vex.model_dump(by_alias=True)
     zip_path = "vex_tix_sbom.zip"

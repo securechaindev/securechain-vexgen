@@ -1,6 +1,7 @@
 import pytest
 from fastapi import HTTPException
 
+from app.constants import ResponseCode, ResponseMessage
 from app.exceptions.expired_token_exception import ExpiredTokenException
 from app.exceptions.invalid_repository_exception import InvalidRepositoryException
 from app.exceptions.invalid_token_exception import InvalidTokenException
@@ -13,14 +14,20 @@ class TestExpiredTokenException:
 
         assert isinstance(exc, HTTPException)
         assert exc.status_code == 401
-        assert exc.detail == "token_expired"
+        assert exc.detail == {
+            "code": ResponseCode.TOKEN_EXPIRED,
+            "message": ResponseMessage.TOKEN_EXPIRED
+        }
 
     def test_expired_token_exception_can_be_raised(self):
         with pytest.raises(ExpiredTokenException) as exc_info:
             raise ExpiredTokenException()
 
         assert exc_info.value.status_code == 401
-        assert exc_info.value.detail == "token_expired"
+        assert exc_info.value.detail == {
+            "code": ResponseCode.TOKEN_EXPIRED,
+            "message": ResponseMessage.TOKEN_EXPIRED
+        }
 
 
 class TestInvalidTokenException:
@@ -29,14 +36,20 @@ class TestInvalidTokenException:
 
         assert isinstance(exc, HTTPException)
         assert exc.status_code == 401
-        assert exc.detail == "invalid_token"
+        assert exc.detail == {
+            "code": ResponseCode.INVALID_TOKEN,
+            "message": ResponseMessage.INVALID_TOKEN
+        }
 
     def test_invalid_token_exception_can_be_raised(self):
         with pytest.raises(InvalidTokenException) as exc_info:
             raise InvalidTokenException()
 
         assert exc_info.value.status_code == 401
-        assert exc_info.value.detail == "invalid_token"
+        assert exc_info.value.detail == {
+            "code": ResponseCode.INVALID_TOKEN,
+            "message": ResponseMessage.INVALID_TOKEN
+        }
 
 
 class TestNotAuthenticatedException:
@@ -45,14 +58,20 @@ class TestNotAuthenticatedException:
 
         assert isinstance(exc, HTTPException)
         assert exc.status_code == 401
-        assert exc.detail == "not_authenticated"
+        assert exc.detail == {
+            "code": ResponseCode.NOT_AUTHENTICATED,
+            "message": ResponseMessage.NOT_AUTHENTICATED
+        }
 
     def test_not_authenticated_exception_can_be_raised(self):
         with pytest.raises(NotAuthenticatedException) as exc_info:
             raise NotAuthenticatedException()
 
         assert exc_info.value.status_code == 401
-        assert exc_info.value.detail == "not_authenticated"
+        assert exc_info.value.detail == {
+            "code": ResponseCode.NOT_AUTHENTICATED,
+            "message": ResponseMessage.NOT_AUTHENTICATED
+        }
 
 
 class TestInvalidRepositoryException:
@@ -61,14 +80,20 @@ class TestInvalidRepositoryException:
 
         assert isinstance(exc, HTTPException)
         assert exc.status_code == 404
-        assert exc.detail == "repository_not_found"
+        assert exc.detail == {
+            "code": ResponseCode.REPOSITORY_NOT_FOUND,
+            "message": ResponseMessage.REPOSITORY_NOT_FOUND
+        }
 
     def test_invalid_repository_exception_can_be_raised(self):
         with pytest.raises(InvalidRepositoryException) as exc_info:
             raise InvalidRepositoryException()
 
         assert exc_info.value.status_code == 404
-        assert exc_info.value.detail == "repository_not_found"
+        assert exc_info.value.detail == {
+            "code": ResponseCode.REPOSITORY_NOT_FOUND,
+            "message": ResponseMessage.REPOSITORY_NOT_FOUND
+        }
 
 
 class TestExceptionInheritance:
@@ -95,7 +120,7 @@ class TestExceptionInheritance:
         for exc in auth_exceptions:
             assert exc.status_code == 401
 
-    def test_exception_details_are_strings(self):
+    def test_exception_details_are_dicts(self):
         exceptions = [
             ExpiredTokenException(),
             InvalidTokenException(),
@@ -104,5 +129,10 @@ class TestExceptionInheritance:
         ]
 
         for exc in exceptions:
-            assert isinstance(exc.detail, str)
-            assert len(exc.detail) > 0
+            assert isinstance(exc.detail, dict)
+            assert "code" in exc.detail
+            assert "message" in exc.detail
+            assert isinstance(exc.detail["code"], str)
+            assert isinstance(exc.detail["message"], str)
+            assert len(exc.detail["code"]) > 0
+            assert len(exc.detail["message"]) > 0

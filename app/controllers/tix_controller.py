@@ -35,7 +35,7 @@ async def get_tixs(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(
             {
-                "tixs": [tix.model_dump(by_alias=True) for tix in tixs],
+                "data": [tix.model_dump(by_alias=True) for tix in tixs],
                 "code": ResponseCode.SUCCESS_TIXS_RETRIEVED,
                 "message": ResponseMessage.SUCCESS_TIXS_RETRIEVED
             },
@@ -65,7 +65,7 @@ async def get_tix(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(
             {
-                "tix": tix.model_dump(by_alias=True),
+                "data": tix.model_dump(by_alias=True),
                 "code": ResponseCode.SUCCESS_TIX_RETRIEVED,
                 "message": ResponseMessage.SUCCESS_TIX_RETRIEVED
             }

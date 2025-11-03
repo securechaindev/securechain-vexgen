@@ -23,7 +23,7 @@ async def health_check(
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode({
-            "status": "healthy",
+            "data": {"status": "healthy"},
             "code": ResponseCode.SUCCESS_HEALTH_CHECK,
             "message": ResponseMessage.SUCCESS_HEALTH_CHECK
         })

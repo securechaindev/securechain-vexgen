@@ -35,7 +35,7 @@ async def get_vexs(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(
             {
-                "vexs": [vex.model_dump(by_alias=True) for vex in vexs],
+                "data": [vex.model_dump(by_alias=True) for vex in vexs],
                 "code": ResponseCode.SUCCESS_VEXS_RETRIEVED,
                 "message": ResponseMessage.SUCCESS_VEXS_RETRIEVED
             }
@@ -65,7 +65,7 @@ async def get_vex(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(
             {
-                "vex": vex.model_dump(by_alias=True),
+                "data": vex.model_dump(by_alias=True),
                 "code": ResponseCode.SUCCESS_VEX_RETRIEVED,
                 "message": ResponseMessage.SUCCESS_VEX_RETRIEVED
             }

@@ -140,16 +140,26 @@ securechain-vexgen/
 ```python
 # DatabaseManager - Single instance for entire app
 class DatabaseManager:
-    _instance: "DatabaseManager | None" = None
+    instance: "DatabaseManager | None" = None
     
     def __new__(cls) -> "DatabaseManager":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+        if cls.instance is None:
+            cls.instance = super().__new__(cls)
+        return cls.instance
+
+# LoggerManager - Custom logger with singleton pattern
+class LoggerManager:
+    instance: "LoggerManager | None" = None
+    initialized: bool = False
+    
+    def __new__(cls, *args, **kwargs):
+        if cls.instance is None:
+            cls.instance = super().__new__(cls)
+        return cls.instance
 
 # ServiceContainer - Manages all services
 class ServiceContainer:
-    _instance: "ServiceContainer | None" = None
+    instance: "ServiceContainer | None" = None
     # Lazy initialization of services
 ```
 
@@ -157,10 +167,10 @@ class ServiceContainer:
 ```python
 # ServiceContainer manages ALL dependencies including utilities
 class ServiceContainer:
-    _vex_service: VEXService | None = None
-    _tix_service: TIXService | None = None
-    _json_encoder: JSONEncoder | None = None  # ✨ Utilities also injected
-    _jwt_bearer: JWTBearer | None = None      # ✨ Security components too
+    vex_service: VEXService | None = None
+    tix_service: TIXService | None = None
+    json_encoder: JSONEncoder | None = None  # ✨ Utilities also injected
+    jwt_bearer: JWTBearer | None = None      # ✨ Security components too
 
 # In controllers - everything is injected:
 async def get_vexs(
@@ -294,13 +304,37 @@ Similar to VEX but with threat intelligence and code analysis information.
 ### Rate Limiting
 ```python
 # slowapi - Limits by IP
-RateLimit.DEFAULT = "100/hour"
-RateLimit.DOWNLOAD = "10/hour"
+RateLimit.DEFAULT = "25/minute"
+RateLimit.DOWNLOAD = "5/minute"
 ```
 
 ### JWT Authentication
 ```python
 # JWTBearer - Validates tokens on protected endpoints
+# Injected via dependency injection (not instantiated directly)
+```
+
+### Exception Handling
+```python
+# Standardized error responses with code and message
+class CustomException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=404,
+            detail={"code": "error_code", "message": "Human-readable message"}
+        )
+
+# All responses follow consistent format:
+{
+    "code": "success_vex_retrieved",      # For programmatic handling
+    "message": "VEX document retrieved successfully"  # For users
+}
+
+# Available exceptions:
+# - VexNotFoundException, TixNotFoundException
+# - ExpiredTokenException, InvalidTokenException, NotAuthenticatedException
+# - InvalidRepositoryException, CloneRepoException
+# - SbomNotFoundException, ComponentNotSupportedException
 ```
 
 ---
@@ -322,6 +356,31 @@ RateLimit.DOWNLOAD = "10/hour"
 - `vulnerabilities.vulnerabilities` - CVEs
 - `vulnerabilities.cwes` - Common Weakness Enumeration
 - `vulnerabilities.exploits` - Known exploits
+
+---
+
+## 📝 Logging
+
+### LoggerManager (Singleton)
+```python
+# Custom logger with singleton pattern to avoid circular imports
+from app.logger import logger
+
+logger.info("Message")
+logger.warning("Warning message")
+logger.error("Error message")
+logger.exception("Exception with traceback")
+logger.debug("Debug message")
+
+# Configuration:
+- File: app/logs/errors.log
+- Level: INFO
+- Rotation: 5MB max, 5 backups
+- Format: timestamp - level - name - file:line - message
+```
+
+**Important:** The logger uses a custom singleton pattern (not via dependencies.py) 
+to avoid circular import issues. Import directly: `from app.logger import logger`
 
 ---
 
@@ -906,12 +965,30 @@ docker compose -f dev/docker-compose.yml down
 
 ### Logs
 ```python
-# Logs in: app/logs/vexgen.log
+# Logs in: app/logs/errors.log
 from app.logger import logger
 
 logger.info("Message")
 logger.error("Error message")
 logger.exception("Exception with traceback")
+```
+
+### API Response Format
+All API responses follow a consistent format with `code` and `message`:
+```json
+{
+    "vex": {...},
+    "code": "success_vex_retrieved",
+    "message": "VEX document retrieved successfully"
+}
+```
+
+Error responses:
+```json
+{
+    "code": "error_vex_not_found",
+    "message": "VEX document not found"
+}
 ```
 
 ### Health Check
@@ -954,275 +1031,30 @@ await db_manager.initialize()
 ```python
 # Solution: Configure limits in constants.py
 class RateLimit(str, Enum):
-    DEFAULT = "100/hour"  # Increase if needed
+    DEFAULT = "25/minute"  # Increase if needed
 ```
 
 ### 4. Git clone timeout
 ```python
-# Solution: Increase GIT_CLONE_DEPTH in .env
-GIT_CLONE_DEPTH=1  # Smaller = faster
+# Solution: Increase timeout in constants.py
+class GitRules:
+    GIT_TIMEOUT_SECONDS = 300  # Increase if needed
 ```
 
----
-
-## 📝 Recent Improvements & Changes
-
-### ✅ Completed (October 28, 2025)
-
-**1. Async/Await Optimization - Performance Improvements**
-- Converted 13 unnecessary async functions to synchronous
-- Integrated `asyncio.to_thread()` for blocking I/O operations
-- Implemented `aiofiles` for true async file reading
-- Removed "fake async" patterns that provided no benefit
-
-**Synchronous Conversions (No Real I/O):**
-- Templates: `vex_template`, `tix_template`, `vex_statement_template`, `tix_statement_template`
-- Helpers: `set_timestamps`, `build_vulnerability_id`, `build_cwe_dict`, `build_exploit_dict`, `get_relative_path`
-- Validators: `validate_sbom_structure`
-- Parsers: `PURLParser.extract_type()`, `PURLParser.is_valid()`
-
-**Async with asyncio.to_thread() (Blocking Operations):**
+### 5. Circular import with logger
 ```python
-async def download_repository(self, owner: str, name: str) -> str:
-    """Download repository without blocking event loop."""
-    return await asyncio.to_thread(
-        self._download_repository_sync,
-        owner,
-        name
-    )
-
-def _download_repository_sync(self, owner: str, name: str) -> str:
-    """Synchronous git operations (clone, config)."""
-    # GitPython operations are inherently blocking
-    repo = Repo.clone_from(url, directory)
-    repo.git.config(...)
-    return directory
-```
-
-**Benefits:**
-- ✅ **No event loop blocking** - Git clone operations run in thread pool
-- ✅ **Better concurrency** - Other requests can be processed during clones
-- ✅ **Cleaner code** - Removed unnecessary `async def` where no I/O occurs
-- ✅ **True async file I/O** - `aiofiles` for `load_sbom_file()`
-
-**Async File Reading with aiofiles:**
-```python
-async def load_sbom_file(sbom_file: str) -> dict:
-    """Load SBOM file asynchronously."""
-    async with aio_open(sbom_file, mode="r", encoding="utf-8") as f:
-        content = await f.read()
-        return loads(content)  # json.loads (not json.load)
-```
-
-**Files Modified:**
-- `app/domain/vex_generation/infrastructure/repository_downloader.py` - Added `asyncio.to_thread()`
-- `app/domain/vex_generation/processors/vex_tix_initializer.py` - Integrated `aiofiles`
-- `app/domain/vex_generation/parsers/purl_parser.py` - Converted to sync
-- `app/templates/statement/` - All template generators converted to sync
-- `app/domain/vex_generation/generators/statement_helpers.py` - All helpers converted to sync
-- `app/domain/vex_generation/helpers/path_helper.py` - `get_relative_path()` converted to sync
-
-**Tests Updated:**
-- `tests/unit/parsers/test_purl_parser.py` - Removed `@pytest.mark.asyncio` and `await`
-- `tests/unit/infrastructure/test_repository_downloader.py` - Updated for `asyncio.to_thread()` pattern
-- `tests/unit/processors/test_statement_generator.py` - Fixed mocks (AsyncMock → MagicMock)
-- `tests/unit/processors/test_sbom_processor.py` - Updated for sync `download_repository`
-- `tests/unit/templates/test_templates.py` - Converted template tests to sync
-- `tests/unit/helpers/test_path_helper.py` - Converted to sync
-
-**Test Results:**
-- ✅ All 483 tests passing
-- ✅ 88% code coverage maintained
-- ✅ No performance regressions
-- ✅ Event loop no longer blocked by git operations
-
-**Performance Impact:**
-- **Before:** Git clone (30s) blocks ALL requests → 30s total wait time
-- **After:** Git clone (30s) runs in thread → 0s wait for other requests
-- **Repository downloader:** Can handle multiple simultaneous clone operations
-- **File I/O:** True async with `aiofiles` instead of blocking `open()`
-
-**Key Learning:**
-> **Rule of thumb:** Use `async def` ONLY when:
-> 1. You actually `await` something (network, database, file I/O)
-> 2. The I/O operation has an async implementation
-> 3. For blocking operations (like git), use `asyncio.to_thread()`
-
-**Architecture Decision:**
-- Keep services async (they use Motor/Neo4j async drivers)
-- Keep processors async (they call async services)
-- Make utilities sync (no I/O, just computation)
-- Wrap blocking I/O with `asyncio.to_thread()`
-
----
-
-### ✅ Completed (October 20, 2025)
-
-**1. Test Suite Implementation - 87% Coverage**
-- Created comprehensive test suite with 484 passing tests
-- Coverage increased from 0% to 87% across all critical components
-- Fixed all pytest warnings (58 → 0) related to async decorators
-- Established testing patterns for async services (Neo4j, MongoDB)
-- Implemented proper mocking strategies for FastAPI dependency injection
-
-**Test Coverage by Component:**
-- Code Analyzers: 98-100% (Python, JS/TS, Java, C#, Ruby, Rust)
-- Processors: 96-100% (SBOM, Statement Generator, VEX/TIX Initializer)
-- Services: 100% (VEX, TIX, Version, Package, Vulnerability)
-- Templates: 100% (VEX/TIX file and statement templates)
-- Exceptions: 100% (All custom exceptions)
-- Validators: 100% (Path validator)
-- Parsers: 90-100% (PURL parser, Node type mapper)
-- Integration: 100% (All 4 controllers covered)
-
-**Files Created:**
-- `tests/unit/code_analyzer/` - 7 analyzer test files
-- `tests/unit/processors/` - 3 processor test files
-- `tests/unit/services/` - 5 service test files
-- `tests/unit/templates/test_templates.py` - All template tests
-- `tests/unit/exceptions/test_exceptions.py` - Exception tests
-- `tests/unit/validators/test_path_validator.py` - Path validation tests
-- `tests/unit/parsers/` - Parser test files
-- `tests/integration/test_health_controller.py` - Health endpoint tests (2)
-- `tests/integration/test_vex_controller.py` - VEX endpoint tests (2)
-- `tests/integration/test_tix_controller.py` - TIX endpoint tests (4)
-- `tests/integration/test_vex_tix_controller.py` - VEX/TIX generation tests (5)
-
-**Testing Infrastructure:**
-- Added `pytest-cov>=7.0.0` to `pyproject.toml`
-- Updated README.md with complete testing documentation
-- Established async testing patterns for Neo4j and MongoDB
-- Created reusable fixtures for common mocking scenarios
-
-**Key Pattern Established:**
-```python
-# Async decorator pattern - Applied to methods, NOT classes
-class TestMyFeature:
-    @pytest.mark.asyncio  # Only on async methods
-    async def test_async_operation(self):
-        pass
-    
-    def test_sync_operation(self):  # No decorator
-        pass
-```
-
-**2. Dependency Injection - Full Implementation**
-- Extended `ServiceContainer` to include `JSONEncoder` and `JWTBearer`
-- Removed all direct instantiations from controllers
-- Updated all 5 controllers to use DI pattern consistently
-- Benefits: Better testability, single instance, centralized management
-
-**Files Modified:**
-- `app/dependencies.py` - Added `get_json_encoder()` and `get_jwt_bearer()`
-- `app/controllers/health_controller.py` - Injected `json_encoder`
-- `app/controllers/vex_controller.py` - Injected both utilities
-- `app/controllers/tix_controller.py` - Injected both utilities
-- `app/controllers/vex_tix_controller.py` - Injected `jwt_bearer`
-
-**3. HTTP Status Messages - Missing Constants**
-- Added missing error constants to `HTTPStatusMessage` enum
-- `ERROR_VEX_NOT_FOUND` - Used in vex_controller.py for 404 responses
-- `ERROR_TIX_NOT_FOUND` - Used in tix_controller.py for 404 responses
-- Organized messages by category (Success, General Errors, VEX/TIX, SBOM, Repository, Authentication)
-
-**Files Modified:**
-- `app/constants.py` - Added missing error messages with categorization
-
-**4. Docker Configuration - Migration to uv**
-- Updated both production and development Dockerfiles to use `uv` package manager
-- Production: Multi-stage build with uv for faster dependency installation
-- Development: Single-stage with hot reload support
-- Fixed PATH issue: `uv` installs to `/root/.local/bin` (not `/root/.cargo/bin`)
-- Fixed WORKDIR: Changed to `/workspace` to avoid conflicts with `app/` module
-- Benefits: ~10x faster dependency resolution, better caching, smaller images
-
-**Files Modified:**
-- `Dockerfile` - Production multi-stage build with uv
-- `dev/Dockerfile` - Development build with uv and hot reload
-- Dependencies now managed via `pyproject.toml` instead of `requirements.txt`
-
-**Key Fix:**
-```dockerfile
-# Correct uv installation path
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:$PATH"
-RUN /root/.local/bin/uv pip install --system -e .
-```
-
-**Testing Pattern:**
-```python
-# Override dependencies in tests
-from app.dependencies import get_json_encoder
-
-def test_endpoint(client, mocker):
-    mock_encoder = mocker.Mock(spec=JSONEncoder)
-    app.dependency_overrides[get_json_encoder] = lambda: mock_encoder
-    
-    response = client.get("/api/v1/endpoint")
-    assert mock_encoder.encode.called
-```
-
-**5. Integration Tests - Controller Coverage**
-- Added integration tests for all 4 API controllers
-- 13 total integration tests covering endpoint validation
-- Tests validate request schemas, error handling, and authentication
-- All tests use async httpx.AsyncClient with proper mocking
-
-**Integration Tests Created:**
-- `test_health_controller.py` (2 tests)
-  - Health check endpoint returns 200 OK
-  - Content-Type is application/json
-  
-- `test_vex_controller.py` (2 tests)
-  - Invalid user_id returns 422 validation error
-  - Invalid vex_id returns 422 validation error
-  
-- `test_tix_controller.py` (4 tests)
-  - Invalid user_id returns 401 (authentication required)
-  - Invalid tix_id returns 422 validation error
-  - Missing request body returns 422
-  - Invalid tix_id in download returns 422
-  
-- `test_vex_tix_controller.py` (5 tests)
-  - Missing request body returns 422
-  - Empty owner returns 422
-  - Empty repo name returns 422
-  - Missing owner field returns 422
-  - Invalid user_id format returns 422
-
-**Key Implementation Details:**
-- Schema `GenerateVEXTIXRequest` has only 3 fields: `owner`, `name`, `user_id`
-- No `sbom_paths` field - SBOMs are automatically discovered in repository
-- `tix_controller.py` has inconsistent JWT dependency (uses `get_jwt_bearer()` instead of `get_jwt_bearer`)
-- Tests reflect actual API behavior, not idealized behavior
-
-**Testing Pattern:**
-```python
-@pytest_asyncio.fixture
-async def client(mock_db_manager):
-    """Async HTTP client with mocked dependencies."""
-    with patch("app.database.get_database_manager", return_value=mock_db_manager):
-        with patch.object(ServiceContainer, "_get_db", return_value=mock_db_manager):
-            transport = ASGITransport(app=app)
-            async with AsyncClient(transport=transport, base_url="http://test") as ac:
-                yield ac
-
-@pytest.mark.asyncio
-async def test_endpoint(client):
-    response = await client.get("/api/v1/endpoint")
-    assert response.status_code == 200
+# Solution: Logger uses its own singleton pattern
+# Always import directly:
+from app.logger import logger  # ✅ Correct
+# NOT from dependencies:
+# from app.dependencies import get_logger  # ❌ Doesn't exist
 ```
 
 ---
 
 ## 📝 High Priority TODOs
 
-1. **Testing - Remaining Areas** ⚠️
-   - [x] ~~Unit tests for services~~ ✅ COMPLETED (100% coverage)
-   - [x] ~~Unit tests for analyzers~~ ✅ COMPLETED (98-100% coverage)
-   - [x] ~~Unit tests for processors~~ ✅ COMPLETED (96-100% coverage)
-   - [x] ~~Integration tests for controllers~~ ✅ COMPLETED (13 tests, all endpoints)
-   - [x] ~~Unit tests for validators~~ ✅ COMPLETED (100% coverage)
+1. **Testing - Remaining Areas**
    - [ ] Integration tests with real MongoDB/Neo4j instances
    - [ ] End-to-end tests for complete VEX/TIX generation flow
    - [ ] Increase controller coverage with authenticated requests (currently 54-60%)
@@ -1241,15 +1073,7 @@ async def test_endpoint(client):
    - [ ] Query optimization for Neo4j
 
 4. **CI/CD**
-   - [ ] GitHub Actions workflow for tests
    - [ ] Pre-commit hooks (ruff, tests)
-   - [ ] Automated coverage reporting (Codecov)
-   - [ ] Container image publishing
-
-5. **Documentation**
-   - [ ] API documentation improvements
-   - [ ] Architecture diagrams
-   - [ ] Deployment guides
    - [ ] Performance benchmarks
 
 ---
@@ -1307,6 +1131,6 @@ See [LICENSE](./LICENSE) for more details.
 
 ---
 
-**Last updated:** October 20, 2025  
+**Last updated:** November 3, 2025  
 **Maintainer:** Secure Chain Team  
 **Project status:** Production (v1.1.0)

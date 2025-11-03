@@ -110,7 +110,7 @@ ruff format app/
 
 ## Testing
 
-The project has comprehensive test coverage (87%) with unit and integration tests.
+The project has comprehensive test coverage (88%) with 483 passing tests covering unit and integration scenarios.
 
 ### Install Test Dependencies
 

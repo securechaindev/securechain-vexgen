@@ -28,7 +28,7 @@ router = APIRouter()
     summary="Generate VEX and TIX from a repository",
     description="Generates VEX and TIX for a specific GitHub repository.",
     response_description="ZIP file containing generated VEX and TIX.",
-    dependencies=[Depends(get_jwt_bearer)],
+    dependencies=[Depends(get_jwt_bearer())],
     tags=["Secure Chain VEXGen - VEX/TIX"]
 )
 @limiter.limit(RateLimit.DOWNLOAD)

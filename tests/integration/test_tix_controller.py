@@ -6,7 +6,7 @@ class TestTIXController:
     async def test_get_tixs_invalid_user_id(self, client):
         response = await client.get("/tix/user/invalid-id")
 
-        assert response.status_code == 401
+        assert response.status_code == 422
 
     @pytest.mark.asyncio
     async def test_get_tix_by_id_invalid_id(self, client):

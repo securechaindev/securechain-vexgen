@@ -5,7 +5,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from app.database import DatabaseManager
-from app.dependencies import ServiceContainer
+from app.dependencies import ServiceContainer, get_jwt_bearer
 from app.main import app
 
 
@@ -29,13 +29,27 @@ def mock_service_container(mock_db_manager):
     return container
 
 
+@pytest.fixture
+def mock_jwt_bearer():
+    """Mock JWT bearer to bypass authentication in tests."""
+    async def bypass_jwt():
+        return None  # Allow all requests
+    return bypass_jwt
+
+
 @pytest_asyncio.fixture
-async def client(mock_db_manager):
+async def client(mock_db_manager, mock_jwt_bearer):
+    # Override JWT dependency to bypass authentication
+    app.dependency_overrides[get_jwt_bearer()] = mock_jwt_bearer
+
     with patch.object(DatabaseManager, "__new__", return_value=mock_db_manager):
         with patch.object(ServiceContainer, "get_db", return_value=mock_db_manager):
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport, base_url="http://test") as ac:
                 yield ac
+
+    # Clean up overrides after test
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture

@@ -20,7 +20,7 @@ router = APIRouter()
     summary="Retrieve VEX documents for a user",
     description="Fetches all VEX documents associated with a specific user.",
     response_description="List of VEX documents with their metadata and content in JSON format.",
-    dependencies=[Depends(get_jwt_bearer)],
+    dependencies=[Depends(get_jwt_bearer())],
     tags=["Secure Chain VEXGen - VEX"]
 )
 @limiter.limit(RateLimit.DEFAULT)
@@ -48,7 +48,7 @@ async def get_vexs(
     summary="Retrieve a specific VEX document",
     description="Fetches a specific VEX document by its ID.",
     response_description="VEX document metadata and content in JSON format.",
-    dependencies=[Depends(get_jwt_bearer)],
+    dependencies=[Depends(get_jwt_bearer())],
     tags=["Secure Chain VEXGen - VEX"]
 )
 @limiter.limit(RateLimit.DEFAULT)
@@ -77,7 +77,7 @@ async def get_vex(
     summary="Download VEX",
     description="Fetches the VEX for a specific VEX ID.",
     response_description="ZIP file containing VEX.",
-    dependencies=[Depends(get_jwt_bearer)],
+    dependencies=[Depends(get_jwt_bearer())],
     tags=["Secure Chain VEXGen - VEX"]
 )
 @limiter.limit(RateLimit.DOWNLOAD)

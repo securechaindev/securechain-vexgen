@@ -9,16 +9,7 @@ class TestTIXController:
         assert response.status_code == 422
 
     @pytest.mark.asyncio
-    async def test_download_tix_missing_body(self, client):
-        response = await client.post("/tix/download")
-
-        assert response.status_code == 422
-
-    @pytest.mark.asyncio
     async def test_download_tix_invalid_tix_id(self, client):
-        response = await client.post(
-            "/tix/download",
-            json={"tix_id": "invalid-id"}
-        )
+        response = await client.get("/tix/download/invalid-id")
 
         assert response.status_code == 422

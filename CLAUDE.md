@@ -1,7 +1,7 @@
 # 🤖 AI Agent Context - SecureChain VEXGen
 
 > **Context file for AI agents (Claude, GPT, etc.)**  
-> Last updated: October 20, 2025  
+> Last updated: November 8, 2025  
 > Project version: 1.1.0
 
 ---
@@ -91,14 +91,12 @@ securechain-vexgen/
 │   │
 │   ├── schemas/                   # Pydantic models
 │   │   ├── commons/               # Shared models
-│   │   │   ├── mongo.py           # MongoObjectId, path params
+│   │   │   ├── mongo.py           # MongoObjectId, VEXIdPath, TIXIdPath
 │   │   │   ├── vex.py             # VEXBase, VEXCreate, VEXResponse
 │   │   │   ├── tix.py             # TIXBase, TIXCreate, TIXResponse
 │   │   │   └── node_type.py       # NodeType Enum
-│   │   └── vex/                   # Specific models
-│   │       ├── generate_vex_tix_request.py
-│   │       ├── download_vex_request.py
-│   │       └── download_tix_request.py
+│   │   └── vex_tix/               # VEX/TIX specific models
+│   │       └── generate_vex_tix_request.py  # owner, name (no user_id)
 │   │
 │   ├── templates/                 # VEX/TIX templates
 │   │   ├── file/                  # File templates
@@ -212,15 +210,18 @@ class VEXStatementGenerator:
 ### 2. **VEX/TIX Generation Flow**
 
 ```
-1. POST /vex_tix/generate
+1. POST /vex_tix/generate (owner, name in body - user_id from token)
    ↓
-2. SBOMProcessor.process_sboms()
+2. Controller extracts user_id from authentication payload
+   user_id = payload.get("user_id")
+   ↓
+3. SBOMProcessor.process_sboms(user_id passed as parameter)
    ├─ RepositoryDownloader.download_repository()  # Clone repo (async via to_thread)
    ├─ find_sbom_files()                           # Find SBOMs
    ├─ GitHubService.get_last_commit_date()       # Check cache
    └─ VEXTIXInitializer.init_vex_tix()           # Generate docs
       ↓
-3. StatementsGenerator.generate_statements()
+4. StatementsGenerator.generate_statements()
    ├─ For each component in SBOM:
    │  ├─ PackageService.read_package_by_name()   # Neo4j
    │  ├─ VersionService.read_vulnerabilities()   # Neo4j
@@ -233,9 +234,11 @@ class VEXStatementGenerator:
       └─ CodeAnalyzer.is_relevant()              # Analyze code
          └─ Detect imports/component usage
       ↓
-4. Save to MongoDB (VEXService, TIXService)
+5. Save to MongoDB with user_id (VEXService, TIXService)
+   await vex_service.update_user_vexs(vex_id, user_id)
+   await tix_service.update_user_tixs(tix_id, user_id)
    ↓
-5. Return ZIP with VEX + TIX
+6. Return ZIP with VEX + TIX
 ```
 
 ---
@@ -351,12 +354,38 @@ class DualAuthBearer(HTTPBearer):
 #### Usage in Controllers
 ```python
 # Protected endpoint with dual authentication
-@router.get("/vex", dependencies=[Depends(get_dual_auth_bearer())])
-async def get_vexs(request: Request):
-    # Authentication is handled by DualAuthBearer
-    # User info available via request after auth
-    pass
+@router.get("/tix/user")  # No user_id in path anymore
+async def get_tixs(
+    request: Request,
+    payload: dict = Depends(get_dual_auth_bearer()),  # Get auth payload
+    tix_service: TIXService = Depends(get_tix_service)
+):
+    # Extract user_id from authentication payload
+    user_id = payload.get("user_id")
+    
+    # Fetch user's TIX documents
+    tixs = await tix_service.read_user_tixs(user_id)
+    return JSONResponse(content={"data": tixs})
+
+# VEX/TIX generation - user_id from token, not body
+@router.post("/vex_tix/generate")
+async def generate_vex_tix(
+    request: Request,
+    generate_request: GenerateVEXTIXRequest = Body(),  # No user_id field
+    payload: dict = Depends(get_dual_auth_bearer()),
+    vex_service: VEXService = Depends(get_vex_service),
+    tix_service: TIXService = Depends(get_tix_service)
+):
+    user_id = payload.get("user_id")  # From token
+    # Process with user_id from authentication
+    processor = SBOMProcessor(generate_request, ..., user_id)
+    # ...
 ```
+
+**Security Rationale:**
+- **Before:** User could pass any `user_id` in path/body → Potential impersonation
+- **After:** `user_id` extracted from verified token → Secure user identification
+- **Pattern:** All user-specific endpoints now use token-based user identification
 
 ### GitValidator
 ```python
@@ -548,10 +577,10 @@ from app.services import VEXService
 ## 🧪 Testing
 
 ### Current Status
-- **Coverage:** 88% (498 tests passing)
+- **Coverage:** 88% (494 tests passing)
 - **Test Framework:** pytest 8.4.2 + pytest-asyncio 1.2.0 + pytest-cov
-- **Test Duration:** ~4-5 seconds
-- **Last Updated:** November 5, 2025
+- **Test Duration:** ~5 seconds
+- **Last Updated:** November 8, 2025
 
 ### Test Structure
 ```
@@ -598,8 +627,8 @@ tests/
 │
 └── integration/                     # Integration tests (API endpoints)
     ├── test_health_controller.py    # Health check endpoint (2 tests)
-    ├── test_vex_controller.py       # VEX endpoints (2 tests)
-    ├── test_tix_controller.py       # TIX endpoints (4 tests)
+    ├── test_vex_controller.py       # VEX endpoints (1 test - removed user_id path test)
+    ├── test_tix_controller.py       # TIX endpoints (3 tests - removed user_id path test)
     └── test_vex_tix_controller.py   # VEX/TIX generation (5 tests)
 ```
 
@@ -1209,37 +1238,3 @@ GNU General Public License v3.0 or later
 See [LICENSE](./LICENSE) for more details.
 
 ---
-
-## 🔄 Recent Changes
-
-### November 5, 2025 - Dual Authentication & Performance Optimization
-
-**Authentication System:**
-- ✨ Added dual authentication support (API Key + JWT)
-- ✨ API Key authentication with MongoDB validation (SHA256 hashing)
-- ✨ Priority-based fallback: API Key → JWT
-- ⚡ Optimized JWTBearer from async to sync (no I/O operations)
-- ✅ 100% test coverage for authentication utilities (15 new tests)
-
-**Architecture Changes:**
-- `ApiKeyBearer`: Async authentication with MongoDB (I/O-bound)
-- `JWTBearer`: Sync authentication with jwt.decode() (CPU-bound)
-- `DualAuthBearer`: Async orchestrator supporting both methods
-- All authentication classes managed by ServiceContainer (DI pattern)
-
-**Testing:**
-- Added `tests/unit/utils/test_api_key_bearer.py` (8 tests)
-- Added `tests/unit/utils/test_dual_auth_bearer.py` (7 tests)
-- Total: 498 tests passing (88% coverage)
-- All authentication flows validated with comprehensive test cases
-
-**Performance Impact:**
-- Reduced latency by removing unnecessary async overhead in JWT validation
-- Maintained async for API key validation (requires MongoDB query)
-- Improved request processing efficiency for JWT-authenticated requests
-
----
-
-**Last updated:** November 5, 2025  
-**Maintainer:** Secure Chain Team  
-**Project status:** Production (v1.1.0)

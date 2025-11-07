@@ -11,8 +11,8 @@ from fastapi.responses import FileResponse
 from app.apis import GitHubService
 from app.constants import RateLimit
 from app.dependencies import (
+    get_dual_auth_bearer,
     get_github_service,
-    get_jwt_bearer,
     get_tix_service,
     get_vex_service,
 )
@@ -28,7 +28,7 @@ router = APIRouter()
     summary="Generate VEX and TIX from a repository",
     description="Generates VEX and TIX for a specific GitHub repository.",
     response_description="ZIP file containing generated VEX and TIX.",
-    dependencies=[Depends(get_jwt_bearer())],
+    dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - VEX/TIX"]
 )
 @limiter.limit(RateLimit.DOWNLOAD)

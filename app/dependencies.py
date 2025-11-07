@@ -9,7 +9,7 @@ from app.services import (
     VEXService,
     VulnerabilityService,
 )
-from app.utils import JSONEncoder, JWTBearer
+from app.utils import DualAuthBearer, JSONEncoder, JWTBearer
 
 
 class ServiceContainer:
@@ -22,6 +22,7 @@ class ServiceContainer:
     vulnerability_service: VulnerabilityService | None = None
     github_service: GitHubService | None = None
     json_encoder: JSONEncoder | None = None
+    dual_auth_bearer: DualAuthBearer | None = None
     jwt_bearer: JWTBearer | None = None
 
     def __new__(cls) -> ServiceContainer:
@@ -69,6 +70,11 @@ class ServiceContainer:
             self.json_encoder = JSONEncoder()
         return self.json_encoder
 
+    def get_dual_auth_bearer(self) -> DualAuthBearer:
+        if self.dual_auth_bearer is None:
+            self.dual_auth_bearer = DualAuthBearer()
+        return self.dual_auth_bearer
+
     def get_jwt_bearer(self) -> JWTBearer:
         if self.jwt_bearer is None:
             self.jwt_bearer = JWTBearer()
@@ -105,6 +111,10 @@ def get_github_service() -> GitHubService:
 
 def get_json_encoder() -> JSONEncoder:
     return ServiceContainer().get_json_encoder()
+
+
+def get_dual_auth_bearer() -> DualAuthBearer:
+    return ServiceContainer().get_dual_auth_bearer()
 
 
 def get_jwt_bearer() -> JWTBearer:

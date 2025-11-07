@@ -6,7 +6,7 @@ from fastapi import APIRouter, Body, Depends, Request, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.constants import RateLimit, ResponseCode, ResponseMessage
-from app.dependencies import get_json_encoder, get_jwt_bearer, get_tix_service
+from app.dependencies import get_dual_auth_bearer, get_json_encoder, get_tix_service
 from app.exceptions import TixNotFoundException
 from app.limiter import limiter
 from app.schemas import DownloadTIXRequest, TIXIdPath, UserIdPath
@@ -20,7 +20,7 @@ router = APIRouter()
     summary="Retrieve TIX documents for a user",
     description="Fetches all TIX documents associated with a specific user.",
     response_description="List of TIX documents with their metadata and content in JSON format.",
-    dependencies=[Depends(get_jwt_bearer())],
+    dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - TIX"]
 )
 @limiter.limit(RateLimit.DEFAULT)
@@ -48,7 +48,7 @@ async def get_tixs(
     summary="Retrieve a specific TIX document",
     description="Fetches a specific TIX document by its ID.",
     response_description="TIX document metadata and content in JSON format.",
-    dependencies=[Depends(get_jwt_bearer())],
+    dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - TIX"]
 )
 @limiter.limit(RateLimit.DEFAULT)
@@ -78,7 +78,7 @@ async def get_tix(
     summary="Download TIX",
     description="Fetches the TIX for a specific TIX ID.",
     response_description="ZIP file containing TIX.",
-    dependencies=[Depends(get_jwt_bearer())],
+    dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - TIX"]
 )
 @limiter.limit(RateLimit.DOWNLOAD)

@@ -64,32 +64,37 @@ class DatabaseManager:
     def get_user_collection(self) -> AsyncIOMotorCollection:
         if self.securechain_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self.securechain_db.get_collection(settings.USERS_COLLECTION)
+        return self.securechain_db.get_collection(settings.DB_USERS_COLLECTION)
 
     def get_vexs_collection(self) -> AsyncIOMotorCollection:
         if self.securechain_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self.securechain_db.get_collection(settings.VEXS_COLLECTION)
+        return self.securechain_db.get_collection(settings.DB_VEXS_COLLECTION)
 
     def get_tixs_collection(self) -> AsyncIOMotorCollection:
         if self.securechain_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self.securechain_db.get_collection(settings.TIXS_COLLECTION)
+        return self.securechain_db.get_collection(settings.DB_TIXS_COLLECTION)
 
     def get_vulnerabilities_collection(self) -> AsyncIOMotorCollection:
         if self.vulnerabilities_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self.vulnerabilities_db.get_collection("vulnerabilities")
+        return self.vulnerabilities_db.get_collection(settings.DB_VULNERABILITIES_COLLECTION)
 
     def get_cwes_collection(self) -> AsyncIOMotorCollection:
         if self.vulnerabilities_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self.vulnerabilities_db.get_collection("cwes")
+        return self.vulnerabilities_db.get_collection(settings.DB_CWES_COLLECTION)
 
     def get_exploits_collection(self) -> AsyncIOMotorCollection:
         if self.vulnerabilities_db is None:
             raise RuntimeError("Database not initialized. Call initialize() first.")
-        return self.vulnerabilities_db.get_collection("exploits")
+        return self.vulnerabilities_db.get_collection(settings.DB_EXPLOITS_COLLECTION)
+
+    def get_api_key_collection(self) -> AsyncIOMotorCollection:
+        if self.securechain_db is None:
+            raise RuntimeError("Database not initialized. Call initialize() first.")
+        return self.securechain_db.get_collection(settings.DB_API_KEY_COLLECTION)
 
     def get_neo4j_driver(self) -> AsyncDriver:
         if self.neo4j_driver is None:

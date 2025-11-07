@@ -13,7 +13,7 @@ router = APIRouter()
     summary="Health Check",
     description="Check the status of the API.",
     response_description="API status.",
-    tags=["Secure Chain VEXGen Health"]
+    tags=["Secure Chain VEXGen - Health"]
 )
 @limiter.limit(RateLimit.DEFAULT)
 async def health_check(

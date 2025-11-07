@@ -8,7 +8,7 @@ from app.controllers import (
 )
 
 api_router = APIRouter()
-api_router.include_router(health_controller.router, tags=["Secure Chain VEXGen Health"])
+api_router.include_router(health_controller.router, tags=["Secure Chain VEXGen - Health"])
 api_router.include_router(vex_controller.router, tags=["Secure Chain VEXGen - VEX"])
 api_router.include_router(tix_controller.router, tags=["Secure Chain VEXGen - TIX"])
 api_router.include_router(vex_tix_controller.router, tags=["Secure Chain VEXGen - VEX/TIX"])

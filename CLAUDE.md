@@ -119,10 +119,10 @@ securechain-vexgen/
 │   │   └── github_service.py     # GitHub GraphQL client
 │   │
 │   └── utils/                     # Generic utilities
-│       └── others/
-│           ├── json_encoder.py
-│           ├── jwt_encoder.py
-│           └── node_type_mapping.py
+│       ├── json_encoder.py        # JSON serialization
+│       ├── jwt_bearer.py          # JWT authentication (sync)
+│       ├── api_key_bearer.py      # API key authentication (async)
+│       └── dual_auth_bearer.py    # Dual authentication orchestrator
 │
 ├── pyproject.toml                 # Dependencies (uv/pip)
 ├── README.md                      # User documentation
@@ -165,12 +165,14 @@ class ServiceContainer:
 
 #### Dependency Injection (Complete Implementation)
 ```python
-# ServiceContainer manages ALL dependencies including utilities
+# ServiceContainer manages ALL dependencies including utilities and security
 class ServiceContainer:
     vex_service: VEXService | None = None
     tix_service: TIXService | None = None
-    json_encoder: JSONEncoder | None = None  # ✨ Utilities also injected
-    jwt_bearer: JWTBearer | None = None      # ✨ Security components too
+    json_encoder: JSONEncoder | None = None      # ✨ Utilities also injected
+    jwt_bearer: JWTBearer | None = None          # ✨ JWT authentication
+    api_key_bearer: ApiKeyBearer | None = None   # ✨ API Key authentication
+    dual_auth_bearer: DualAuthBearer | None = None # ✨ Dual auth (API Key + JWT)
 
 # In controllers - everything is injected:
 async def get_vexs(
@@ -182,11 +184,14 @@ async def get_vexs(
     return JSONResponse(content=json_encoder.encode({...}))
 
 # Authentication via DI (not direct instantiation):
-@router.get("/endpoint", dependencies=[Depends(get_jwt_bearer)])
+@router.get("/endpoint", dependencies=[Depends(get_dual_auth_bearer())])
+async def protected_endpoint():
+    # Dual authentication: API Key or JWT
+    pass
 ```
 
 **Key Point:** ALL components (services, utilities, security) follow the same DI pattern. 
-No direct instantiation (`JSONEncoder()`, `JWTBearer()`) in controllers.
+No direct instantiation (`JSONEncoder()`, `JWTBearer()`, `ApiKeyBearer()`) in controllers.
 
 #### Factory Pattern
 ```python
@@ -282,6 +287,77 @@ Similar to VEX but with threat intelligence and code analysis information.
 
 ## 🔒 Security Implementation
 
+### Dual Authentication System
+
+The application supports **two authentication methods** with priority-based fallback:
+
+```python
+# Priority order:
+1. API Key (X-API-Key header) - Priority 1
+2. JWT Token (access_token cookie) - Fallback
+```
+
+#### API Key Authentication
+```python
+# ApiKeyBearer - Async authentication with MongoDB validation
+class ApiKeyBearer(HTTPBearer):
+    async def __call__(self, request: Request) -> dict[str, str]:
+        # 1. Extract X-API-Key header
+        # 2. Validate "sk_" prefix
+        # 3. SHA256 hash the key
+        # 4. Query MongoDB for key_hash
+        # 5. Verify key is active
+        # 6. Return {"user_id": "..."}
+
+# API Key format: sk_xxxxxxxxxxxxxxxx
+# Storage: SHA256-hashed in MongoDB with is_active flag
+# Use case: Machine-to-machine, CI/CD pipelines
+```
+
+#### JWT Authentication
+```python
+# JWTBearer - Synchronous token validation
+class JWTBearer(HTTPBearer):
+    def __call__(self, request: Request) -> dict[str, Any]:
+        # 1. Extract access_token cookie
+        # 2. Verify with JWT secret key
+        # 3. Decode payload
+        # 4. Return user claims
+
+# Note: Synchronous (not async) because jwt.decode() is CPU-bound
+# No I/O operations - just cryptographic validation
+# Use case: Web application, user sessions
+```
+
+#### Dual Auth Bearer
+```python
+# DualAuthBearer - Orchestrates both authentication methods
+class DualAuthBearer(HTTPBearer):
+    async def __call__(self, request: Request) -> dict[str, Any]:
+        api_key = request.headers.get("X-API-Key")
+        if api_key:
+            return await self.api_key_bearer(request)  # async
+        return self.jwt_bearer(request)  # sync (no await)
+
+# Priority: API Key > JWT
+# Injected via dependency: Depends(get_dual_auth_bearer())
+```
+
+**Design Rationale:**
+- `ApiKeyBearer`: **async** - MongoDB I/O operation (`find_one`)
+- `JWTBearer`: **sync** - Only CPU-bound cryptographic operations
+- `DualAuthBearer`: **async** - Delegates to ApiKeyBearer (which is async)
+
+#### Usage in Controllers
+```python
+# Protected endpoint with dual authentication
+@router.get("/vex", dependencies=[Depends(get_dual_auth_bearer())])
+async def get_vexs(request: Request):
+    # Authentication is handled by DualAuthBearer
+    # User info available via request after auth
+    pass
+```
+
 ### GitValidator
 ```python
 # Validates Git repository URLs
@@ -306,12 +382,6 @@ Similar to VEX but with threat intelligence and code analysis information.
 # slowapi - Limits by IP
 RateLimit.DEFAULT = "25/minute"
 RateLimit.DOWNLOAD = "5/minute"
-```
-
-### JWT Authentication
-```python
-# JWTBearer - Validates tokens on protected endpoints
-# Injected via dependency injection (not instantiated directly)
 ```
 
 ### Exception Handling
@@ -397,11 +467,13 @@ ServiceContainer (Singleton)
 ├── VersionService          # Data access
 ├── VulnerabilityService    # Data access
 ├── JSONEncoder             # Utility - JSON serialization
-└── JWTBearer              # Security - Authentication
+├── JWTBearer               # Security - JWT authentication (sync)
+├── ApiKeyBearer            # Security - API key authentication (async)
+└── DualAuthBearer          # Security - Dual authentication orchestrator
 ```
 
 **Important:** ALL components are managed by `ServiceContainer`, including utilities 
-like `JSONEncoder` and `JWTBearer`. This ensures:
+and all authentication classes. This ensures:
 - Single instance across the app (Singleton)
 - Easy testing (mock via `app.dependency_overrides`)
 - Consistent pattern (no direct instantiation)
@@ -412,15 +484,17 @@ like `JSONEncoder` and `JWTBearer`. This ensures:
 # ❌ WRONG - Direct instantiation
 json_encoder = JSONEncoder()
 jwt_bearer = JWTBearer()
+api_key_bearer = ApiKeyBearer()
 
 # ✅ CORRECT - Dependency Injection
-from app.dependencies import get_json_encoder, get_jwt_bearer
+from app.dependencies import get_json_encoder, get_dual_auth_bearer
 
 async def endpoint(
     json_encoder: JSONEncoder = Depends(get_json_encoder),
-    jwt_bearer: JWTBearer = Depends(get_jwt_bearer)
+    auth: dict = Depends(get_dual_auth_bearer())  # Dual auth
 ):
     # Use injected dependencies
+    # auth contains user_id from either API key or JWT
     return JSONResponse(content=json_encoder.encode({...}))
 ```
 
@@ -474,10 +548,10 @@ from app.services import VEXService
 ## 🧪 Testing
 
 ### Current Status
-- **Coverage:** 88% (484 tests passing)
+- **Coverage:** 88% (498 tests passing)
 - **Test Framework:** pytest 8.4.2 + pytest-asyncio 1.2.0 + pytest-cov
-- **Test Duration:** ~2-3 seconds
-- **Last Updated:** October 20, 2025
+- **Test Duration:** ~4-5 seconds
+- **Last Updated:** November 5, 2025
 
 ### Test Structure
 ```
@@ -513,6 +587,10 @@ tests/
 │   │
 │   ├── validators/                  # Path validation (100%)
 │   │   └── test_path_validator.py
+│   │
+│   ├── utils/                       # Authentication utilities (100%)
+│   │   ├── test_api_key_bearer.py   # API key authentication (8 tests)
+│   │   └── test_dual_auth_bearer.py # Dual authentication (7 tests)
 │   │
 │   └── parsers/                     # Parsers and utilities (90-100%)
 │       ├── test_purl_parser.py
@@ -763,13 +841,14 @@ def mock_vex_service():
 - ✅ Service layer (VEX, TIX, Version, Package, Vulnerability)
 - ✅ Templates (VEX/TIX file and statement)
 - ✅ Custom exceptions
+- ✅ Authentication utilities (ApiKeyBearer, DualAuthBearer) - **NEW**
 - ✅ PURL parser
 - ✅ Node type mapper
 
 **Partially Covered (50-70%):**
-- ⚠️ Controllers (health: 100%, others: 54-60%)
+- ⚠️ Controllers (health: 100%, others: 53-61%)
 - ⚠️ Validators (58%)
-- ⚠️ Utilities (json_encoder: 56%, jwt_encoder: 52%)
+- ⚠️ Utilities (json_encoder: 56%, jwt_bearer: 52%)
 
 **Low Coverage (<50%):**
 - ❌ GitHub API service (38%)
@@ -1131,6 +1210,36 @@ See [LICENSE](./LICENSE) for more details.
 
 ---
 
-**Last updated:** November 3, 2025  
+## 🔄 Recent Changes
+
+### November 5, 2025 - Dual Authentication & Performance Optimization
+
+**Authentication System:**
+- ✨ Added dual authentication support (API Key + JWT)
+- ✨ API Key authentication with MongoDB validation (SHA256 hashing)
+- ✨ Priority-based fallback: API Key → JWT
+- ⚡ Optimized JWTBearer from async to sync (no I/O operations)
+- ✅ 100% test coverage for authentication utilities (15 new tests)
+
+**Architecture Changes:**
+- `ApiKeyBearer`: Async authentication with MongoDB (I/O-bound)
+- `JWTBearer`: Sync authentication with jwt.decode() (CPU-bound)
+- `DualAuthBearer`: Async orchestrator supporting both methods
+- All authentication classes managed by ServiceContainer (DI pattern)
+
+**Testing:**
+- Added `tests/unit/utils/test_api_key_bearer.py` (8 tests)
+- Added `tests/unit/utils/test_dual_auth_bearer.py` (7 tests)
+- Total: 498 tests passing (88% coverage)
+- All authentication flows validated with comprehensive test cases
+
+**Performance Impact:**
+- Reduced latency by removing unnecessary async overhead in JWT validation
+- Maintained async for API key validation (requires MongoDB query)
+- Improved request processing efficiency for JWT-authenticated requests
+
+---
+
+**Last updated:** November 5, 2025  
 **Maintainer:** Secure Chain Team  
 **Project status:** Production (v1.1.0)

@@ -92,10 +92,13 @@ securechain-vexgen/
 │   ├── schemas/                   # Pydantic models
 │   │   ├── commons/               # Shared models
 │   │   │   ├── mongo.py           # MongoObjectId, VEXIdPath, TIXIdPath
-│   │   │   ├── vex.py             # VEXBase, VEXCreate, VEXResponse
-│   │   │   ├── tix.py             # TIXBase, TIXCreate, TIXResponse
-│   │   │   └── node_type.py       # NodeType Enum
-│   │   └── vex_tix/               # VEX/TIX specific models
+│   │   │   ├── node_type.py       # NodeType Enum
+│   │   │   └── processed_sbom_result.py  # ProcessedSBOMResult
+│   │   ├── tix/                   # TIX specific models
+│   │   │   └── tix.py             # TIXBase, TIXCreate, TIXResponse
+│   │   ├── vex/                   # VEX specific models
+│   │   │   └── vex.py             # VEXBase, VEXCreate, VEXResponse
+│   │   └── vex_tix/               # VEX/TIX generation models
 │   │       └── generate_vex_tix_request.py  # owner, name (no user_id)
 │   │
 │   ├── templates/                 # VEX/TIX templates
@@ -367,6 +370,26 @@ async def get_tixs(
     tixs = await tix_service.read_user_tixs(user_id)
     return JSONResponse(content={"data": tixs})
 
+# Download TIX endpoint - RESTful GET with path parameter
+@router.get("/tix/download/{tix_id}")
+async def download_tix(
+    request: Request,
+    path: TIXIdPath = Depends(),  # Path parameter validation
+    tix_service: TIXService = Depends(get_tix_service)
+):
+    tix = await tix_service.read_tix_by_id(path.tix_id)
+    # Return ZIP file...
+
+# Download VEX endpoint - RESTful GET with path parameter  
+@router.get("/vex/download/{vex_id}")
+async def download_vex(
+    request: Request,
+    path: VEXIdPath = Depends(),  # Path parameter validation
+    vex_service: VEXService = Depends(get_vex_service)
+):
+    vex = await vex_service.read_vex_by_id(path.vex_id)
+    # Return ZIP file...
+
 # VEX/TIX generation - user_id from token, not body
 @router.post("/vex_tix/generate")
 async def generate_vex_tix(
@@ -382,10 +405,12 @@ async def generate_vex_tix(
     # ...
 ```
 
-**Security Rationale:**
+**Security & RESTful Design:**
 - **Before:** User could pass any `user_id` in path/body → Potential impersonation
 - **After:** `user_id` extracted from verified token → Secure user identification
+- **Download Endpoints:** Changed from `POST /download` with body to `GET /download/{id}` with path parameter (RESTful)
 - **Pattern:** All user-specific endpoints now use token-based user identification
+- **Validation:** Path parameters validated using `TIXIdPath` and `VEXIdPath` Pydantic models
 
 ### GitValidator
 ```python
@@ -577,7 +602,7 @@ from app.services import VEXService
 ## 🧪 Testing
 
 ### Current Status
-- **Coverage:** 88% (494 tests passing)
+- **Coverage:** 88% (493 tests passing)
 - **Test Framework:** pytest 8.4.2 + pytest-asyncio 1.2.0 + pytest-cov
 - **Test Duration:** ~5 seconds
 - **Last Updated:** November 8, 2025
@@ -627,8 +652,8 @@ tests/
 │
 └── integration/                     # Integration tests (API endpoints)
     ├── test_health_controller.py    # Health check endpoint (2 tests)
-    ├── test_vex_controller.py       # VEX endpoints (1 test - removed user_id path test)
-    ├── test_tix_controller.py       # TIX endpoints (3 tests - removed user_id path test)
+    ├── test_vex_controller.py       # VEX endpoints (1 test)
+    ├── test_tix_controller.py       # TIX endpoints (2 tests)
     └── test_vex_tix_controller.py   # VEX/TIX generation (5 tests)
 ```
 

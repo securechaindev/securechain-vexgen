@@ -3,7 +3,6 @@ from .commons import (
     NodeType,
     ProcessedSBOMResult,
     TIXIdPath,
-    UserIdPath,
     VEXIdPath,
 )
 from .tix import (
@@ -33,7 +32,6 @@ __all__ = [
     "TIXCreate",
     "TIXIdPath",
     "TIXResponse",
-    "UserIdPath",
     "VEXBase",
     "VEXCreate",
     "VEXIdPath",

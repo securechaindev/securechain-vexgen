@@ -22,12 +22,14 @@ class SBOMProcessor:
         generate_vex_tix_request: GenerateVEXTIXRequest,
         github_service: GitHubService,
         vex_service: VEXService,
-        tix_service: TIXService
+        tix_service: TIXService,
+        user_id: str
     ):
         self.request = generate_vex_tix_request
         self.github_service = github_service
         self.vex_service = vex_service
         self.tix_service = tix_service
+        self.user_id = user_id
         self.sbom_file_extension = ".json"
         self.sbom_identifier = "sbom"
 
@@ -99,7 +101,7 @@ class SBOMProcessor:
                 tix_list.append(last_tix["tix"])
                 cached_paths.append(sbom_path)
 
-                await self.vex_service.update_user_vexs(last_vex["_id"], self.request.user_id)
+                await self.vex_service.update_user_vexs(last_vex["_id"], self.user_id)
 
         return vex_list, tix_list, cached_paths
 
@@ -161,8 +163,8 @@ class SBOMProcessor:
         )
         tix_id = await self.tix_service.create_tix(tix_create)
 
-        await self.vex_service.update_user_vexs(vex_id, self.request.user_id)
-        await self.tix_service.update_user_tixs(tix_id, self.request.user_id)
+        await self.vex_service.update_user_vexs(vex_id, self.user_id)
+        await self.tix_service.update_user_tixs(tix_id, self.user_id)
 
     async def find_sbom_files(self, directory: str) -> list[str]:
         sbom_files = []

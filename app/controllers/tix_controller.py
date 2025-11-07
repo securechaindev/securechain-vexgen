@@ -9,28 +9,28 @@ from app.constants import RateLimit, ResponseCode, ResponseMessage
 from app.dependencies import get_dual_auth_bearer, get_json_encoder, get_tix_service
 from app.exceptions import TixNotFoundException
 from app.limiter import limiter
-from app.schemas import DownloadTIXRequest, TIXIdPath, UserIdPath
+from app.schemas import DownloadTIXRequest, TIXIdPath
 from app.services import TIXService
 from app.utils import JSONEncoder
 
 router = APIRouter()
 
 @router.get(
-    "/tix/user/{user_id}",
+    "/tix/user",
     summary="Retrieve TIX documents for a user",
-    description="Fetches all TIX documents associated with a specific user.",
+    description="Fetches all TIX documents associated with the authenticated user.",
     response_description="List of TIX documents with their metadata and content in JSON format.",
-    dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - TIX"]
 )
 @limiter.limit(RateLimit.DEFAULT)
 async def get_tixs(
     request: Request,
-    path: UserIdPath = Depends(),
+    payload: dict = Depends(get_dual_auth_bearer()),
     tix_service: TIXService = Depends(get_tix_service),
     json_encoder: JSONEncoder = Depends(get_json_encoder)
 ) -> JSONResponse:
-    tixs = await tix_service.read_user_tixs(path.user_id)
+    user_id = payload.get("user_id")
+    tixs = await tix_service.read_user_tixs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(

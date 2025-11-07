@@ -1,4 +1,4 @@
-from .mongo import MongoObjectId, TIXIdPath, UserIdPath, VEXIdPath
+from .mongo import MongoObjectId, TIXIdPath, VEXIdPath
 from .node_type import NodeType
 from .processed_sbom_result import ProcessedSBOMResult
 
@@ -7,6 +7,5 @@ __all__ = [
     "NodeType",
     "ProcessedSBOMResult",
     "TIXIdPath",
-    "UserIdPath",
     "VEXIdPath",
 ]

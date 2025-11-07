@@ -11,10 +11,6 @@ class MongoObjectId(BaseModel):
     )
 
 
-class UserIdPath(BaseModel):
-    user_id: str = Field(..., pattern=MONGO_OBJECT_ID_PATTERN)
-
-
 class VEXIdPath(BaseModel):
     vex_id: str = Field(..., pattern=MONGO_OBJECT_ID_PATTERN)
 

@@ -9,28 +9,28 @@ from app.constants import RateLimit, ResponseCode, ResponseMessage
 from app.dependencies import get_dual_auth_bearer, get_json_encoder, get_vex_service
 from app.exceptions import VexNotFoundException
 from app.limiter import limiter
-from app.schemas import DownloadVEXRequest, UserIdPath, VEXIdPath
+from app.schemas import DownloadVEXRequest, VEXIdPath
 from app.services import VEXService
 from app.utils import JSONEncoder
 
 router = APIRouter()
 
 @router.get(
-    "/vex/user/{user_id}",
+    "/vex/user",
     summary="Retrieve VEX documents for a user",
-    description="Fetches all VEX documents associated with a specific user.",
+    description="Fetches all VEX documents associated with the authenticated user.",
     response_description="List of VEX documents with their metadata and content in JSON format.",
-    dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - VEX"]
 )
 @limiter.limit(RateLimit.DEFAULT)
 async def get_vexs(
     request: Request,
-    path: UserIdPath = Depends(),
+    payload: dict = Depends(get_dual_auth_bearer()),
     vex_service: VEXService = Depends(get_vex_service),
     json_encoder: JSONEncoder = Depends(get_json_encoder)
 ) -> JSONResponse:
-    vexs = await vex_service.read_user_vexs(path.user_id)
+    user_id = payload.get("user_id")
+    vexs = await vex_service.read_user_vexs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=json_encoder.encode(

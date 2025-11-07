@@ -28,22 +28,24 @@ router = APIRouter()
     summary="Generate VEX and TIX from a repository",
     description="Generates VEX and TIX for a specific GitHub repository.",
     response_description="ZIP file containing generated VEX and TIX.",
-    dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - VEX/TIX"]
 )
 @limiter.limit(RateLimit.DOWNLOAD)
 async def generate_vex_tix(
     request: Request,
     generate_vex_tix_request: Annotated[GenerateVEXTIXRequest, Body()],
+    payload: dict = Depends(get_dual_auth_bearer()),
     vex_service: VEXService = Depends(get_vex_service),
     tix_service: TIXService = Depends(get_tix_service),
     github_service: GitHubService = Depends(get_github_service)
 ) -> FileResponse:
+    user_id = payload.get("user_id")
     sbom_processor = SBOMProcessor(
         generate_vex_tix_request,
         github_service,
         vex_service,
-        tix_service
+        tix_service,
+        user_id
     )
     result = await sbom_processor.process_sboms()
 

@@ -1,15 +1,14 @@
 from json import dumps
-from typing import Annotated
 from zipfile import ZipFile
 
-from fastapi import APIRouter, Body, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.constants import RateLimit, ResponseCode, ResponseMessage
 from app.dependencies import get_dual_auth_bearer, get_json_encoder, get_tix_service
 from app.exceptions import TixNotFoundException
 from app.limiter import limiter
-from app.schemas import DownloadTIXRequest, TIXIdPath
+from app.schemas import TIXIdPath
 from app.services import TIXService
 from app.utils import JSONEncoder
 
@@ -73,10 +72,10 @@ async def get_tix(
     )
 
 
-@router.post(
-    "/tix/download",
+@router.get(
+    "/tix/download/{tix_id}",
     summary="Download TIX",
-    description="Fetches the TIX for a specific TIX ID.",
+    description="Downloads a TIX document as a ZIP file by its ID.",
     response_description="ZIP file containing TIX.",
     dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - TIX"]
@@ -84,10 +83,10 @@ async def get_tix(
 @limiter.limit(RateLimit.DOWNLOAD)
 async def download_tix(
     request: Request,
-    DownloadTIXRequest: Annotated[DownloadTIXRequest, Body()],
+    path: TIXIdPath = Depends(),
     tix_service: TIXService = Depends(get_tix_service)
 ) -> FileResponse:
-    tix = await tix_service.read_tix_by_id(DownloadTIXRequest.tix_id)
+    tix = await tix_service.read_tix_by_id(path.tix_id)
     if not tix:
         raise TixNotFoundException()
 

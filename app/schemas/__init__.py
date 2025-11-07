@@ -6,13 +6,11 @@ from .commons import (
     VEXIdPath,
 )
 from .tix import (
-    DownloadTIXRequest,
     TIXBase,
     TIXCreate,
     TIXResponse,
 )
 from .vex import (
-    DownloadVEXRequest,
     VEXBase,
     VEXCreate,
     VEXResponse,
@@ -22,8 +20,6 @@ from .vex_tix import (
 )
 
 __all__ = [
-    "DownloadTIXRequest",
-    "DownloadVEXRequest",
     "GenerateVEXTIXRequest",
     "MongoObjectId",
     "NodeType",

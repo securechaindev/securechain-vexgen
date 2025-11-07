@@ -1,15 +1,14 @@
 from json import dumps
-from typing import Annotated
 from zipfile import ZipFile
 
-from fastapi import APIRouter, Body, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.constants import RateLimit, ResponseCode, ResponseMessage
 from app.dependencies import get_dual_auth_bearer, get_json_encoder, get_vex_service
 from app.exceptions import VexNotFoundException
 from app.limiter import limiter
-from app.schemas import DownloadVEXRequest, VEXIdPath
+from app.schemas import VEXIdPath
 from app.services import VEXService
 from app.utils import JSONEncoder
 
@@ -72,10 +71,10 @@ async def get_vex(
         ),
     )
 
-@router.post(
-    "/vex/download",
+@router.get(
+    "/vex/download/{vex_id}",
     summary="Download VEX",
-    description="Fetches the VEX for a specific VEX ID.",
+    description="Downloads a VEX document as a ZIP file by its ID.",
     response_description="ZIP file containing VEX.",
     dependencies=[Depends(get_dual_auth_bearer())],
     tags=["Secure Chain VEXGen - VEX"]
@@ -83,10 +82,10 @@ async def get_vex(
 @limiter.limit(RateLimit.DOWNLOAD)
 async def download_vex(
     request: Request,
-    DownloadVEXRequest: Annotated[DownloadVEXRequest, Body()],
+    path: VEXIdPath = Depends(),
     vex_service: VEXService = Depends(get_vex_service)
 ) -> FileResponse:
-    vex = await vex_service.read_vex_by_id(DownloadVEXRequest.vex_id)
+    vex = await vex_service.read_vex_by_id(path.vex_id)
     if not vex:
         raise VexNotFoundException()
 

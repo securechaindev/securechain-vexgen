@@ -5,7 +5,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from app.database import DatabaseManager
-from app.dependencies import ServiceContainer, get_jwt_bearer
+from app.dependencies import ServiceContainer, get_dual_auth_bearer
 from app.main import app
 
 
@@ -30,17 +30,18 @@ def mock_service_container(mock_db_manager):
 
 
 @pytest.fixture
-def mock_jwt_bearer():
-    """Mock JWT bearer to bypass authentication in tests."""
-    async def bypass_jwt():
-        return None  # Allow all requests
-    return bypass_jwt
+def mock_dual_auth_bearer():
+    """Mock DualAuthBearer to bypass authentication in tests."""
+    async def bypass_auth(request):
+        # Return a mock user_id for tests
+        return {"user_id": "test-user-id"}
+    return bypass_auth
 
 
 @pytest_asyncio.fixture
-async def client(mock_db_manager, mock_jwt_bearer):
-    # Override JWT dependency to bypass authentication
-    app.dependency_overrides[get_jwt_bearer()] = mock_jwt_bearer
+async def client(mock_db_manager, mock_dual_auth_bearer):
+    # Override DualAuthBearer dependency to bypass authentication
+    app.dependency_overrides[get_dual_auth_bearer()] = mock_dual_auth_bearer
 
     with patch.object(DatabaseManager, "__new__", return_value=mock_db_manager):
         with patch.object(ServiceContainer, "get_db", return_value=mock_db_manager):

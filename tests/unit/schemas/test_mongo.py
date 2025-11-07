@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.schemas import MongoObjectId, TIXIdPath, UserIdPath, VEXIdPath
+from app.schemas import MongoObjectId, TIXIdPath, VEXIdPath
 
 
 class TestMongoObjectId:
@@ -45,20 +45,6 @@ class TestMongoObjectId:
         data = {"id": "507f1F77BcF86cD799439011"}
         obj = MongoObjectId(**data)
         assert obj.id == "507f1F77BcF86cD799439011"
-
-
-class TestUserIdPath:
-    def test_valid_user_id_path(self):
-        data = {"user_id": "507f1f77bcf86cd799439011"}
-        path = UserIdPath(**data)
-        assert path.user_id == "507f1f77bcf86cd799439011"
-
-    def test_invalid_user_id_path(self):
-        data = {"user_id": "invalid-id"}
-        with pytest.raises(ValidationError) as exc_info:
-            UserIdPath(**data)
-        errors = exc_info.value.errors()
-        assert any(e["type"] == "string_pattern_mismatch" for e in errors)
 
 
 class TestVEXIdPath:

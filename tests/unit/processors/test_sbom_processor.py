@@ -40,8 +40,7 @@ class TestSBOMProcessor:
     def generate_request(self):
         return GenerateVEXTIXRequest(
             owner="test-owner",
-            name="test-repo",
-            user_id="507f1f77bcf86cd799439011"
+            name="test-repo"
         )
 
     @pytest.fixture
@@ -50,7 +49,8 @@ class TestSBOMProcessor:
             generate_request,
             mock_github_service,
             mock_vex_service,
-            mock_tix_service
+            mock_tix_service,
+            user_id="507f1f77bcf86cd799439011"
         )
 
     def test_initialization(self, processor, generate_request):

@@ -68,35 +68,52 @@ docker compose -f dev/docker-compose.yml up --build
 - **Neo4j Browser**: [http://localhost:7474](http://localhost:7474)
 - **MongoDB**: `mongodb://localhost:27017`
 
-## Local Development
+## Python Environment
+The project uses Python 3.13 and **uv** as the package manager for faster and more reliable dependency management.
 
-### Python Environment Setup
+### Setting up the development environment with uv
 
-The project uses **Python 3.13** with dependencies managed by `pyproject.toml`.
+1. **Install uv** (if not already installed):
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
 
-#### Option 1: Using uv (Recommended)
+2. **Install dependencies**:
+   ```bash
+   uv sync
+   ```
+
+3. **Activate the virtual environment** (uv creates it automatically):
+   ```bash
+   source .venv/bin/activate
+   ```
+
+4. **Run the application**:
+   ```bash
+   uv run uvicorn app.main:app --reload
+   ```
+
+5. **Run tests**:
+   ```bash
+   uv run pytest --cov=app --cov-report=term-missing
+   ```
+
+## Testing
+
+The project uses pytest with coverage tracking. Current coverage: **84%** (407 tests passing).
+
 ```bash
-# Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Run all tests
+uv run pytest
 
-# Sync dependencies
-uv sync
+# Run tests with coverage report
+uv run pytest --cov=app --cov-report=term-missing --cov-report=html
 
-# Run server
-uv run uvicorn app.main:app --reload --port 8002
-```
+# Run specific test file
+uv run pytest tests/unit/controllers/test_graph_controller.py -v
 
-#### Option 2: Using pip
-```bash
-# Create virtual environment
-python3.13 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -e .
-
-# Run server
-uvicorn app.main:app --reload --port 8002
+# Run only unit tests
+uv run pytest tests/unit/ -v
 ```
 
 ### Code Quality
@@ -108,63 +125,9 @@ ruff check app/
 ruff format app/
 ```
 
-## Testing
-
-The project has comprehensive test coverage (88%) with 483 passing tests covering unit and integration scenarios.
-
-### Install Test Dependencies
-
-#### Using uv (Recommended)
-```bash
-uv sync --extra test
-```
-
-#### Using pip
-```bash
-pip install -e ".[test]"
-```
-
-### Running Tests
-
-#### Run all tests
-```bash
-uv run pytest tests/
-```
-
-#### Run with coverage report
-```bash
-uv run pytest tests/ --cov=app --cov-report=term
-```
-
-#### Run with detailed HTML coverage report
-```bash
-uv run pytest tests/ --cov=app --cov-report=html
-# Open htmlcov/index.html in your browser
-```
-
-#### Run specific test file
-```bash
-uv run pytest tests/unit/services/test_vex_service.py -v
-```
-
-#### Run tests matching a pattern
-```bash
-uv run pytest tests/ -k "test_analyzer" -v
-```
-
 ## Contributing
 
 Pull requests are welcome! For major changes, please open an issue first.
-
-### Commit Convention
-```
-feat: new feature
-fix: bug fix
-docs: documentation
-refactor: code refactoring
-test: add tests
-chore: maintenance
-```
 
 ## License
 

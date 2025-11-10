@@ -45,7 +45,7 @@ class TIXService:
             },
             {
                 "$lookup": {
-                    "from": "tixs",
+                    "from": "tix",
                     "localField": "tixs",
                     "foreignField": "_id",
                     "as": 'lookup'
@@ -60,7 +60,7 @@ class TIXService:
                     "sbom_path": "$lookup.sbom_path",
                     "sbom_name": "$lookup.sbom_name",
                     "moment": "$lookup.moment",
-                    "statements": "$lookup.statements"
+                    "metadata": "$lookup.metadata"
                 }
             }
         ]

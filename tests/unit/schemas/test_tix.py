@@ -86,19 +86,7 @@ class TestTIXCreate:
         }
         tix = TIXCreate(**data)
         assert tix.owner == "test-owner"
-        assert tix.statements == []
         assert tix.metadata is None
-
-    def test_tix_create_with_statements(self):
-        data = {
-            "owner": "test-owner",
-            "name": "test-repo",
-            "sbom_path": "/path/to/sbom.json",
-            "statements": [{"id": "stmt-1", "status": "exploitable"}]
-        }
-        tix = TIXCreate(**data)
-        assert len(tix.statements) == 1
-        assert tix.statements[0]["id"] == "stmt-1"
 
     def test_tix_create_with_metadata(self):
         data = {

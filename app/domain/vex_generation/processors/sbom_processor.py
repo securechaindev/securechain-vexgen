@@ -147,7 +147,6 @@ class SBOMProcessor:
             sbom_path=sbom_path,
             sbom_name=sbom_path.split("/")[-1] if "/" in sbom_path else sbom_path,
             moment=now,
-            statements=vex.get("statements", []),
             metadata=vex
         )
         vex_id = await self.vex_service.create_vex(vex_create)
@@ -158,7 +157,6 @@ class SBOMProcessor:
             sbom_path=sbom_path,
             sbom_name=sbom_path.split("/")[-1] if "/" in sbom_path else sbom_path,
             moment=now,
-            statements=tix.get("statements", []),
             metadata=tix
         )
         tix_id = await self.tix_service.create_tix(tix_create)

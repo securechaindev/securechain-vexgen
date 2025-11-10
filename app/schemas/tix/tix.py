@@ -15,13 +15,12 @@ class TIXBase(BaseModel):
 
 
 class TIXCreate(TIXBase):
-    statements: list[dict[str, Any]] = Field(default_factory=list)
     metadata: dict[str, Any] | None = None
 
 
 class TIXResponse(TIXBase):
     id: str = Field(..., alias="_id")
-    statements: list[dict[str, Any]] = Field(default_factory=list)
+    metadata: dict[str, Any] | None = None
 
     model_config = ConfigDict(
         populate_by_name=True,

@@ -86,19 +86,7 @@ class TestVEXCreate:
         }
         vex = VEXCreate(**data)
         assert vex.owner == "test-owner"
-        assert vex.statements == []
         assert vex.metadata is None
-
-    def test_vex_create_with_statements(self):
-        data = {
-            "owner": "test-owner",
-            "name": "test-repo",
-            "sbom_path": "/path/to/sbom.json",
-            "statements": [{"id": "stmt-1", "status": "not_affected"}]
-        }
-        vex = VEXCreate(**data)
-        assert len(vex.statements) == 1
-        assert vex.statements[0]["id"] == "stmt-1"
 
     def test_vex_create_with_metadata(self):
         data = {

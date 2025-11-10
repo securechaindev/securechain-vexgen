@@ -209,7 +209,6 @@ class TestSBOMProcessor:
         assert vex_call.name == "test-repo"
         assert vex_call.sbom_path == sbom_path
         assert vex_call.sbom_name == "sbom.json"
-        assert vex_call.statements == [{"id": "stmt1"}]
 
         mock_tix_service.create_tix.assert_called_once()
         tix_call = mock_tix_service.create_tix.call_args[0][0]
@@ -217,7 +216,6 @@ class TestSBOMProcessor:
         assert tix_call.name == "test-repo"
         assert tix_call.sbom_path == sbom_path
         assert tix_call.sbom_name == "sbom.json"
-        assert tix_call.statements == [{"id": "stmt2"}]
 
         mock_vex_service.update_user_vexs.assert_called_once_with("vex_id_123", "507f1f77bcf86cd799439011")
         mock_tix_service.update_user_tixs.assert_called_once_with("tix_id_123", "507f1f77bcf86cd799439011")

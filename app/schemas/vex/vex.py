@@ -15,13 +15,12 @@ class VEXBase(BaseModel):
 
 
 class VEXCreate(VEXBase):
-    statements: list[dict[str, Any]] = Field(default_factory=list)
     metadata: dict[str, Any] | None = None
 
 
 class VEXResponse(VEXBase):
     id: str = Field(..., alias="_id")
-    statements: list[dict[str, Any]] = Field(default_factory=list)
+    metadata: dict[str, Any] | None = None
 
     model_config = ConfigDict(
         populate_by_name=True,

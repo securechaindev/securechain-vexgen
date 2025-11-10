@@ -45,7 +45,7 @@ class VEXService:
             },
             {
                 "$lookup": {
-                    "from": "vexs",
+                    "from": "vex",
                     "localField": "vexs",
                     "foreignField": "_id",
                     "as": 'lookup'
@@ -60,7 +60,7 @@ class VEXService:
                     "sbom_path": "$lookup.sbom_path",
                     "sbom_name": "$lookup.sbom_name",
                     "moment": "$lookup.moment",
-                    "statements": "$lookup.statements"
+                    "metadata": "$lookup.metadata"
                 }
             }
         ]

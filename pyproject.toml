@@ -1,6 +1,6 @@
 [project]
 name = "securechain-vexgen"
-version = "1.1.0"
+version = "1.1.1"
 description = "A simple generating tool of Vulnerability Exploitability eXchange (VEX) and Threat Intelligence eXchange (TIX) files"
 readme = "README.md"
 requires-python = ">=3.13"

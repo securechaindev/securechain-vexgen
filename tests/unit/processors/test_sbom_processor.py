@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from pytz import UTC
@@ -10,6 +10,8 @@ from pytz import UTC
 from app.domain.vex_generation.processors.sbom_processor import SBOMProcessor
 from app.exceptions import SbomNotFoundException
 from app.schemas import GenerateVEXTIXRequest
+from app.schemas.tix import TIXResponse
+from app.schemas.vex import VEXResponse
 
 
 class TestSBOMProcessor:
@@ -123,10 +125,8 @@ class TestSBOMProcessor:
         commit_date = datetime.now(UTC) - timedelta(hours=2)
         cache_date = datetime.now(UTC) - timedelta(hours=1)
 
-        last_vex = {
-            "moment": cache_date,
-            "vex": {}
-        }
+        last_vex = Mock(spec=VEXResponse)
+        last_vex.moment = cache_date
 
         result = await processor.is_cache_valid(last_vex, commit_date)
         assert result is True
@@ -136,10 +136,8 @@ class TestSBOMProcessor:
         commit_date = datetime.now(UTC) - timedelta(hours=1)
         cache_date = datetime.now(UTC) - timedelta(hours=2)
 
-        last_vex = {
-            "moment": cache_date,
-            "vex": {}
-        }
+        last_vex = Mock(spec=VEXResponse)
+        last_vex.moment = cache_date
 
         result = await processor.is_cache_valid(last_vex, commit_date)
         assert result is False
@@ -148,10 +146,8 @@ class TestSBOMProcessor:
     async def test_is_cache_valid_same_time(self, processor):
         now = datetime.now(UTC)
 
-        last_vex = {
-            "moment": now,
-            "vex": {}
-        }
+        last_vex = Mock(spec=VEXResponse)
+        last_vex.moment = now
 
         result = await processor.is_cache_valid(last_vex, now)
         assert result is True
@@ -178,15 +174,14 @@ class TestSBOMProcessor:
         directory = "/tmp/repo"
         last_commit_date = datetime.now(UTC) - timedelta(hours=2)
 
-        cached_vex = {
-            "_id": "vex_id",
-            "moment": datetime.now(UTC) - timedelta(hours=1),
-            "vex": {"statements": []}
-        }
-        cached_tix = {
-            "_id": "tix_id",
-            "tix": {"statements": []}
-        }
+        cached_vex = Mock(spec=VEXResponse)
+        cached_vex.id = "vex_id"
+        cached_vex.moment = datetime.now(UTC) - timedelta(hours=1)
+        cached_vex.model_dump = Mock(return_value={"_id": "vex_id", "statements": []})
+
+        cached_tix = Mock(spec=TIXResponse)
+        cached_tix.id = "tix_id"
+        cached_tix.model_dump = Mock(return_value={"_id": "tix_id", "statements": []})
 
         mock_vex_service.read_vex_by_owner_name_sbom_name.return_value = cached_vex
         mock_tix_service.read_tix_by_owner_name_sbom_name.return_value = cached_tix
@@ -314,15 +309,14 @@ class TestSBOMProcessor:
         mock_path_helper.get_relative_path = mock_get_relative_path
 
         with patch.object(processor, 'find_sbom_files', return_value=[sbom_file]):
-            cached_vex = {
-                "_id": "cached_vex_id",
-                "moment": datetime.now(UTC) + timedelta(hours=1),
-                "vex": {"statements": [{"id": "cached"}]}
-            }
-            cached_tix = {
-                "_id": "cached_tix_id",
-                "tix": {"statements": [{"id": "cached"}]}
-            }
+            cached_vex = Mock(spec=VEXResponse)
+            cached_vex.id = "cached_vex_id"
+            cached_vex.moment = datetime.now(UTC) + timedelta(hours=1)
+            cached_vex.model_dump = Mock(return_value={"_id": "cached_vex_id", "statements": [{"id": "cached"}]})
+
+            cached_tix = Mock(spec=TIXResponse)
+            cached_tix.id = "cached_tix_id"
+            cached_tix.model_dump = Mock(return_value={"_id": "cached_tix_id", "statements": [{"id": "cached"}]})
 
             mock_vex_service.read_vex_by_owner_name_sbom_name.return_value = cached_vex
             mock_tix_service.read_tix_by_owner_name_sbom_name.return_value = cached_tix

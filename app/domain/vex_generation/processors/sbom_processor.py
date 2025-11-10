@@ -97,19 +97,19 @@ class SBOMProcessor:
                     sbom_path
                 )
 
-                vex_list.append(last_vex["vex"])
-                tix_list.append(last_tix["tix"])
+                vex_list.append(last_vex.model_dump(mode='json', by_alias=True))
+                tix_list.append(last_tix.model_dump(mode='json', by_alias=True))
                 cached_paths.append(sbom_path)
 
-                await self.vex_service.update_user_vexs(last_vex["_id"], self.user_id)
+                await self.vex_service.update_user_vexs(last_vex.id, self.user_id)
 
         return vex_list, tix_list, cached_paths
 
-    async def is_cache_valid(self, last_vex: dict[str, Any] | None, last_commit_date: datetime) -> bool:
+    async def is_cache_valid(self, last_vex: Any | None, last_commit_date: datetime) -> bool:
         if not last_vex:
             return False
 
-        cache_date = last_vex["moment"].replace(tzinfo=UTC)
+        cache_date = last_vex.moment.replace(tzinfo=UTC)
         commit_date = last_commit_date.replace(tzinfo=UTC)
 
         return cache_date >= commit_date

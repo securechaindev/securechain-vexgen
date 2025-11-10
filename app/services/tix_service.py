@@ -4,12 +4,14 @@ from bson import ObjectId
 
 from app.database import DatabaseManager
 from app.schemas import TIXCreate, TIXResponse
+from app.utils import JSONEncoder
 
 
 class TIXService:
-    def __init__(self, db: DatabaseManager):
+    def __init__(self, db: DatabaseManager, json_encoder: JSONEncoder):
         self.tix_collection = db.get_tixs_collection()
         self.user_collection = db.get_user_collection()
+        self.json_encoder = json_encoder
 
     async def create_tix(self, tix: TIXCreate) -> str:
         tix_dict = tix.model_dump(exclude_unset=True)
@@ -23,12 +25,14 @@ class TIXService:
     async def read_tix_by_id(self, tix_id: str) -> TIXResponse | None:
         tix_dict = await self.tix_collection.find_one({"_id": ObjectId(tix_id)})
         if tix_dict:
+            tix_dict = self.json_encoder.encode(tix_dict)
             return TIXResponse(**tix_dict)
         return None
 
     async def read_tix_by_owner_name_sbom_name(self, owner: str, name: str, sbom_path: str) -> TIXResponse | None:
         tix_dict = await self.tix_collection.find_one({"owner": owner, "name": name, "sbom_path": sbom_path})
         if tix_dict:
+            tix_dict = self.json_encoder.encode(tix_dict)
             return TIXResponse(**tix_dict)
         return None
 
@@ -61,9 +65,12 @@ class TIXService:
             }
         ]
         try:
-            return [
-                TIXResponse(**tix) async for tix in self.user_collection.aggregate(pipeline) if tix
-            ]
+            tixs = []
+            async for tix in self.user_collection.aggregate(pipeline):
+                if tix:
+                    tix = self.json_encoder.encode(tix)
+                    tixs.append(TIXResponse(**tix))
+            return tixs
         except Exception as _:
             return []
 

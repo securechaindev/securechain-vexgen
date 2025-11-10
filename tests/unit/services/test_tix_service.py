@@ -7,6 +7,7 @@ from bson import ObjectId
 from app.database import DatabaseManager
 from app.schemas.tix.tix import TIXCreate
 from app.services.tix_service import TIXService
+from app.utils import JSONEncoder
 
 
 @pytest.fixture
@@ -18,8 +19,15 @@ def mock_db():
 
 
 @pytest.fixture
-def tix_service(mock_db):
-    return TIXService(mock_db)
+def mock_json_encoder():
+    encoder = Mock(spec=JSONEncoder)
+    encoder.encode = Mock(side_effect=lambda x: x)
+    return encoder
+
+
+@pytest.fixture
+def tix_service(mock_db, mock_json_encoder):
+    return TIXService(mock_db, mock_json_encoder)
 
 
 @pytest.fixture

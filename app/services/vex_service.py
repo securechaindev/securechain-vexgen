@@ -4,12 +4,14 @@ from bson import ObjectId
 
 from app.database import DatabaseManager
 from app.schemas import VEXCreate, VEXResponse
+from app.utils import JSONEncoder
 
 
 class VEXService:
-    def __init__(self, db: DatabaseManager):
+    def __init__(self, db: DatabaseManager, json_encoder: JSONEncoder):
         self.vex_collection = db.get_vexs_collection()
         self.user_collection = db.get_user_collection()
+        self.json_encoder = json_encoder
 
     async def create_vex(self, vex: VEXCreate) -> str:
         vex_dict = vex.model_dump(exclude_unset=True)
@@ -23,12 +25,14 @@ class VEXService:
     async def read_vex_by_id(self, vex_id: str) -> VEXResponse | None:
         vex_dict = await self.vex_collection.find_one({"_id": ObjectId(vex_id)})
         if vex_dict:
+            vex_dict = self.json_encoder.encode(vex_dict)
             return VEXResponse(**vex_dict)
         return None
 
     async def read_vex_by_owner_name_sbom_name(self, owner: str, name: str, sbom_path: str) -> VEXResponse | None:
         vex_dict = await self.vex_collection.find_one({"owner": owner, "name": name, "sbom_path": sbom_path})
         if vex_dict:
+            vex_dict = self.json_encoder.encode(vex_dict)
             return VEXResponse(**vex_dict)
         return None
 
@@ -61,9 +65,12 @@ class VEXService:
             }
         ]
         try:
-            return [
-                VEXResponse(**vex) async for vex in self.user_collection.aggregate(pipeline) if vex
-            ]
+            vexs = []
+            async for vex in self.user_collection.aggregate(pipeline):
+                if vex:
+                    vex = self.json_encoder.encode(vex)
+                    vexs.append(VEXResponse(**vex))
+            return vexs
         except Exception as _:
             return []
 

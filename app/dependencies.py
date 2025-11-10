@@ -37,12 +37,12 @@ class ServiceContainer:
 
     def get_vex_service(self) -> VEXService:
         if self.vex_service is None:
-            self.vex_service = VEXService(self.get_db())
+            self.vex_service = VEXService(self.get_db(), self.get_json_encoder())
         return self.vex_service
 
     def get_tix_service(self) -> TIXService:
         if self.tix_service is None:
-            self.tix_service = TIXService(self.get_db())
+            self.tix_service = TIXService(self.get_db(), self.get_json_encoder())
         return self.tix_service
 
     def get_package_service(self) -> PackageService:

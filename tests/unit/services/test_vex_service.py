@@ -7,6 +7,7 @@ from bson import ObjectId
 from app.database import DatabaseManager
 from app.schemas import VEXCreate
 from app.services.vex_service import VEXService
+from app.utils import JSONEncoder
 
 
 @pytest.fixture
@@ -18,8 +19,15 @@ def mock_db():
 
 
 @pytest.fixture
-def vex_service(mock_db):
-    return VEXService(mock_db)
+def mock_json_encoder():
+    encoder = Mock(spec=JSONEncoder)
+    encoder.encode = Mock(side_effect=lambda x: x)
+    return encoder
+
+
+@pytest.fixture
+def vex_service(mock_db, mock_json_encoder):
+    return VEXService(mock_db, mock_json_encoder)
 
 
 @pytest.fixture

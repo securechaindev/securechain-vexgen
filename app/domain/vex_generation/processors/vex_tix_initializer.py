@@ -10,6 +10,8 @@ from app.templates import create_tix_template, create_vex_template
 
 from .statement_generator import StatementsGenerator
 
+from app.logger import logger
+
 
 class VEXTIXInitializer:
     def __init__(self, directory: str):
@@ -20,13 +22,17 @@ class VEXTIXInitializer:
         self,
         owner: str,
         sbom_files: list[str],
-    ) -> list[tuple[dict[str, Any], dict[str, Any]]]:
+    ) -> list[tuple[str, dict[str, Any], dict[str, Any]]]:
         timestamp = datetime.now(UTC).isoformat()
         results = []
 
         for sbom_file in sbom_files:
-            vex_tix = await self.process_single_sbom(sbom_file, owner, timestamp)
-            results.append(vex_tix)
+            try:
+                vex_tix = await self.process_single_sbom(sbom_file, owner, timestamp)
+                results.append((sbom_file, vex_tix[0], vex_tix[1]))
+            except ValueError as e:
+                logger.warning(f"Skipping invalid SBOM file {sbom_file}: {e}")
+                continue
 
         return results
 

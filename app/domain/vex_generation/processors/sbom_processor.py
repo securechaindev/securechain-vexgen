@@ -125,7 +125,7 @@ class SBOMProcessor:
         vex_list = []
         tix_list = []
 
-        for sbom_file, (vex, tix) in zip(sboms_to_process, results, strict=True):
+        for sbom_file, vex, tix in results:
             sbom_path = PathHelper.get_relative_path(sbom_file, directory)
             await self.save_vex_tix(vex, tix, sbom_path)
             vex_list.append(vex)

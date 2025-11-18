@@ -194,7 +194,8 @@ class TestVEXTIXInitializer:
 
                 assert len(results) == 1
                 assert isinstance(results[0], tuple)
-                assert len(results[0]) == 2
+                assert len(results[0]) == 3
+                assert results[0][0] == f.name
                 mock_process.assert_called_once()
 
     @pytest.mark.asyncio
@@ -343,6 +344,6 @@ class TestVEXTIXInitializer:
 
             results = await initializer.init_vex_tix("test-owner", files)
 
-            assert results[0][0]["id"] == 1
-            assert results[1][0]["id"] == 2
-            assert results[2][0]["id"] == 3
+            assert results[0][1]["id"] == 1
+            assert results[1][1]["id"] == 2
+            assert results[2][1]["id"] == 3

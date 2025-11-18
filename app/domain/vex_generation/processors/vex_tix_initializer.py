@@ -6,11 +6,10 @@ from aiofiles import open as aio_open
 from pytz import UTC
 
 from app.domain.vex_generation.generators import StatementHelpers
+from app.logger import logger
 from app.templates import create_tix_template, create_vex_template
 
 from .statement_generator import StatementsGenerator
-
-from app.logger import logger
 
 
 class VEXTIXInitializer:

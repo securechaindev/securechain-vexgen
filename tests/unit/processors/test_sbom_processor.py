@@ -268,7 +268,7 @@ class TestSBOMProcessor:
         mock_initializer = AsyncMock()
         mock_vex = {"statements": [{"id": "vex1"}]}
         mock_tix = {"statements": [{"id": "tix1"}]}
-        mock_initializer.init_vex_tix.return_value = [(mock_vex, mock_tix)]
+        mock_initializer.init_vex_tix.return_value = [("/tmp/repo/sbom.json", mock_vex, mock_tix)]
         mock_initializer_class.return_value = mock_initializer
 
         with patch.object(processor, 'save_vex_tix') as mock_save:
@@ -340,8 +340,8 @@ class TestSBOMProcessor:
         with patch('app.domain.vex_generation.processors.sbom_processor.VEXTIXInitializer') as mock_init_class:
             mock_init = AsyncMock()
             mock_init.init_vex_tix.return_value = [
-                (mock_vex1, mock_tix1),
-                (mock_vex2, mock_tix2)
+                ("/tmp/repo/sbom1.json", mock_vex1, mock_tix1),
+                ("/tmp/repo/sbom2.json", mock_vex2, mock_tix2)
             ]
             mock_init_class.return_value = mock_init
 

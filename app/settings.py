@@ -27,13 +27,13 @@ class Settings(BaseSettings):
     GIT_FSCK_OBJECTS: bool = True
 
     # Database Configuration
-    DB_VEXS_COLLECTION: str = "vex"
-    DB_TIXS_COLLECTION: str = "tix"
-    DB_USERS_COLLECTION: str = "user"
+    DB_VEXS_COLLECTION: str = "vexs"
+    DB_TIXS_COLLECTION: str = "tixs"
+    DB_USERS_COLLECTION: str = "users"
+    DB_API_KEY_COLLECTION: str = "api_keys"
     DB_VULNERABILITIES_COLLECTION: str = "vulnerabilities"
     DB_CWES_COLLECTION: str = "cwes"
     DB_EXPLOITS_COLLECTION: str = "exploits"
-    DB_API_KEY_COLLECTION: str = "api_key"
     MIN_POOL_SIZE: int = 10
     MAX_POOL_SIZE: int = 100
     MAX_IDLE_TIME_MS: int = 60000

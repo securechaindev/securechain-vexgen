@@ -9,7 +9,7 @@ dependencies = [
     "fastapi==0.116.1",
     "uvicorn==0.35.0",
     "pydantic-settings==2.7.0",
-    "motor==3.6.0",
+    "pymongo==4.15.4",
     "python-dotenv==1.0.1",
     "python-dateutil==2.9.0",
     "neo4j==5.27.0",

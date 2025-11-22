@@ -24,9 +24,9 @@
 ### Tech Stack
 - **Framework:** FastAPI 0.116.1 (Python 3.13+)
 - **Databases:**
-  - MongoDB (Motor 3.6.0) - Stores VEX/TIX documents
+  - MongoDB (PyMongo 4.15.4) - Stores VEX/TIX documents
   - Neo4j (5.27.0) - Dependency and vulnerability graph
-- **Async I/O:** aiofiles, aiohttp, motor
+- **Async I/O:** aiofiles, aiohttp
 - **Validation:** Pydantic v2
 - **Git:** GitPython
 - **Rate Limiting:** slowapi
@@ -590,7 +590,7 @@ from typing import Any
 
 # 2. Third-party
 from fastapi import APIRouter
-from motor.motor_asyncio import AsyncIOMotorCollection
+from pymongo import AsyncMongoClient
 
 # 3. Local app
 from app.config import settings
@@ -1216,7 +1216,7 @@ from app.logger import logger  # ✅ Correct
 ### External Documentation
 - [FastAPI Docs](https://fastapi.tiangolo.com/)
 - [Pydantic V2 Docs](https://docs.pydantic.dev/latest/)
-- [Motor (MongoDB Async)](https://motor.readthedocs.io/)
+- [PyMongo (MongoDB Async)](https://pymongo.readthedocs.io/en/stable/api/pymongo/asynchronous/index.html)
 - [Neo4j Python Driver](https://neo4j.com/docs/python-manual/current/)
 - [VEX Spec](https://www.cisa.gov/resources-tools/resources/minimum-elements-vulnerability-exploitability-exchange-vex)
 

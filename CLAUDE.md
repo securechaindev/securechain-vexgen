@@ -22,7 +22,7 @@
 ## 🏗️ Project Architecture
 
 ### Tech Stack
-- **Framework:** FastAPI 0.116.1 (Python 3.13+)
+- **Framework:** FastAPI 0.116.1 (Python 3.14+)
 - **Databases:**
   - MongoDB (PyMongo 4.15.4) - Stores VEX/TIX documents
   - Neo4j (5.27.0) - Dependency and vulnerability graph
@@ -1010,7 +1010,7 @@ uv sync --all-extras
 uv run uvicorn app.main:app --reload --port 8002
 
 # Run with specific Python version
-uv run --python 3.13 uvicorn app.main:app --reload --port 8002
+uv run --python 3.14 uvicorn app.main:app --reload --port 8002
 
 # Install additional package
 uv pip install package-name
@@ -1034,7 +1034,7 @@ uv run pytest tests/ --cov=app --cov-report=html
 #### Option 2: Using pip/venv
 ```bash
 # Create venv
-python3.13 -m venv .venv
+python3.14 -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 

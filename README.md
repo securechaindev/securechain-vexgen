@@ -21,7 +21,7 @@
 2. **[Docker Compose](https://docs.docker.com/compose/)** - Multi-container orchestration
 3. **[MongoDB Compass](https://www.mongodb.com/products/compass)** (optional) - MongoDB GUI
 4. **[Neo4j Browser](http://localhost:7474)** - Graph database visualization (runs on container)
-5. **Python 3.13+** - For local development
+5. **Python 3.14+** - For local development
 
 ## Quick Start
 
@@ -69,7 +69,7 @@ docker compose -f dev/docker-compose.yml up --build
 - **MongoDB**: `mongodb://localhost:27017`
 
 ## Python Environment
-The project uses Python 3.13 and **uv** as the package manager for faster and more reliable dependency management.
+The project uses Python 3.14 and **uv** as the package manager for faster and more reliable dependency management.
 
 ### Setting up the development environment with uv
 

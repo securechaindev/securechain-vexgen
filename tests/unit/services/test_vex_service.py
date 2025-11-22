@@ -14,7 +14,7 @@ from app.utils import JSONEncoder
 def mock_db():
     db = Mock(spec=DatabaseManager)
     db.get_vexs_collection = Mock(return_value=AsyncMock())
-    db.get_user_collection = Mock(return_value=AsyncMock())
+    db.get_users_collection = Mock(return_value=AsyncMock())
     return db
 
 
@@ -108,7 +108,7 @@ class TestVEXService:
         async def async_generator():
             yield sample_vex_dict
 
-        mock_db.get_user_collection().aggregate = Mock(return_value=async_generator())
+        mock_db.get_users_collection().aggregate = Mock(return_value=async_generator())
 
         vexs = await vex_service.read_user_vexs("507f1f77bcf86cd799439011")
 
@@ -117,7 +117,7 @@ class TestVEXService:
 
     @pytest.mark.asyncio
     async def test_read_user_vexs_exception(self, vex_service, mock_db):
-        mock_db.get_user_collection().aggregate = Mock(side_effect=Exception("DB Error"))
+        mock_db.get_users_collection().aggregate = Mock(side_effect=Exception("DB Error"))
 
         vexs = await vex_service.read_user_vexs("507f1f77bcf86cd799439011")
 
@@ -125,8 +125,8 @@ class TestVEXService:
 
     @pytest.mark.asyncio
     async def test_update_user_vexs(self, vex_service, mock_db):
-        mock_db.get_user_collection().update_one = AsyncMock()
+        mock_db.get_users_collection().update_one = AsyncMock()
 
         await vex_service.update_user_vexs("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012")
 
-        mock_db.get_user_collection().update_one.assert_called_once()
+        mock_db.get_users_collection().update_one.assert_called_once()

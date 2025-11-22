@@ -54,7 +54,7 @@ class TestApiKeyBearer:
         mock_db_manager = Mock()
         mock_collection = AsyncMock()
         mock_collection.find_one.return_value = None
-        mock_db_manager.get_api_key_collection.return_value = mock_collection
+        mock_db_manager.get_api_keys_collection.return_value = mock_collection
 
         with patch("app.utils.api_key_bearer.DatabaseManager", return_value=mock_db_manager):
             with pytest.raises(InvalidTokenException):
@@ -74,7 +74,7 @@ class TestApiKeyBearer:
             "user_id": "user123",
             "is_active": False
         }
-        mock_db_manager.get_api_key_collection.return_value = mock_collection
+        mock_db_manager.get_api_keys_collection.return_value = mock_collection
 
         with patch("app.utils.api_key_bearer.DatabaseManager", return_value=mock_db_manager):
             with pytest.raises(InvalidTokenException):
@@ -96,7 +96,7 @@ class TestApiKeyBearer:
             "is_active": True,
             "name": "Test Key"
         }
-        mock_db_manager.get_api_key_collection.return_value = mock_collection
+        mock_db_manager.get_api_keys_collection.return_value = mock_collection
 
         with patch("app.utils.api_key_bearer.DatabaseManager", return_value=mock_db_manager):
             result = await bearer(mock_request)
@@ -115,7 +115,7 @@ class TestApiKeyBearer:
         mock_collection.find_one.return_value = {
             "key_hash": ApiKeyBearer.hash(api_key),
         }
-        mock_db_manager.get_api_key_collection.return_value = mock_collection
+        mock_db_manager.get_api_keys_collection.return_value = mock_collection
 
         with patch("app.utils.api_key_bearer.DatabaseManager", return_value=mock_db_manager):
             with pytest.raises(InvalidTokenException):

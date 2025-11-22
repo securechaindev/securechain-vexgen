@@ -14,7 +14,7 @@ def mock_db_manager():
     db_manager = Mock(spec=DatabaseManager)
     db_manager.get_vexs_collection = Mock(return_value=AsyncMock())
     db_manager.get_tixs_collection = Mock(return_value=AsyncMock())
-    db_manager.get_user_collection = Mock(return_value=AsyncMock())
+    db_manager.get_users_collection = Mock(return_value=AsyncMock())
     db_manager.get_vulnerabilities_collection = Mock(return_value=AsyncMock())
     db_manager.get_neo4j_driver = Mock(return_value=AsyncMock())
     db_manager.initialize = AsyncMock()

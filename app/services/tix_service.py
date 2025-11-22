@@ -9,13 +9,13 @@ from app.utils import JSONEncoder
 
 class TIXService:
     def __init__(self, db: DatabaseManager, json_encoder: JSONEncoder):
-        self.tix_collection = db.get_tixs_collection()
-        self.user_collection = db.get_user_collection()
+        self.tixs_collection = db.get_tixs_collection()
+        self.users_collection = db.get_users_collection()
         self.json_encoder = json_encoder
 
     async def create_tix(self, tix: TIXCreate) -> str:
         tix_dict = tix.model_dump(exclude_unset=True)
-        result = await self.tix_collection.replace_one(
+        result = await self.tixs_collection.replace_one(
             {"owner": tix.owner, "name": tix.name, "sbom_path": tix.sbom_path},
             tix_dict,
             upsert=True
@@ -23,14 +23,14 @@ class TIXService:
         return str(result.upserted_id)
 
     async def read_tix_by_id(self, tix_id: str) -> TIXResponse | None:
-        tix_dict = await self.tix_collection.find_one({"_id": ObjectId(tix_id)})
+        tix_dict = await self.tixs_collection.find_one({"_id": ObjectId(tix_id)})
         if tix_dict:
             tix_dict = self.json_encoder.encode(tix_dict)
             return TIXResponse(**tix_dict)
         return None
 
     async def read_tix_by_owner_name_sbom_name(self, owner: str, name: str, sbom_path: str) -> TIXResponse | None:
-        tix_dict = await self.tix_collection.find_one({"owner": owner, "name": name, "sbom_path": sbom_path})
+        tix_dict = await self.tixs_collection.find_one({"owner": owner, "name": name, "sbom_path": sbom_path})
         if tix_dict:
             tix_dict = self.json_encoder.encode(tix_dict)
             return TIXResponse(**tix_dict)
@@ -66,7 +66,7 @@ class TIXService:
         ]
         try:
             tixs = []
-            async for tix in self.user_collection.aggregate(pipeline):
+            async for tix in self.users_collection.aggregate(pipeline):
                 if tix:
                     tix = self.json_encoder.encode(tix)
                     tixs.append(TIXResponse(**tix))
@@ -76,4 +76,4 @@ class TIXService:
 
 
     async def update_user_tixs(self, tix_id: str, user_id: str) -> None:
-        await self.user_collection.update_one({"_id": ObjectId(user_id)}, {"$addToSet": {"tixs": ObjectId(tix_id)}})
+        await self.users_collection.update_one({"_id": ObjectId(user_id)}, {"$addToSet": {"tixs": ObjectId(tix_id)}})

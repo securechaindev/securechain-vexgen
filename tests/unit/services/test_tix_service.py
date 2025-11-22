@@ -14,7 +14,7 @@ from app.utils import JSONEncoder
 def mock_db():
     db = Mock(spec=DatabaseManager)
     db.get_tixs_collection = Mock(return_value=AsyncMock())
-    db.get_user_collection = Mock(return_value=AsyncMock())
+    db.get_users_collection = Mock(return_value=AsyncMock())
     return db
 
 
@@ -108,7 +108,7 @@ class TestTIXService:
         async def async_generator():
             yield sample_tix_dict
 
-        mock_db.get_user_collection().aggregate = Mock(return_value=async_generator())
+        mock_db.get_users_collection().aggregate = Mock(return_value=async_generator())
 
         tixs = await tix_service.read_user_tixs("507f1f77bcf86cd799439011")
 
@@ -117,7 +117,7 @@ class TestTIXService:
 
     @pytest.mark.asyncio
     async def test_read_user_tixs_exception(self, tix_service, mock_db):
-        mock_db.get_user_collection().aggregate = Mock(side_effect=Exception("DB Error"))
+        mock_db.get_users_collection().aggregate = Mock(side_effect=Exception("DB Error"))
 
         tixs = await tix_service.read_user_tixs("507f1f77bcf86cd799439011")
 
@@ -125,8 +125,8 @@ class TestTIXService:
 
     @pytest.mark.asyncio
     async def test_update_user_tixs(self, tix_service, mock_db):
-        mock_db.get_user_collection().update_one = AsyncMock()
+        mock_db.get_users_collection().update_one = AsyncMock()
 
         await tix_service.update_user_tixs("507f1f77bcf86cd799439012", "507f1f77bcf86cd799439011")
 
-        mock_db.get_user_collection().update_one.assert_called_once()
+        mock_db.get_users_collection().update_one.assert_called_once()

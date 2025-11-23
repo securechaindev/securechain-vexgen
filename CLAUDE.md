@@ -2,7 +2,7 @@
 
 > **Context file for AI agents (Claude, GPT, etc.)**  
 > Last updated: November 8, 2025  
-> Project version: 1.1.1
+> Project version: 1.1.3
 
 ---
 

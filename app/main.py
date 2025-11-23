@@ -26,7 +26,7 @@ app = FastAPI(
     title="VEXGen",
     description=DESCRIPTION,
     docs_url=settings.DOCS_URL,
-    version="1.1.1",
+    version="1.1.3",
     contact={
         "name": "Secure Chain Team",
         "url": "https://github.com/securechaindev",

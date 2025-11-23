@@ -704,7 +704,7 @@ wheels = [
 
 [[package]]
 name = "securechain-vexgen"
-version = "1.1.1"
+version = "1.1.3"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },

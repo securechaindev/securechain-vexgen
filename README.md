@@ -49,7 +49,7 @@ docker network create securechain
 ```
 
 ### 4. Seed Databases
-Download [database dumps](https://doi.org/10.5281/zenodo.16739081) from Zenodo, unzip, and run:
+Download [database dumps](https://doi.org/10.5281/zenodo.17692376) from **Zenodo**, unzip, and run:
 ```bash
 docker compose up --build
 ```

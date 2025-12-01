@@ -107,13 +107,16 @@ uv run pytest tests/unit/controllers/test_graph_controller.py -v
 uv run pytest tests/unit/ -v
 ```
 
-### Code Quality
+## Code Quality
 ```bash
+# Install linter
+uv sync --extra dev
+
 # Linting
-ruff check app/
+uv ruff check app/
 
 # Formatting
-ruff format app/
+uv ruff format app/
 ```
 
 ## Contributing

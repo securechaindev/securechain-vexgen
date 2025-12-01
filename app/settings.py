@@ -1,24 +1,31 @@
 from functools import lru_cache
 from os import environ
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     model_config = ConfigDict(env_file=".env")
 
-    GRAPH_DB_URI: str = ""
-    GRAPH_DB_USER: str = ""
-    GRAPH_DB_PASSWORD: str = ""
-    VULN_DB_URI: str = ""
-    VULN_DB_USER: str = ""
-    VULN_DB_PASSWORD: str = ""
-    DOCS_URL: str | None = None
-    SERVICES_ALLOWED_ORIGINS: list[str] = []
-    ALGORITHM: str = ""
-    JWT_ACCESS_SECRET_KEY: str = ""
-    GITHUB_GRAPHQL_API_KEY: str = ""
+    # Database connections (required)
+    GRAPH_DB_URI: str = Field(..., alias="GRAPH_DB_URI")
+    GRAPH_DB_USER: str = Field(..., alias="GRAPH_DB_USER")
+    GRAPH_DB_PASSWORD: str = Field(..., alias="GRAPH_DB_PASSWORD")
+    VULN_DB_URI: str = Field(..., alias="VULN_DB_URI")
+
+    # GitHub API Key (required)
+    GITHUB_GRAPHQL_API_KEY: str = Field(..., alias="GITHUB_GRAPHQL_API_KEY")
+
+    # JWT secrets (required)
+    JWT_ACCESS_SECRET_KEY: str = Field(..., alias="JWT_ACCESS_SECRET_KEY")
+
+    # Application settings (safe defaults)
+    DOCS_URL: str | None = Field(None, alias="DOCS_URL")
+    SERVICES_ALLOWED_ORIGINS: list[str] = Field(["*"], alias="SERVICES_ALLOWED_ORIGINS")
+    ALGORITHM: str = Field("HS256", alias="ALGORITHM")
+
+    # VEX Configuration
     VEX_VULNERABILITY_IMPACT_WEIGHT: float = 0.7
     VEX_REACHABLE_CODE_PRIORITY_BONUS: float = 1.0
     VEX_EXPLOITS_PRIORITY_BONUS: float = 1.0

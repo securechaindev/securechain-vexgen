@@ -3,7 +3,7 @@ from os.path import join
 from pathlib import Path
 from typing import Any
 
-from app.domain import CodeAnalyzerFactory
+from app.domain import BaseCodeAnalyzer, CodeAnalyzerFactory
 from app.domain.vex_generation.constants import SKIP_DIRECTORIES, TEXT_FILE_EXTENSIONS
 from app.domain.vex_generation.helpers import PathHelper
 from app.domain.vex_generation.parsers import NodeTypeMapper
@@ -91,7 +91,7 @@ class TIXStatementGenerator:
         path: str,
         vulnerability: dict[str, Any],
         import_names: list[str],
-        analyzer: CodeAnalyzerFactory
+        analyzer: BaseCodeAnalyzer
     ) -> dict[str, Any]:
         relative_path = PathHelper.get_relative_path(path, self.directory)
         affected_artefacts = vulnerability.get("affected_artefacts", {})

@@ -36,7 +36,7 @@ class BaseCodeAnalyzer(ABC):
         filename: str,
         import_names: list[str],
         cve_description: str,
-        affected_artefacts: dict[str, dict[str, list[str]]]
+        affected_artefacts: dict[str, dict[str, dict[str, list[str]]]]
     ) -> list[dict[str, Any]]:
         async with aiofiles.open(filename, encoding="utf-8") as file:
             code = await file.read()
@@ -76,7 +76,7 @@ class BaseCodeAnalyzer(ABC):
         import_names: list[str],
         code: str,
         cve_description: str,
-        affected_artefacts: dict[str, dict[str, Any]],
+        affected_artefacts: dict[str, dict[str, dict[str, list[str]]]],
         visited: set[str]
     ) -> dict[tuple[str, str, str], list[str]]:
         patterns, used_artefacts = await self.extract_patterns(
@@ -108,7 +108,7 @@ class BaseCodeAnalyzer(ABC):
         self,
         match: Any,
         split_type: str,
-        affected_artefacts: dict[str, dict[str, Any]],
+        affected_artefacts: dict[str, dict[str, dict[str, list[str]]]],
         cve_description: str,
         used_artefacts: dict[tuple[str, str, str], list[str]],
         new_artefacts: list[str]

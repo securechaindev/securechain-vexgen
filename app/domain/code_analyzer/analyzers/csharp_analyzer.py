@@ -24,6 +24,7 @@ class CSharpAnalyzer(BaseCodeAnalyzer):
                     pattern = self.get_import_pattern(import_name)
                     if search(pattern, code):
                         return True
+                return False
         except Exception:
             return False
 
@@ -114,7 +115,7 @@ class CSharpAnalyzer(BaseCodeAnalyzer):
         filename: str,
         import_names: list[str],
         cve_description: str,
-        affected_artefacts: dict[str, dict[str, list[str]]]
+        affected_artefacts: dict[str, dict[str, dict[str, list[str]]]]
     ) -> list[dict[str, Any]]:
         result = await super().get_used_artefacts(
             filename, import_names, cve_description, affected_artefacts

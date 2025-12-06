@@ -23,6 +23,7 @@ class RustAnalyzer(BaseCodeAnalyzer):
                     pattern = self.get_import_pattern(import_name)
                     if search(pattern, code):
                         return True
+                return False
         except Exception:
             return False
 
@@ -75,7 +76,7 @@ class RustAnalyzer(BaseCodeAnalyzer):
         self,
         match: Any,
         split_type: str,
-        affected_artefacts: dict[str, dict[str, Any]],
+        affected_artefacts: dict[str, dict[str, dict[str, list[str]]]],
         cve_description: str,
         used_artefacts: dict[tuple[str, str, str], list[str]],
         new_artefacts: list[str]

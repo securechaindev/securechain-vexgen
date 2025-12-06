@@ -66,7 +66,7 @@ class VEXService:
         ]
         try:
             vexs = []
-            async for vex in self.users_collection.aggregate(pipeline):
+            async for vex in await self.users_collection.aggregate(pipeline):
                 if vex:
                     vex = self.json_encoder.encode(vex)
                     vexs.append(VEXResponse(**vex))

@@ -66,7 +66,7 @@ class TIXService:
         ]
         try:
             tixs = []
-            async for tix in self.users_collection.aggregate(pipeline):
+            async for tix in await self.users_collection.aggregate(pipeline):
                 if tix:
                     tix = self.json_encoder.encode(tix)
                     tixs.append(TIXResponse(**tix))

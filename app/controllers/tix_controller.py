@@ -28,7 +28,7 @@ async def get_tixs(
     tix_service: TIXService = Depends(get_tix_service),
     json_encoder: JSONEncoder = Depends(get_json_encoder)
 ) -> JSONResponse:
-    user_id = payload.get("user_id")
+    user_id = payload.get("user_id", "")
     tixs = await tix_service.read_user_tixs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,

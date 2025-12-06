@@ -28,7 +28,7 @@ async def get_vexs(
     vex_service: VEXService = Depends(get_vex_service),
     json_encoder: JSONEncoder = Depends(get_json_encoder)
 ) -> JSONResponse:
-    user_id = payload.get("user_id")
+    user_id = payload.get("user_id", "")
     vexs = await vex_service.read_user_vexs(user_id)
     return JSONResponse(
         status_code=status.HTTP_200_OK,

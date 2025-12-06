@@ -39,7 +39,7 @@ async def generate_vex_tix(
     tix_service: TIXService = Depends(get_tix_service),
     github_service: GitHubService = Depends(get_github_service)
 ) -> FileResponse:
-    user_id = payload.get("user_id")
+    user_id = payload.get("user_id", "")
     sbom_processor = SBOMProcessor(
         generate_vex_tix_request,
         github_service,

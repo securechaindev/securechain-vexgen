@@ -90,18 +90,19 @@ class SBOMProcessor:
                 sbom_path
             )
 
-            if await self.is_cache_valid(last_vex, last_commit_date):
-                last_tix = await self.tix_service.read_tix_by_owner_name_sbom_name(
-                    self.request.owner,
-                    self.request.name,
-                    sbom_path
-                )
+            last_tix = await self.tix_service.read_tix_by_owner_name_sbom_name(
+                self.request.owner,
+                self.request.name,
+                sbom_path
+            )
 
+            if last_vex and last_tix and await self.is_cache_valid(last_vex, last_commit_date):
                 vex_list.append(last_vex.model_dump(mode='json', by_alias=True))
                 tix_list.append(last_tix.model_dump(mode='json', by_alias=True))
                 cached_paths.append(sbom_path)
 
                 await self.vex_service.update_user_vexs(last_vex.id, self.user_id)
+                await self.tix_service.update_user_tixs(last_tix.id, self.user_id)
 
         return vex_list, tix_list, cached_paths
 

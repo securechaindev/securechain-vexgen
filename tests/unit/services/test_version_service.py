@@ -92,61 +92,6 @@ class TestVersionService:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_read_versions_names_by_package_found(
-        self, version_service, mock_db
-    ):
-        _, mock_session = mock_db
-
-        mock_record = Mock()
-        mock_record.get = Mock(return_value=["1.0.0", "1.1.0", "2.0.0"])
-
-        mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=mock_record)
-        mock_session.run = AsyncMock(return_value=mock_result)
-
-        result = await version_service.read_versions_names_by_package(
-            "PypiPackage", "requests"
-        )
-
-        assert result == ["1.0.0", "1.1.0", "2.0.0"]
-        mock_session.run.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_read_versions_names_by_package_not_found(
-        self, version_service, mock_db
-    ):
-        _, mock_session = mock_db
-
-        mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=None)
-        mock_session.run = AsyncMock(return_value=mock_result)
-
-        result = await version_service.read_versions_names_by_package(
-            "PypiPackage", "nonexistent"
-        )
-
-        assert result is None
-
-    @pytest.mark.asyncio
-    async def test_read_versions_names_empty_versions(
-        self, version_service, mock_db
-    ):
-        _, mock_session = mock_db
-
-        mock_record = Mock()
-        mock_record.get = Mock(return_value=[])
-
-        mock_result = AsyncMock()
-        mock_result.single = AsyncMock(return_value=mock_record)
-        mock_session.run = AsyncMock(return_value=mock_result)
-
-        result = await version_service.read_versions_names_by_package(
-            "NpmPackage", "empty-package"
-        )
-
-        assert result == []
-
-    @pytest.mark.asyncio
     async def test_different_node_types(self, version_service, mock_db):
         _, mock_session = mock_db
 

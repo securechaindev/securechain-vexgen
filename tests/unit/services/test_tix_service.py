@@ -108,7 +108,7 @@ class TestTIXService:
         async def async_generator():
             yield sample_tix_dict
 
-        mock_db.get_users_collection().aggregate = Mock(return_value=async_generator())
+        mock_db.get_users_collection().aggregate = AsyncMock(return_value=async_generator())
 
         tixs = await tix_service.read_user_tixs("507f1f77bcf86cd799439011")
 

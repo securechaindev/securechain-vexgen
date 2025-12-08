@@ -12,7 +12,7 @@ class TestStatementsGenerator:
     @pytest.fixture
     def mock_package_service(self):
         service = AsyncMock()
-        service.read_package_by_name.return_value = ("package-name", ["import1", "import2"])
+        service.read_package_by_name.return_value = {"name": "package-name", "import_names": ["import1", "import2"]}
         return service
 
     @pytest.fixture
@@ -186,7 +186,7 @@ class TestStatementsGenerator:
         tix = {"statements": []}
 
         generator.purl_parser.extract_type = MagicMock(return_value="npm")
-        generator.package_service.read_package_by_name.return_value = ("express", ["express"])
+        generator.package_service.read_package_by_name.return_value = {"name": "express", "import_names": ["express"]}
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-2023-1234"]
 
         vulnerability = {"id": "CVE-2023-1234"}
@@ -249,7 +249,7 @@ class TestStatementsGenerator:
         tix = {"statements": []}
 
         generator.purl_parser.extract_type = MagicMock(return_value="npm")
-        generator.package_service.read_package_by_name.return_value = ("express", ["express"])
+        generator.package_service.read_package_by_name.return_value = {"name": "express", "import_names": ["express"]}
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = []
 
         await generator.process_component(component, "2024-01-01T00:00:00Z", vex, tix)
@@ -268,7 +268,7 @@ class TestStatementsGenerator:
         tix = {"statements": []}
 
         generator.purl_parser.extract_type = MagicMock(return_value="npm")
-        generator.package_service.read_package_by_name.return_value = ("express", ["express"])
+        generator.package_service.read_package_by_name.return_value = {"name": "express", "import_names": ["express"]}
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = [
             "CVE-2023-1234",
             "CVE-2023-5678"
@@ -317,7 +317,7 @@ class TestStatementsGenerator:
         generator.purl_parser.is_valid = MagicMock(return_value=True)
         generator.purl_parser.extract_type = MagicMock(return_value="npm")
 
-        generator.package_service.read_package_by_name.return_value = ("pkg", ["pkg"])
+        generator.package_service.read_package_by_name.return_value = {"name": "pkg", "import_names": ["pkg"]}
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-1"]
         generator.vulnerability_service.read_vulnerability_by_id.return_value = {"id": "CVE-1"}
 
@@ -368,7 +368,7 @@ class TestStatementsGenerator:
 
         generator.purl_parser.is_valid = MagicMock(return_value=True)
         generator.purl_parser.extract_type = MagicMock(return_value="npm")
-        generator.package_service.read_package_by_name.return_value = ("pkg", ["pkg"])
+        generator.package_service.read_package_by_name.return_value = {"name": "pkg", "import_names": ["pkg"]}
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-1"]
         generator.vulnerability_service.read_vulnerability_by_id.return_value = {"id": "CVE-1"}
 
@@ -413,7 +413,7 @@ class TestStatementsGenerator:
 
         generator.purl_parser.is_valid = MagicMock(return_value=True)
         generator.purl_parser.extract_type = MagicMock(return_value="npm")
-        generator.package_service.read_package_by_name.return_value = ("pkg", ["pkg"])
+        generator.package_service.read_package_by_name.return_value = {"name": "pkg", "import_names": ["pkg"]}
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = ["CVE-1"]
         generator.vulnerability_service.read_vulnerability_by_id.return_value = {"id": "CVE-1"}
 
@@ -472,7 +472,7 @@ class TestStatementsGenerator:
         tix = {"statements": []}
 
         generator.purl_parser.extract_type = MagicMock(return_value="npm")
-        generator.package_service.read_package_by_name.return_value = ("express", ["express"])
+        generator.package_service.read_package_by_name.return_value = {"name": "express", "import_names": ["express"]}
         generator.version_service.read_vulnerability_ids_by_version_and_package.return_value = []
 
         await generator.process_component(component, "2024-01-01T00:00:00Z", vex, tix)

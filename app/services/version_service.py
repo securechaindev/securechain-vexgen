@@ -8,12 +8,13 @@ class VersionService:
     async def read_vulnerability_ids_by_version_and_package(
         self, node_type: str, name: str, version: str
     ) -> list[str]:
+        # TODO: Add dynamic labels where Neo4j supports it with indexes
         query = f"""
         MATCH (p:{node_type}{{name:$name}})
         MATCH (p)-[r:HAVE]->(v: Version) WHERE v.name = $version
         RETURN v.vulnerabilities AS vulnerability_ids
         """
         async with self.driver.session() as session:
-            result = await session.run(query, name=name, version=version)
+            result = await session.run(query, name=name, version=version) # type: ignore
             record = await result.single()
         return record.get("vulnerability_ids") if record else []

@@ -8,12 +8,13 @@ class PackageService:
         self.driver = db.get_neo4j_driver()
 
     async def read_package_by_name(self, node_type: str, name: str) -> dict[str, Any] | None:
+        # TODO: Add dynamic labels where Neo4j supports it with indexes
         query = f"""
         MATCH(p:{node_type}{{name:$name}})
         RETURN {{name: p.name,
             import_names: coalesce(p.import_names, []) + [p.name] + [coalesce(p.group_id, '')]}} as package
         """
         async with self.driver.session() as session:
-            result = await session.run(query, name=name)
+            result = await session.run(query, name=name) # type: ignore
             record = await result.single()
             return record.get("package") if record else None

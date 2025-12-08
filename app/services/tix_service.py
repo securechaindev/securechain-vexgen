@@ -74,6 +74,5 @@ class TIXService:
         except Exception as _:
             return []
 
-
     async def update_user_tixs(self, tix_id: str, user_id: str) -> None:
         await self.users_collection.update_one({"_id": ObjectId(user_id)}, {"$addToSet": {"tixs": ObjectId(tix_id)}})

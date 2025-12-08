@@ -85,27 +85,28 @@ class StatementsGenerator:
         except ComponentNotSupportedException:
             return
 
-        package_name, import_names = await self.package_service.read_package_by_name(
+        package = await self.package_service.read_package_by_name(
             node_type,
             component[self.component_name_key].lower()
         )
 
-        vulnerability_ids = await self.version_service.read_vulnerability_ids_by_version_and_package(
-            node_type,
-            package_name,
-            component[self.component_version_key]
-        )
-
-        for vulnerability_id in vulnerability_ids:
-            await self.process_vulnerability(
-                vulnerability_id,
-                purl,
-                timestamp,
-                import_names,
+        if package:
+            vulnerability_ids = await self.version_service.read_vulnerability_ids_by_version_and_package(
                 node_type,
-                vex,
-                tix
+                package.get("name", ""),
+                component[self.component_version_key]
             )
+
+            for vulnerability_id in vulnerability_ids:
+                await self.process_vulnerability(
+                    vulnerability_id,
+                    purl,
+                    timestamp,
+                    package.get("import_names", []),
+                    node_type,
+                    vex,
+                    tix
+                )
 
     async def process_vulnerability(
         self,

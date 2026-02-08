@@ -32,9 +32,9 @@ cd securechain-vexgen
 ```
 
 ### 2. Configure Environment Variables
-Create a `.env` file from `template.env`:
+Create a `.env` file from `.env.template`:
 ```bash
-cp template.env .env
+cp .env.template .env
 ```
 
 Edit `.env` with your configuration:

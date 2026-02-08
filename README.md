@@ -116,10 +116,10 @@ uv run pytest tests/unit/ -v
 uv sync --extra dev
 
 # Linting
-uv ruff check app/
+uv run ruff check app/
 
 # Formatting
-uv ruff format app/
+uv run ruff format app/
 ```
 
 ## Contributing

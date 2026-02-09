@@ -45,7 +45,7 @@ class TIXService:
             },
             {
                 "$lookup": {
-                    "from": "tix",
+                    "from": "tixs",
                     "localField": "tixs",
                     "foreignField": "_id",
                     "as": 'lookup'

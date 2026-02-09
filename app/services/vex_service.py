@@ -45,7 +45,7 @@ class VEXService:
             },
             {
                 "$lookup": {
-                    "from": "vex",
+                    "from": "vexs",
                     "localField": "vexs",
                     "foreignField": "_id",
                     "as": 'lookup'

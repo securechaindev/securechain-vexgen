@@ -68,8 +68,8 @@ docker compose -f dev/docker-compose.yml up --build
 - **Neo4j Browser**: [http://localhost:7474](http://localhost:7474)
 - **MongoDB**: `mongodb://localhost:27017`
 
-## Python Environment
-The project uses Python 3.14 and **uv** as the package manager for faster and more reliable dependency management.
+## Development Environment
+The project uses Python 3.14 and [uv](https://github.com/astral-sh/uv) as the package manager for faster and more reliable dependency management.
 
 ### Setting up the development environment with uv
 
@@ -91,8 +91,6 @@ The project uses Python 3.14 and **uv** as the package manager for faster and mo
 
 ## Testing
 
-The project uses pytest with coverage tracking. Current coverage: **84%** (407 tests passing).
-
 ```bash
 # Install test dependencies
 uv sync --extra test
@@ -111,6 +109,7 @@ uv run pytest tests/unit/ -v
 ```
 
 ## Code Quality
+
 ```bash
 # Install linter
 uv sync --extra dev
@@ -129,3 +128,8 @@ Pull requests are welcome! For major changes, please open an issue first.
 ## License
 
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Links
+- [Secure Chain Team](mailto:hi@securechain.dev)
+- [Secure Chain Organization](https://github.com/securechaindev)
+- [Secure Chain Documentation](https://securechaindev.github.io/)

@@ -123,7 +123,7 @@ uv run ruff format app/
 
 ## Contributing
 
-Pull requests are welcome! For major changes, please open an issue first.
+Pull requests are welcome! To contribute follow this [guidelines](https://securechaindev.github.io/contributing.html).
 
 ## License
 

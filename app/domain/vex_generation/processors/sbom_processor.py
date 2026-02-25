@@ -6,8 +6,7 @@ from typing import Any
 from pytz import UTC
 
 from app.apis import GitHubService
-from app.domain.vex_generation.helpers import PathHelper
-from app.domain.vex_generation.infrastructure import RepositoryDownloader
+from app.domain.vex_generation import PathHelper, RepositoryDownloader
 from app.exceptions import SbomNotFoundException
 from app.schemas import GenerateVEXTIXRequest, ProcessedSBOMResult, TIXCreate, VEXCreate
 from app.services import TIXService, VEXService
